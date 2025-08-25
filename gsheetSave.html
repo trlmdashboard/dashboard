@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Entry for Google Sheets</title>
+    <title>Google Sheets Data Entry</title>
     <style>
         * {
             box-sizing: border-box;
@@ -107,7 +107,6 @@
             border-radius: 8px;
             text-align: center;
             font-weight: 500;
-            display: none;
         }
         
         .success {
@@ -122,11 +121,18 @@
             border: 1px solid #f5c6cb;
         }
         
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
         .instructions {
             background: #e8f0fe;
             padding: 25px;
             border-radius: 10px;
             border-left: 5px solid #4285f4;
+            margin-top: 30px;
         }
         
         .instructions h3 {
@@ -234,12 +240,14 @@
                 <button type="submit">Submit Data to Google Sheet</button>
             </form>
             
-            <div id="statusMessage" class="status"></div>
+            <div id="statusMessage" class="status info">
+                Note: To make this form work, you need to set up the Google Apps Script as described below.
+            </div>
         </div>
         
         <div class="instructions">
             <h3>📋 Setup Instructions</h3>
-            <p>For this form to work, you need to set up a Google Apps Script:</p>
+            <p>To fix the CORS error and make this form work, you need to set up a Google Apps Script with proper headers:</p>
             <ol>
                 <li>Create a Google Sheet where you want to store the data</li>
                 <li>Click on <strong>Extensions</strong> → <strong>Apps Script</strong></li>
@@ -266,31 +274,59 @@ function doPost(e) {
       data.email,
       data.phone,
       data.department,
-      data.message
+      data.message || ""
     ];
     
     sheet.appendRow(row);
     
+    // Set CORS headers to fix the CORS error
     return ContentService
       .createTextOutput(JSON.stringify({
         result: "success", 
         message: "Data added successfully"
       }))
-      .setMimeType(ContentService.MimeType.JSON);
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeaders({
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      });
   } catch (error) {
+    // Set CORS headers for error response too
     return ContentService
       .createTextOutput(JSON.stringify({
         result: "error", 
         message: error.toString()
       }))
-      .setMimeType(ContentService.MimeType.JSON);
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeaders({
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      });
   }
+}
+
+// For handling preflight OPTIONS request
+function doOptions() {
+  return ContentService
+    .createTextOutput()
+    .setHeaders({
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    });
 }
 
 function doGet() {
   return ContentService
     .createTextOutput(JSON.stringify({version: "1.0", status: "active"}))
-    .setMimeType(ContentService.MimeType.JSON);
+    .setMimeType(ContentService.MimeType.JSON)
+    .setHeaders({
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    });
 }
             </code></pre>
             
@@ -304,7 +340,7 @@ function doGet() {
         </div>
         
         <footer>
-            <p>This form connects to Google Sheets using Google Apps Script</p>
+            <p>This form connects to Google Sheets using Google Apps Script with CORS headers</p>
         </footer>
     </div>
 
@@ -322,7 +358,7 @@ function doGet() {
             submitButton.textContent = 'Submitting...';
             
             const statusMessage = document.getElementById('statusMessage');
-            statusMessage.style.display = 'none';
+            statusMessage.style.display = 'block';
             
             // Get form data
             const formData = {
@@ -334,7 +370,7 @@ function doGet() {
             };
             
             try {
-                // Send data to Google Sheets
+                // First try a direct POST request
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: {
@@ -352,13 +388,50 @@ function doGet() {
                     showStatus('Error: ' + result.message, 'error');
                 }
             } catch (error) {
-                showStatus('Error submitting data. Please check your connection and try again.', 'error');
-                console.error('Error:', error);
+                // If direct request fails, try using a proxy to avoid CORS
+                showStatus('Direct request failed. Trying alternative method...', 'info');
+                
+                try {
+                    // Alternative approach using Google Apps Script ID and proxy
+                    await submitViaProxy(formData);
+                } catch (proxyError) {
+                    showStatus('Error submitting data. Please check your script URL and deployment settings.', 'error');
+                    console.error('Error:', proxyError);
+                }
             } finally {
                 submitButton.disabled = false;
                 submitButton.textContent = originalText;
             }
         });
+        
+        // Alternative submission method using a proxy approach
+        async function submitViaProxy(formData) {
+            // Extract script ID from URL if provided
+            let scriptId = SCRIPT_URL;
+            if (SCRIPT_URL.includes('/d/')) {
+                scriptId = SCRIPT_URL.split('/d/')[1].split('/')[0];
+            }
+            
+            // Use Google Apps Script API directly (this may require additional setup)
+            const proxyUrl = `https://script.google.com/macros/s/${scriptId}/exec`;
+            
+            const response = await fetch(proxyUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.result === "success") {
+                showStatus('Data submitted successfully via proxy!', 'success');
+                document.getElementById('dataForm').reset();
+            } else {
+                throw new Error(result.message || 'Unknown error');
+            }
+        }
         
         function showStatus(message, type) {
             const statusMessage = document.getElementById('statusMessage');

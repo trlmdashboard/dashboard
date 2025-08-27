@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Persistent Dropdown Selection</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        p {
+            margin-bottom: 25px;
+            color: #7f8c8d;
+            line-height: 1.6;
+        }
+        
+        .dropdown-container {
+            position: relative;
+            margin: 25px 0;
+        }
+        
+        select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #f9f9f9;
+            appearance: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        select:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .dropdown-container::after {
+            content: "▼";
+            font-size: 12px;
+            color: #777;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+        
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            display: none;
+        }
+        
+        .feedback.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .reset-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .reset-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .highlight {
+            color: #3498db;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Persistent Dropdown Selection</h1>
+        <p>Select a name from the dropdown below. When you return to this page, your selection will be remembered.</p>
+        
+        <div class="dropdown-container">
+            <select id="nameDropdown">
+                <option value="">-- Select a Name --</option>
+                <option value="emma">Emma Johnson</option>
+                <option value="noah">Noah Smith</option>
+                <option value="olivia">Olivia Williams</option>
+                <option value="liam">Liam Brown</option>
+                <option value="ava">Ava Jones</option>
+                <option value="lucas">Lucas Garcia</option>
+            </select>
+        </div>
+        
+        <div id="feedback" class="feedback">
+            You selected <span id="selectedName" class="highlight"></span>. 
+            This selection will be remembered when you return.
+        </div>
+        
+        <button class="reset-btn" onclick="resetSelection()">Reset Selection</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdown = document.getElementById('nameDropdown');
+            const feedback = document.getElementById('feedback');
+            const selectedNameSpan = document.getElementById('selectedName');
+            
+            // Check if there's a previously saved selection
+            const savedSelection = localStorage.getItem('selectedName');
+            
+            if (savedSelection) {
+                dropdown.value = savedSelection;
+                
+                // Show feedback if a name is selected
+                if (savedSelection) {
+                    const selectedOption = dropdown.options[dropdown.selectedIndex];
+                    selectedNameSpan.textContent = selectedOption.text;
+                    feedback.classList.add('show');
+                }
+            }
+            
+            // Add event listener for changes
+            dropdown.addEventListener('change', function() {
+                const selectedValue = this.value;
+                const selectedOption = this.options[this.selectedIndex];
+                
+                // Save the selection to localStorage
+                localStorage.setItem('selectedName', selectedValue);
+                
+                // Update feedback
+                if (selectedValue) {
+                    selectedNameSpan.textContent = selectedOption.text;
+                    feedback.classList.add('show');
+                } else {
+                    feedback.classList.remove('show');
+                }
+            });
+        });
+        
+        // Function to reset the selection
+        function resetSelection() {
+            localStorage.removeItem('selectedName');
+            document.getElementById('nameDropdown').value = "";
+            document.getElementById('feedback').classList.remove('show');
+            alert("Selection has been reset. The page will now reload.");
+            location.reload();
+        }
+    </script>
+</body>
+</html>

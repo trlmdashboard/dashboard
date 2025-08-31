@@ -1,1 +1,236 @@
-a
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank-wise Loan Progress</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 20px;
+        }
+        .dashboard-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .header-logos {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-sizing: border-box;
+        }
+        .header-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .data-table {
+            font-size: 16px;
+            width: 100%;
+            border-collapse: collapse;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #e0e0e0;
+            padding: 12px 15px;
+            text-align: center;
+        }
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            position: relative;
+            color: #34495e;
+            font-size: 0.95em;
+        }
+        .group-header {
+            background-color: #e9ecef !important;
+            font-weight: 700;
+            text-align: center !important;
+            font-size: 1em;
+        }
+        .data-table tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+        .data-table tr:hover {
+            background-color: #f1f7ff;
+        }
+        .bank-table-container {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+        }
+        .bank-filter {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .bank-filter label {
+            font-weight: 600;
+            margin-bottom: 0;
+            color: #495057;
+        }
+        .bank-filter select {
+            width: 200px;
+        }
+        .text-center {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-header">
+        <div class="header-logos">
+            <img src="https://pbs.twimg.com/profile_images/1524416655140753408/yXqxucvR_400x400.jpg" class="header-logo" alt="Logo 1">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Tripura_Emblem.png/330px-Tripura_Emblem.png" class="header-logo" alt="Tripura Emblem">
+        </div>
+        <div class="container"><center>
+            <h1><i class="bi bi-bank"></i> Bank-wise Loan Progress</h1>
+        </center></div>
+    </div>
+
+    <!-- Bank Table Section -->
+    <div class="container bank-table-container">
+        <h2><i class="bi bi-bank"></i> Bank-wise Loan Progress</h2>
+        
+        <div class="bank-filter">
+            <label for="districtFilter">Filter by District:</label>
+            <select class="form-select" id="districtFilter">
+                <option value="ALL DISTRICT" selected>ALL DISTRICT</option>
+                <option value="DHALAI">DHALAI</option>
+                <option value="GOMATI">GOMATI</option>
+                <option value="KHOWAI">KHOWAI</option>
+                <option value="SOUTH TRIPURA">SOUTH TRIPURA</option>
+                <option value="NORTH TRIPURA">NORTH TRIPURA</option>
+                <option value="SEPAHIJALA">SEPAHIJALA</option>
+                <option value="UNAKOTI">UNAKOTI</option>
+                <option value="WEST TRIPURA">WEST TRIPURA</option>
+            </select>
+        </div>
+        
+        <table class="data-table" id="bankTable">
+            <thead>
+                <tr>
+                    <th rowspan="2">Bank Name</th>
+                    <th colspan="5" class="group-header">SHG Loan</th>
+                    <th colspan="5" class="group-header">Individual Loan</th>
+                </tr>
+                <tr>
+                    <th>Submitted</th>
+                    <th>Submitted Amount (₹ Lakh)</th>
+                    <th>Sanctioned</th>
+                    <th>Sanctioned Amount (₹ Lakh)</th>
+                    <th>Achievement (%)</th>
+                    <th>Submitted</th>
+                    <th>Submitted Amount (₹ Lakh)</th>
+                    <th>Sanctioned</th>
+                    <th>Sanctioned Amount (₹ Lakh)</th>
+                    <th>Achievement (%)</th>
+                </tr>
+            </thead>
+            <tbody id="bankTableBody">
+                <tr>
+                    <td colspan="11" class="text-center">No data available</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Sample bank data (replace with your actual data source)
+    const bankData = [
+        { district: "DHALAI", bankName: "State Bank of India", shgSubmitted: 120, shgSanctioned: 80, individualSubmitted: 45, individualSanctioned: 30 },
+        { district: "DHALAI", bankName: "Tripura Gramin Bank", shgSubmitted: 85, shgSanctioned: 60, individualSubmitted: 30, individualSanctioned: 20 },
+        { district: "GOMATI", bankName: "State Bank of India", shgSubmitted: 150, shgSanctioned: 100, individualSubmitted: 60, individualSanctioned: 40 },
+        { district: "GOMATI", bankName: "Tripura Gramin Bank", shgSubmitted: 95, shgSanctioned: 70, individualSubmitted: 40, individualSanctioned: 25 },
+        { district: "KHOWAI", bankName: "State Bank of India", shgSubmitted: 80, shgSanctioned: 50, individualSubmitted: 35, individualSanctioned: 20 },
+        { district: "KHOWAI", bankName: "Tripura Gramin Bank", shgSubmitted: 60, shgSanctioned: 40, individualSubmitted: 25, individualSanctioned: 15 }
+    ];
+
+    // Function to update bank table based on selected district
+    function updateBankTable() {
+        const districtFilter = document.getElementById('districtFilter').value;
+        const filteredBankData = districtFilter === 'ALL DISTRICT' 
+            ? bankData 
+            : bankData.filter(item => item.district === districtFilter);
+            
+        const bankTableBody = document.getElementById('bankTableBody');
+        
+        if (filteredBankData.length === 0) {
+            bankTableBody.innerHTML = '<tr><td colspan="11" class="text-center">No data available for selected district</td></tr>';
+            return;
+        }
+        
+        // Group by bank name
+        const bankGroups = {};
+        filteredBankData.forEach(item => {
+            if (!bankGroups[item.bankName]) {
+                bankGroups[item.bankName] = {
+                    shgSubmitted: 0,
+                    shgSanctioned: 0,
+                    individualSubmitted: 0,
+                    individualSanctioned: 0
+                };
+            }
+            
+            bankGroups[item.bankName].shgSubmitted += item.shgSubmitted;
+            bankGroups[item.bankName].shgSanctioned += item.shgSanctioned;
+            bankGroups[item.bankName].individualSubmitted += item.individualSubmitted;
+            bankGroups[item.bankName].individualSanctioned += item.individualSanctioned;
+        });
+        
+        let html = '';
+        Object.keys(bankGroups).sort().forEach(bankName => {
+            const data = bankGroups[bankName];
+            const shgAchievement = data.shgSubmitted > 0 ? (data.shgSanctioned / data.shgSubmitted * 100).toFixed(1) : 0;
+            const individualAchievement = data.individualSubmitted > 0 ? (data.individualSanctioned / data.individualSubmitted * 100).toFixed(1) : 0;
+            
+            html += `
+                <tr>
+                    <td>${bankName}</td>
+                    <td>${data.shgSubmitted}</td>
+                    <td>${(data.shgSubmitted * 3.13).toFixed(2)}</td>
+                    <td>${data.shgSanctioned}</td>
+                    <td>${(data.shgSanctioned * 3.13).toFixed(2)}</td>
+                    <td>${shgAchievement}%</td>
+                    <td>${data.individualSubmitted}</td>
+                    <td>${(data.individualSubmitted * 2).toFixed(2)}</td>
+                    <td>${data.individualSanctioned}</td>
+                    <td>${(data.individualSanctioned * 2).toFixed(2)}</td>
+                    <td>${individualAchievement}%</td>
+                </tr>
+            `;
+        });
+        
+        bankTableBody.innerHTML = html;
+    }
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', function() {
+        updateBankTable();
+        
+        // Add event listener for district filter
+        document.getElementById('districtFilter').addEventListener('change', updateBankTable);
+    });
+    </script>
+</body>
+</html>

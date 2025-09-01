@@ -895,8 +895,8 @@
         if (today < campaignStart) return 1;
         
         // If current date is after campaign end, show all 31 days
-        const campaignEnd = new Date(2025, 8, 7);
-        if (today > campaignEnd) return 38;
+        const campaignEnd = new Date(2025, 7, 31);
+        if (today > campaignEnd) return 31;
         
         // Otherwise show days up to current date
         return today.getDate();
@@ -907,7 +907,7 @@
     // Function to get day columns (1-31 August 2025)
     function getDayColumns() {
         const columns = [];
-        for (let day = 1; day <= 38; day++) {
+        for (let day = 1; day <= 31; day++) {
             const dayOffset = (day - 1) * 8;
             columns.push({
                 date: `${day}-08-2025`,
@@ -1227,10 +1227,10 @@
             const blockData = {};
             
             // Initialize daily data for charts
-            const dailyShgSubmitted = Array(38).fill(0);
-            const dailyShgSanctioned = Array(38).fill(0);
-            const dailyIndividualSubmitted = Array(38).fill(0);
-            const dailyIndividualSanctioned = Array(38).fill(0);
+            const dailyShgSubmitted = Array(31).fill(0);
+            const dailyShgSanctioned = Array(31).fill(0);
+            const dailyIndividualSubmitted = Array(31).fill(0);
+            const dailyIndividualSanctioned = Array(31).fill(0);
             
             rows.slice(1).forEach(row => {
                 const district = (row[0] || "").trim().toUpperCase();

@@ -887,42 +887,67 @@
     };
 
     // Get current date to determine how many days to show in charts
-    function getCurrentDate() {
-        const today = new Date();
-        const campaignStart = new Date(2025, 7, 1); // August 1, 2025 (month is 0-indexed)
-        
-        // If current date is before campaign start, show first day only
-        if (today < campaignStart) return 1;
-        
-        // If current date is after campaign end, show all 31 days
-        const campaignEnd = new Date(2025, 7, 31);
-        if (today > campaignEnd) return 31;
-        
-        // Otherwise show days up to current date
-        return today.getDate();
+   function getCurrentDate() {
+    const today = new Date();
+    const campaignStart = new Date(2025, 7, 1); // August 1, 2025 (month is 0-indexed)
+    const campaignEnd = new Date(2025, 8, 7);   // September 7, 2025
+    
+    // If current date is before campaign start, show first day only
+    if (today < campaignStart) return 1;
+    
+    // If current date is after campaign end, show all 38 days
+    if (today > campaignEnd) return 38;
+    
+    // Calculate days from August 1 to current date
+    const augustDays = 31; // Total days in August
+    const currentMonth = today.getMonth() + 1; // 1-indexed month
+    const currentDay = today.getDate();
+    
+    if (currentMonth === 8) { // August
+        return currentDay;
+    } else { // September
+        return augustDays + currentDay;
     }
+}
 
     const daysToShow = getCurrentDate();
 
     // Function to get day columns (1-31 August 2025)
     function getDayColumns() {
-        const columns = [];
-        for (let day = 1; day <= 31; day++) {
-            const dayOffset = (day - 1) * 8;
-            columns.push({
-                date: `${day}-08-2025`,
-                shgSubmittedCount: 4 + dayOffset,
-                shgSubmittedAmt: 5 + dayOffset,
-                shgSanctionedCount: 6 + dayOffset,
-                shgSanctionedAmt: 7 + dayOffset,
-                individualSubmittedCount: 8 + dayOffset,
-                individualSubmittedAmt: 9 + dayOffset,
-                individualSanctionedCount: 10 + dayOffset,
-                individualSanctionedAmt: 11 + dayOffset
-            });
-        }
-        return columns;
+    const columns = [];
+    // August days (1-31)
+    for (let day = 1; day <= 31; day++) {
+        const dayOffset = (day - 1) * 8;
+        columns.push({
+            date: `${day}-08-2025`,
+            shgSubmittedCount: 4 + dayOffset,
+            shgSubmittedAmt: 5 + dayOffset,
+            shgSanctionedCount: 6 + dayOffset,
+            shgSanctionedAmt: 7 + dayOffset,
+            individualSubmittedCount: 8 + dayOffset,
+            individualSubmittedAmt: 9 + dayOffset,
+            individualSanctionedCount: 10 + dayOffset,
+            individualSanctionedAmt: 11 + dayOffset
+        });
     }
+    
+    // September days (1-7)
+    for (let day = 1; day <= 7; day++) {
+        const dayOffset = (day - 1) * 8;
+        columns.push({
+            date: `${day}-09-2025`,
+            shgSubmittedCount: 252 + dayOffset,
+            shgSubmittedAmt: 253 + dayOffset,
+            shgSanctionedCount: 254 + dayOffset,
+            shgSanctionedAmt: 255 + dayOffset,
+            individualSubmittedCount: 256 + dayOffset,
+            individualSubmittedAmt: 257 + dayOffset,
+            individualSanctionedCount: 258 + dayOffset,
+            individualSanctionedAmt: 259 + dayOffset
+        });
+    }
+    return columns;
+}
 
     const dayColumns = getDayColumns();
 
@@ -1033,10 +1058,14 @@
         
         // Process each day's data
         dayColumns.slice(0, daysToShow).forEach((day, index) => {
-            const date = `${day.date.split('-')[0]} Aug`;
-            labels.push(date);
+            const dateParts = day.date.split('-');
+            const dayNum = dateParts[0];
+            const month = dateParts[1] === '08' ? 'Aug' : 'Sep';
+            const dateLabel = `${dayNum} ${month}`;
+            labels.push(dateLabel);
             
             // Get day-wise data from CSV
+            
             const shgSubmitted = parseFloat(blockRow[day.shgSubmittedCount]) || 0;
             const shgSubmittedAmt = parseFloat(blockRow[day.shgSubmittedAmt]) || 0;
             const shgSanctioned = parseFloat(blockRow[day.shgSanctionedCount]) || 0;
@@ -1526,8 +1555,16 @@
 
     function createCharts(shgSubmitted, shgSanctioned, individualSubmitted, individualSanctioned) {
         // Create labels for days (1-current date August)
-        const dayLabels = Array.from({length: daysToShow}, (_, i) => `${i+1} Aug`);
-        
+        const labelsToShow = [];
+            for (let i = 0; i < daysToShow; i++) {
+                if (i < 31) {
+                    // August days
+                    labelsToShow.push(`${i+1} Aug`);
+                } else {
+                    // September days (i >= 31)
+                    labelsToShow.push(`${i-30} Sep`);
+                }
+            }
         // Register the plugin to all charts
         Chart.register(ChartDataLabels);
         
@@ -1536,7 +1573,7 @@
         new Chart(shgCtx, {
             type: 'bar',
             data: {
-                labels: dayLabels,
+                labels: labelsToShow,
                 datasets: [
                     {
                         label: 'Submitted',
@@ -1636,7 +1673,7 @@
         new Chart(individualCtx, {
             type: 'bar',
             data: {
-                labels: dayLabels,
+                labels: labelsToShow,
                 datasets: [
                     {
                         label: 'Submitted',

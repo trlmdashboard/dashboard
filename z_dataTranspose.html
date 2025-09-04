@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHG Loan Data Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-bottom: 50px;
+        }
+        .header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            border: none;
+        }
+        .card-header {
+            background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+        }
+        .table-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        table {
+            font-size: 0.9rem;
+        }
+        th {
+            position: sticky;
+            top: 0;
+            background-color: #4e73df !important;
+            color: white;
+            z-index: 10;
+        }
+        .progress {
+            height: 20px;
+            margin: 5px 0;
+        }
+        .filter-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            margin-bottom: 15px;
+        }
+        .stat-card i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        }
+        .bg-gradient-success {
+            background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);
+        }
+        .bg-gradient-info {
+            background: linear-gradient(135deg, #36b9cc 0%, #258391 100%);
+        }
+        .bg-gradient-warning {
+            background: linear-gradient(135deg, #f6c23e 0%, #dda20a 100%);
+        }
+        .highlight {
+            background-color: #e8f4ff !important;
+        }
+        .percentage-cell {
+            font-weight: bold;
+        }
+        .percentage-high {
+            color: #1cc88a;
+        }
+        .percentage-medium {
+            color: #f6c23e;
+        }
+        .percentage-low {
+            color: #e74a3b;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-chart-line me-3"></i>SHG Loan Data Dashboard</h1>
+                    <p class="lead">Tracking SHG loan submissions and sanctions across districts and blocks</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <button id="refreshBtn" class="btn btn-light"><i class="fas fa-sync-alt me-2"></i>Refresh Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card bg-gradient-primary">
+                    <i class="fas fa-building"></i>
+                    <h4 id="districtsCount">0</h4>
+                    <p>Districts</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card bg-gradient-success">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h4 id="blocksCount">0</h4>
+                    <p>Blocks</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card bg-gradient-info">
+                    <i class="fas fa-calendar-day"></i>
+                    <h4 id="daysCount">0</h4>
+                    <p>Days Tracked</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card bg-gradient-warning">
+                    <i class="fas fa-percentage"></i>
+                    <h4 id="avgAchievement">0%</h4>
+                    <p>Avg Achievement</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <div class="row">
+                <div class="col-md-3 mb-2">
+                    <label for="districtFilter" class="form-label">District</label>
+                    <select id="districtFilter" class="form-select">
+                        <option value="">All Districts</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label for="blockFilter" class="form-label">Block</label>
+                    <select id="blockFilter" class="form-select">
+                        <option value="">All Blocks</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label for="dateFilter" class="form-label">Date</label>
+                    <select id="dateFilter" class="form-select">
+                        <option value="">All Dates</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label for="achievementFilter" class="form-label">Achievement</label>
+                    <select id="achievementFilter" class="form-select">
+                        <option value="">All</option>
+                        <option value="high">High (&gt;= 75%)</option>
+                        <option value="medium">Medium (25% - 75%)</option>
+                        <option value="low">Low (&lt; 25%)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-table me-2"></i>Loan Data</h5>
+                <div>
+                    <button id="exportBtn" class="btn btn-sm btn-success"><i class="fas fa-download me-1"></i>Export CSV</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-container">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>District</th>
+                                <th>Block</th>
+                                <th>Entry Date</th>
+                                <th>Target</th>
+                                <th>SHG Loan Target</th>
+                                <th>SHG Loan Sanctioned</th>
+                                <th>Running Total</th>
+                                <th>Achievement %</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTable">
+                            <tr>
+                                <td colspan="9" class="text-center">Loading data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>About This Dashboard</h5>
+            </div>
+            <div class="card-body">
+                <p>This dashboard displays SHG (Self Help Group) loan data across various districts and blocks. The data is loaded from a Google Sheets document and includes:</p>
+                <ul>
+                    <li>Daily tracking of SHG loan submissions and sanctions</li>
+                    <li>Target values for each block</li>
+                    <li>Running totals of sanctioned loans</li>
+                    <li>Achievement percentages against targets</li>
+                </ul>
+                <p class="mb-0">Use the filters above to analyze the data by district, block, date, or achievement level.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Block targets data
+            const blockTargets = {
+                "BC NAGAR": { shg: { loan: 80, amount: 250.4 }, individual: { loan: 15, amount: 30 } },
+                "BOKAFA": { shg: { loan: 85, amount: 266.05 }, individual: { loan: 18, amount: 36 } },
+                "HRISHYAMUKH": { shg: { loan: 110, amount: 344.3 }, individual: { loan: 19, amount: 38 } },
+                "JOLAIBARI": { shg: { loan: 135, amount: 422.55 }, individual: { loan: 23, amount: 46 } },
+                "POANGBARI": { shg: { loan: 30, amount: 93.9 }, individual: { loan: 8, amount: 16 } },
+                "RAJNAGAR": { shg: { loan: 105, amount: 328.65 }, individual: { loan: 19, amount: 38 } },
+                "RUPAICHARI": { shg: { loan: 75, amount: 234.75 }, individual: { loan: 11, amount: 22 } },
+                "SATCHAND": { shg: { loan: 130, amount: 406.9 }, individual: { loan: 22, amount: 44 } },
+                "DAMCHERRA": { shg: { loan: 45, amount: 140.85 }, individual: { loan: 12, amount: 24 } },
+                "DASDA": { shg: { loan: 65, amount: 203.45 }, individual: { loan: 12, amount: 24 } },
+                "JAMPUI HILLS": { shg: { loan: 15, amount: 46.95 }, individual: { loan: 6, amount: 12 } },
+                "JUBARAJNAGAR": { shg: { loan: 90, amount: 281.7 }, individual: { loan: 15, amount: 30 } },
+                "KADAMTALA": { shg: { loan: 100, amount: 313 }, individual: { loan: 15, amount: 30 } },
+                "KALACHERRA": { shg: { loan: 70, amount: 219.1 }, individual: { loan: 15, amount: 30 } },
+                "LALJURI": { shg: { loan: 60, amount: 187.8 }, individual: { loan: 10, amount: 20 } },
+                "PANISAGAR": { shg: { loan: 65, amount: 203.45 }, individual: { loan: 15, amount: 30 } },
+                "CHANDIPUR": { shg: { loan: 85, amount: 266.05 }, individual: { loan: 12, amount: 24 } },
+                "GOURNAGAR": { shg: { loan: 105, amount: 328.65 }, individual: { loan: 21, amount: 42 } },
+                "KUMARGHAT": { shg: { loan: 135, amount: 422.55 }, individual: { loan: 24, amount: 48 } },
+                "PECHARTHAL": { shg: { loan: 75, amount: 234.75 }, individual: { loan: 13, amount: 26 } },
+                "SALEMA": { shg: { loan: 80, amount: 250.4 }, individual: { loan: 15, amount: 30 } },
+                "AMBASSA": { shg: { loan: 105, amount: 328.65 }, individual: { loan: 25, amount: 50 } },
+                "CHAWMANU": { shg: { loan: 75, amount: 234.75 }, individual: { loan: 14, amount: 28 } },
+                "DUMBURNAGAR": { shg: { loan: 110, amount: 344.3 }, individual: { loan: 21, amount: 42 } },
+                "DURGACHOWMUHANI": { shg: { loan: 180, amount: 563.4 }, individual: { loan: 21, amount: 42 } },
+                "GANGANAGAR": { shg: { loan: 45, amount: 140.85 }, individual: { loan: 6, amount: 12 } },
+                "MANU": { shg: { loan: 170, amount: 532.1 }, individual: { loan: 25, amount: 50 } },
+                "RAISHYABARI": { shg: { loan: 35, amount: 109.55 }, individual: { loan: 8, amount: 16 } },
+                "KALYANPUR": { shg: { loan: 85, amount: 266.05 }, individual: { loan: 14, amount: 28 } },
+                "KHOWAI": { shg: { loan: 110, amount: 344.3 }, individual: { loan: 18, amount: 36 } },
+                "MUNGIAKAMI": { shg: { loan: 45, amount: 140.85 }, individual: { loan: 10, amount: 20 } },
+                "PADMABIL": { shg: { loan: 75, amount: 234.75 }, individual: { loan: 10, amount: 20 } },
+                "TELIAMURA": { shg: { loan: 100, amount: 313 }, individual: { loan: 18, amount: 36 } },
+                "TULASHIKHAR": { shg: { loan: 85, amount: 266.05 }, individual: { loan: 15, amount: 30 } },
+                "BAMUTIA": { shg: { loan: 120, amount: 375.6 }, individual: { loan: 14, amount: 28 } },
+                "BELBARI": { shg: { loan: 65, amount: 203.45 }, individual: { loan: 14, amount: 28 } },
+                "DUKLI": { shg: { loan: 155, amount: 485.15 }, individual: { loan: 19, amount: 38 } },
+                "HEZAMARA": { shg: { loan: 60, amount: 187.8 }, individual: { loan: 13, amount: 26 } },
+                "JIRANIA": { shg: { loan: 105, amount: 328.65 }, individual: { loan: 14, amount: 28 } },
+                "LEFUNGA": { shg: { loan: 55, amount: 172.15 }, individual: { loan: 13, amount: 26 } },
+                "MANDWI": { shg: { loan: 80, amount: 250.4 }, individual: { loan: 13, amount: 26 } },
+                "MOHANPUR": { shg: { loan: 95, amount: 297.35 }, individual: { loan: 14, amount: 28 } },
+                "OLD AGARTALA": { shg: { loan: 105, amount: 328.65 }, individual: { loan: 21, amount: 42 } },
+                "BISHALGARH": { shg: { loan: 100, amount: 313 }, individual: { loan: 16, amount: 32 } },
+                "BOXANAGAR": { shg: { loan: 70, amount: 219.1 }, individual: { loan: 10, amount: 20 } },
+                "CHARILAM": { shg: { loan: 75, amount: 234.75 }, individual: { loan: 14, amount: 28 } },
+                "JAMPUIJALA": { shg: { loan: 95, amount: 297.35 }, individual: { loan: 10, amount: 20 } },
+                "KATAHALIA": { shg: { loan: 80, amount: 250.4 }, individual: { loan: 13, amount: 26 } },
+                "MOHANBHOG": { shg: { loan: 65, amount: 203.45 }, individual: { loan: 8, amount: 16 } },
+                "NALCHAR": { shg: { loan: 115, amount: 359.95 }, individual: { loan: 14, amount: 28 } },
+                "AMARPUR": { shg: { loan: 95, amount: 297.35 }, individual: { loan: 13, amount: 26 } },
+                "KAKRABAN": { shg: { loan: 130, amount: 406.9 }, individual: { loan: 18, amount: 36 } },
+                "KARBOOK": { shg: { loan: 105, amount: 328.65 }, individual: { loan: 12, amount: 24 } },
+                "KILLA": { shg: { loan: 65, amount: 203.45 }, individual: { loan: 18, amount: 36 } },
+                "MATABARI": { shg: { loan: 180, amount: 563.4 }, individual: { loan: 25, amount: 50 } },
+                "OMPI": { shg: { loan: 85, amount: 266.05 }, individual: { loan: 12, amount: 24 } },
+                "SILACHARI": { shg: { loan: 50, amount: 156.5 }, individual: { loan: 12, amount: 24 } },
+                "TEPANIA": { shg: { loan: 140, amount: 438.2 }, individual: { loan: 25, amount: 50 } }
+            };
+
+            const csvUrl = "https://docs.google.com/spreadsheets/d/1CRjXmoPGnHvmNyIkkJ4LhPhke5j2ywUvgt5cD1P17VY/gviz/tq?tqx=out:csv&sheet=jsondata";
+            let allData = [];
+            let filteredData = [];
+
+            // Initialize the page
+            loadData();
+
+            // Event listeners
+            document.getElementById('refreshBtn').addEventListener('click', loadData);
+            document.getElementById('exportBtn').addEventListener('click', exportToCSV);
+            document.getElementById('districtFilter').addEventListener('change', filterData);
+            document.getElementById('blockFilter').addEventListener('change', filterData);
+            document.getElementById('dateFilter').addEventListener('change', filterData);
+            document.getElementById('achievementFilter').addEventListener('change', filterData);
+
+            // Load data from CSV
+            async function loadData() {
+                try {
+                    document.getElementById('dataTable').innerHTML = '<tr><td colspan="9" class="text-center">Loading data...</td></tr>';
+                    
+                    const response = await fetch(csvUrl);
+                    const csvText = await response.text();
+                    
+                    const rows = csvText.split('\n').map(row => row.split(','));
+                    
+                    // Remove header row if exists
+                    if (rows.length > 0 && isHeaderRow(rows[0])) {
+                        rows.shift();
+                    }
+                    
+                    // Date mapping - column index to date
+                    const dateColumns = {};
+                    let currentDate = new Date(2025, 7, 1); // August 1, 2025 (month is 0-indexed)
+                    const endDate = new Date(2025, 8, 7); // September 7, 2025
+                    
+                    let colIndex = 4; // Starting column for data
+                    
+                    while (currentDate <= endDate) {
+                        const dateStr = formatDate(currentDate);
+                        
+                        // SHG Submitted (No)
+                        dateColumns[colIndex] = {date: dateStr, type: 'shg_submitted_no'};
+                        colIndex++;
+                        
+                        // SHG Submitted (Amt)
+                        dateColumns[colIndex] = {date: dateStr, type: 'shg_submitted_amt'};
+                        colIndex++;
+                        
+                        // SHG Sanctioned (No)
+                        dateColumns[colIndex] = {date: dateStr, type: 'shg_sanctioned_no'};
+                        colIndex++;
+                        
+                        // SHG Sanctioned (Amt)
+                        dateColumns[colIndex] = {date: dateStr, type: 'shg_sanctioned_amt'};
+                        colIndex++;
+                        
+                        // Individual Submitted (No)
+                        dateColumns[colIndex] = {date: dateStr, type: 'ind_submitted_no'};
+                        colIndex++;
+                        
+                        // Individual Submitted (Amt)
+                        dateColumns[colIndex] = {date: dateStr, type: 'ind_submitted_amt'};
+                        colIndex++;
+                        
+                        // Individual Sanctioned (No)
+                        dateColumns[colIndex] = {date: dateStr, type: 'ind_sanctioned_no'};
+                        colIndex++;
+                        
+                        // Individual Sanctioned (Amt)
+                        dateColumns[colIndex] = {date: dateStr, type: 'ind_sanctioned_amt'};
+                        colIndex++;
+                        
+                        // Move to next day
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                    
+                    // Process each row from CSV
+                    allData = [];
+                    const districts = new Set();
+                    const blocks = new Set();
+                    const dates = new Set();
+                    let totalAchievement = 0;
+                    let achievementCount = 0;
+                    
+                    for (const row of rows) {
+                        if (row.length < 4) continue; // Skip incomplete rows
+                        
+                        const district = row[0]?.trim();
+                        const block = row[1]?.trim();
+                        
+                        if (!district || !block) continue;
+                        
+                        districts.add(district);
+                        blocks.add(block);
+                        
+                        // Get target for this block
+                        const target = blockTargets[block.toUpperCase()];
+                        if (!target) continue;
+                        
+                        const shgLoanTarget = target.shg.loan;
+                        
+                        // Initialize running total
+                        let runningTotal = 0;
+                        
+                        // Process each date column
+                        for (let col = 4; col < row.length; col++) {
+                            const dateInfo = dateColumns[col];
+                            if (!dateInfo) continue;
+                            
+                            if (dateInfo.type === 'shg_sanctioned_no') {
+                                const sanctionedValue = parseFloat(row[col]) || 0;
+                                runningTotal += sanctionedValue;
+                                
+                                const achievementPercentage = shgLoanTarget > 0 ? 
+                                    (runningTotal / shgLoanTarget) * 100 : 0;
+                                
+                                dates.add(dateInfo.date);
+                                totalAchievement += achievementPercentage;
+                                achievementCount++;
+                                
+                                allData.push({
+                                    District: district,
+                                    Block: block,
+                                    EntryDate: dateInfo.date,
+                                    Target: shgLoanTarget,
+                                    SHGLoanTarget: shgLoanTarget,
+                                    SHGLoanSanctioned: sanctionedValue,
+                                    RunningTotal: runningTotal,
+                                    AchievementPercentage: achievementPercentage
+                                });
+                            }
+                        }
+                    }
+                    
+                    // Update statistics
+                    document.getElementById('districtsCount').textContent = districts.size;
+                    document.getElementById('blocksCount').textContent = blocks.size;
+                    document.getElementById('daysCount').textContent = dates.size;
+                    document.getElementById('avgAchievement').textContent = (totalAchievement / achievementCount).toFixed(2) + '%';
+                    
+                    // Populate filters
+                    populateFilter('districtFilter', Array.from(districts).sort());
+                    populateFilter('blockFilter', Array.from(blocks).sort());
+                    populateFilter('dateFilter', Array.from(dates).sort());
+                    
+                    // Apply initial filter
+                    filterData();
+                    
+                } catch (error) {
+                    console.error('Error processing data:', error);
+                    document.getElementById('dataTable').innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error loading data. Please try again.</td></tr>';
+                }
+            }
+
+            // Filter data based on selections
+            function filterData() {
+                const districtFilter = document.getElementById('districtFilter').value;
+                const blockFilter = document.getElementById('blockFilter').value;
+                const dateFilter = document.getElementById('dateFilter').value;
+                const achievementFilter = document.getElementById('achievementFilter').value;
+                
+                filteredData = allData.filter(item => {
+                    if (districtFilter && item.District !== districtFilter) return false;
+                    if (blockFilter && item.Block !== blockFilter) return false;
+                    if (dateFilter && item.EntryDate !== dateFilter) return false;
+                    
+                    if (achievementFilter) {
+                        if (achievementFilter === 'high' && item.AchievementPercentage < 75) return false;
+                        if (achievementFilter === 'medium' && 
+                            (item.AchievementPercentage >= 75 || item.AchievementPercentage < 25)) return false;
+                        if (achievementFilter === 'low' && item.AchievementPercentage >= 25) return false;
+                    }
+                    
+                    return true;
+                });
+                
+                renderTable();
+            }
+
+            // Render the data table
+            function renderTable() {
+                const tableBody = document.getElementById('dataTable');
+                
+                if (filteredData.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="9" class="text-center">No data matching filters</td></tr>';
+                    return;
+                }
+                
+                let html = '';
+                
+                filteredData.forEach(item => {
+                    const achievementClass = item.AchievementPercentage >= 75 ? 'percentage-high' : 
+                                           item.AchievementPercentage >= 25 ? 'percentage-medium' : 'percentage-low';
+                    
+                    html += `
+                    <tr>
+                        <td>${item.District}</td>
+                        <td>${item.Block}</td>
+                        <td>${item.EntryDate}</td>
+                        <td>${item.Target}</td>
+                        <td>${item.SHGLoanTarget}</td>
+                        <td>${item.SHGLoanSanctioned}</td>
+                        <td>${item.RunningTotal.toFixed(2)}</td>
+                        <td class="percentage-cell ${achievementClass}">${item.AchievementPercentage.toFixed(2)}%</td>
+                        <td>
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" 
+                                    style="width: ${Math.min(item.AchievementPercentage, 100)}%" 
+                                    aria-valuenow="${item.AchievementPercentage}" 
+                                    aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    `;
+                });
+                
+                tableBody.innerHTML = html;
+            }
+
+            // Helper function to populate filter dropdowns
+            function populateFilter(filterId, options) {
+                const filter = document.getElementById(filterId);
+                // Save current selection
+                const currentValue = filter.value;
+                
+                // Clear existing options except the first one
+                while (filter.options.length > 1) {
+                    filter.remove(1);
+                }
+                
+                // Add options
+                options.forEach(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option;
+                    opt.textContent = option;
+                    filter.appendChild(opt);
+                });
+                
+                // Restore selection if still valid
+                if (options.includes(currentValue)) {
+                    filter.value = currentValue;
+                }
+            }
+
+            // Export to CSV
+            function exportToCSV() {
+                if (filteredData.length === 0) {
+                    alert('No data to export');
+                    return;
+                }
+                
+                const headers = ['District', 'Block', 'Entry Date', 'Target', 'SHG Loan Target', 'SHG Loan Sanctioned', 'Running Total', 'Achievement %'];
+                const csvData = filteredData.map(item => [
+                    item.District,
+                    item.Block,
+                    item.EntryDate,
+                    item.Target,
+                    item.SHGLoanTarget,
+                    item.SHGLoanSanctioned,
+                    item.RunningTotal.toFixed(2),
+                    item.AchievementPercentage.toFixed(2) + '%'
+                ]);
+                
+                const csvContent = [headers, ...csvData].map(row => row.join(',')).join('\n');
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'shg_loan_data.csv');
+                link.style.visibility = 'hidden';
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
+            // Helper function to check if a row is a header row
+            function isHeaderRow(row) {
+                return row[0] === 'District Name' || row[0] === 'District' || 
+                       row[1] === 'Block Name' || row[1] === 'Block';
+            }
+
+            // Helper function to format date as DD-MM-YYYY
+            function formatDate(date) {
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}-${month}-${year}`;
+            }
+        });
+    </script>
+</body>
+</html>

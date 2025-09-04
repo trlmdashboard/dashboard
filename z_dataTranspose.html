@@ -1,74 +1,377 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>CSV Data Display</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Data Viewer</title>
     <style>
-        table { border-collapse: collapse; margin: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            padding: 30px;
+            margin-top: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+        
+        .description {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 25px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        #refresh-btn {
+            background: #2ecc71;
+        }
+        
+        #refresh-btn:hover {
+            background: #27ae60;
+        }
+        
+        .status {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
+        .loading {
+            background: #fff4e5;
+            color: #e67e22;
+        }
+        
+        .error {
+            background: #ffecef;
+            color: #e74c3c;
+        }
+        
+        .success {
+            background: #e7f9ed;
+            color: #27ae60;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+            position: sticky;
+            top: 0;
+        }
+        
+        tr:hover {
+            background: #f5f9ff;
+        }
+        
+        .json-view {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .json-view h3 {
+            margin-bottom: 15px;
+            color: #3498db;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .card h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card h2 svg {
+            width: 24px;
+            height: 24px;
+            fill: #3498db;
+        }
+        
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
-    <div id="data-container"></div>
+    <h1>CSV Data Viewer</h1>
+    
+    <p class="description">
+        This application fetches and displays CSV data from a Google Sheets document. 
+        You can view the data in both table and JSON format.
+    </p>
+    
+    <div class="controls">
+        <button id="load-btn">Load CSV Data</button>
+        <button id="refresh-btn">Refresh Data</button>
+    </div>
+    
+    <div class="container">
+        <div id="status" class="status">Click "Load CSV Data" to fetch the data</div>
+        
+        <div class="table-container">
+            <table id="csv-table" style="display: none;">
+                <thead>
+                    <tr id="table-headers"></tr>
+                </thead>
+                <tbody id="table-body"></tbody>
+            </table>
+        </div>
+        
+        <div class="json-view" id="json-view" style="display: none;">
+            <h3>JSON Representation</h3>
+            <pre id="json-data"></pre>
+        </div>
+        
+        <div class="card">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+                Information
+            </h2>
+            <p>If no data is displayed, it could be due to:</p>
+            <ul style="margin: 15px 0 15px 20px;">
+                <li>CORS restrictions on the Google Sheets document</li>
+                <li>The sheet being empty or not containing data</li>
+                <li>Network connectivity issues</li>
+                <li>The sheet not being publicly accessible</li>
+            </ul>
+            <p>Make sure your Google Sheets document is published to the web.</p>
+        </div>
+    </div>
+    
+    <footer>
+        <p>CSV Data Viewer Application &copy; 2023</p>
+    </footer>
 
     <script>
-        const csvUrl = "https://docs.google.com/spreadsheets/d/1CRjXmoPGnHvmNyIkkJ4LhPhke5j2ywUvgt5cD1P17VY/gviz/tq?tqx=out:csv&sheet=jsondata";
-
-        async function loadCSVData() {
-            try {
-                const response = await fetch(csvUrl);
-                const csvText = await response.text();
+        document.addEventListener('DOMContentLoaded', function() {
+            const csvUrl = "https://docs.google.com/spreadsheets/d/1CRjXmoPGnHvmNyIkkJ4LhPhke5j2ywUvgt5cD1P17VY/gviz/tq?tqx=out:csv&sheet=jsondata";
+            const loadBtn = document.getElementById('load-btn');
+            const refreshBtn = document.getElementById('refresh-btn');
+            const statusDiv = document.getElementById('status');
+            const tableHeaders = document.getElementById('table-headers');
+            const tableBody = document.getElementById('table-body');
+            const csvTable = document.getElementById('csv-table');
+            const jsonView = document.getElementById('json-view');
+            const jsonData = document.getElementById('json-data');
+            
+            loadBtn.addEventListener('click', loadCSVData);
+            refreshBtn.addEventListener('click', loadCSVData);
+            
+            async function loadCSVData() {
+                statusDiv.textContent = "Loading data...";
+                statusDiv.className = "status loading";
                 
-                // Parse CSV data
-                const rows = csvText.split('\n');
-                const headers = rows[0].split(',').map(header => header.trim());
-                const data = rows.slice(1).map(row => {
-                    const values = row.split(',');
-                    return headers.reduce((obj, header, index) => {
-                        obj[header] = values[index] ? values[index].trim() : '';
-                        return obj;
-                    }, {});
-                });
-
-                // Display data
-                displayData(headers, data);
-                
-            } catch (error) {
-                console.error('Error loading CSV:', error);
-                document.getElementById('data-container').innerHTML = 
-                    '<p>Error loading data: ' + error.message + '</p>';
+                try {
+                    // Add timestamp to URL to prevent caching
+                    const timestamp = new Date().getTime();
+                    const url = `${csvUrl}&t=${timestamp}`;
+                    
+                    const response = await fetch(url);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const csvText = await response.text();
+                    
+                    if (!csvText || csvText.trim().length === 0) {
+                        throw new Error("No data returned from the server");
+                    }
+                    
+                    // Parse CSV data
+                    const rows = csvText.split('\n').filter(row => row.trim() !== '');
+                    
+                    if (rows.length === 0) {
+                        throw new Error("CSV is empty");
+                    }
+                    
+                    const headers = rows[0].split(',').map(header => header.trim());
+                    const data = [];
+                    
+                    for (let i = 1; i < rows.length; i++) {
+                        const values = rows[i].split(',');
+                        const rowData = {};
+                        
+                        headers.forEach((header, index) => {
+                            rowData[header] = values[index] ? values[index].trim() : '';
+                        });
+                        
+                        data.push(rowData);
+                    }
+                    
+                    // Display data in table
+                    displayTable(headers, data);
+                    
+                    // Display data in JSON viewer
+                    jsonData.textContent = JSON.stringify(data, null, 2);
+                    jsonView.style.display = 'block';
+                    
+                    statusDiv.textContent = `Data loaded successfully! Found ${data.length} records.`;
+                    statusDiv.className = "status success";
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    statusDiv.textContent = `Error: ${error.message}`;
+                    statusDiv.className = "status error";
+                    
+                    csvTable.style.display = 'none';
+                    jsonView.style.display = 'none';
+                }
             }
-        }
-
-        function displayData(headers, data) {
-            const container = document.getElementById('data-container');
             
-            // Create table
-            let table = '<table>';
-            
-            // Create header row
-            table += '<tr>';
-            headers.forEach(header => {
-                table += `<th>${header}</th>`;
-            });
-            table += '</tr>';
-            
-            // Create data rows
-            data.forEach(row => {
-                table += '<tr>';
+            function displayTable(headers, data) {
+                // Clear previous data
+                tableHeaders.innerHTML = '';
+                tableBody.innerHTML = '';
+                
+                // Create headers
                 headers.forEach(header => {
-                    table += `<td>${row[header] || ''}</td>`;
+                    const th = document.createElement('th');
+                    th.textContent = header;
+                    tableHeaders.appendChild(th);
                 });
-                table += '</tr>';
-            });
-            
-            table += '</table>';
-            container.innerHTML = table;
-        }
-
-        // Load data when page loads
-        loadCSVData();
+                
+                // Create rows
+                if (data.length === 0) {
+                    const tr = document.createElement('tr');
+                    const td = document.createElement('td');
+                    td.textContent = 'No data available';
+                    td.colSpan = headers.length;
+                    tr.appendChild(td);
+                    tableBody.appendChild(tr);
+                } else {
+                    data.forEach(row => {
+                        const tr = document.createElement('tr');
+                        
+                        headers.forEach(header => {
+                            const td = document.createElement('td');
+                            td.textContent = row[header] || '';
+                            tr.appendChild(td);
+                        });
+                        
+                        tableBody.appendChild(tr);
+                    });
+                }
+                
+                // Show table
+                csvTable.style.display = 'table';
+            }
+        });
     </script>
 </body>
 </html>

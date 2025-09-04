@@ -134,6 +134,13 @@
             font-weight: bold;
             color: #c3c3c3;
         }
+        .text-outline {
+            color: white;
+            -webkit-text-stroke: 2px black; /* For Safari/Chrome */
+            text-stroke: 2px black;
+            font-weight: bold;
+        }
+
         .stats-container {
             flex: 1;
         }
@@ -613,7 +620,7 @@
                                 <circle class="progress-circle-bg" cx="18" cy="18" r="14" stroke-dasharray="87.96" stroke-dashoffset="0"></circle>
                                 <circle class="progress-circle-fill" cx="18" cy="18" r="14" stroke-dasharray="87.96" stroke-dashoffset="0" id="shg-progress-circle"></circle>
                             </svg>
-                            <div class="progress-value loading" id="shg-achievement-value"></div>
+                            <div class="progress-value text-outline loading" id="shg-achievement-value"></div>
                         </div>
                     </div>
                     <div class="stats-container">

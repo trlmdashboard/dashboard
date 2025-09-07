@@ -3,537 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supabase CRUD with Auth</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <title>Supabase Table Reader</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --primary: #3b82f6;
-            --primary-dark: #2563eb;
-            --danger: #ef4444;
-            --success: #10b981;
-            --gray: #6b7280;
-            --light: #f3f4f6;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
         body {
-            background-color: #f9fafb;
-            color: #1f2937;
-            line-height: 1.6;
-            padding: 20px;
-            max-width: 1200px;
+            font-family: Arial, sans-serif;
+            max-width: 800px;
             margin: 0 auto;
-        }
-        
-        .container {
-            display: grid;
-            grid-template-columns: 1fr 3fr;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 0;
-            border-bottom: 1px solid #e5e7eb;
-            margin-bottom: 30px;
-        }
-        
-        h1 {
-            color: var(--primary);
-            font-size: 2.2rem;
-        }
-        
-        h2 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: var(--primary-dark);
-        }
-        
-        .card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            margin-bottom: 20px;
         }
-        
-        .auth-section, .user-section {
-            margin-bottom: 30px;
-        }
-        
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        
-        label {
-            font-weight: 500;
-            color: var(--gray);
-        }
-        
-        input, textarea {
-            padding: 10px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 16px;
-        }
-        
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-        
-        button {
-            padding: 10px 16px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--primary-dark);
-        }
-        
-        .btn-danger {
-            background-color: var(--danger);
-            color: white;
-        }
-        
-        .btn-success {
-            background-color: var(--success);
-            color: white;
-        }
-        
-        .btn-secondary {
-            background-color: var(--gray);
-            color: white;
-        }
-        
-        .auth-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
-        
         th, td {
-            padding: 12px 15px;
+            border: 1px solid #ddd;
+            padding: 8px;
             text-align: left;
-            border-bottom: 1px solid #e5e7eb;
         }
-        
         th {
-            background-color: var(--light);
-            font-weight: 600;
+            background-color: #f2f2f2;
         }
-        
-        tr:hover {
-            background-color: #f9fafb;
+        .loading {
+            text-align: center;
+            padding: 20px;
         }
-        
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .message {
-            padding: 12px 15px;
-            border-radius: 6px;
-            margin: 15px 0;
-        }
-        
         .error {
-            background-color: #fee2e2;
-            color: var(--danger);
-            border: 1px solid #fecaca;
-        }
-        
-        .success {
-            background-color: #d1fae5;
-            color: var(--success);
-            border: 1px solid #a7f3d0;
-        }
-        
-        .hidden {
-            display: none;
-        }
-        
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
+            color: red;
+            padding: 10px;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Supabase CRUD with Auth</h1>
-        <div id="userInfo" class="user-info hidden">
-            <div class="avatar">U</div>
-            <span id="userEmail"></span>
-        </div>
-    </header>
-
-    <div id="message" class="message hidden"></div>
-
-    <div class="container">
-        <div class="left-column">
-            <div class="card auth-section">
-                <h2>Authentication</h2>
-                <div class="auth-buttons">
-                    <button id="signUpBtn" class="btn-primary">Sign Up</button>
-                    <button id="signInBtn" class="btn-secondary">Sign In</button>
-                    <button id="signOutBtn" class="btn-danger hidden">Sign Out</button>
-                </div>
-
-                <form id="authForm" class="hidden">
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" required>
-                    </div>
-                    <button type="submit" class="btn-primary">Submit</button>
-                </form>
-            </div>
-
-            <div class="card user-section">
-                <h2>User Management</h2>
-                <p>Sign up or sign in to manage your posts.</p>
-            </div>
-        </div>
-
-        <div class="right-column">
-            <div class="card">
-                <h2>Create New Post</h2>
-                <form id="createForm">
-                    <div class="form-group">
-                        <label for="title">Title</label>
-                        <input type="text" id="title" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="content">Content</label>
-                        <textarea id="content" required></textarea>
-                    </div>
-                    <button type="submit" class="btn-primary">Create Post</button>
-                </form>
-            </div>
-
-            <div class="card">
-                <h2>Your Posts</h2>
-                <div id="postsContainer">
-                    <p>Sign in to view and manage your posts.</p>
-                </div>
-            </div>
-        </div>
-    </div>
+    <h1>Supabase Table Data</h1>
+    <button onclick="fetchData()">Load Data</button>
+    <div id="loading" class="loading" style="display: none;">Loading...</div>
+    <div id="error" class="error" style="display: none;"></div>
+    <div id="data-container"></div>
 
     <script>
-        // Initialize Supabase
-        const SUPABASE_URL = 'https://your-project.supabase.co';
-        const SUPABASE_ANON_KEY = 'your-anon-key';
-        
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // DOM Elements
-        const authForm = document.getElementById('authForm');
-        const createForm = document.getElementById('createForm');
-        const signUpBtn = document.getElementById('signUpBtn');
-        const signInBtn = document.getElementById('signInBtn');
-        const signOutBtn = document.getElementById('signOutBtn');
-        const messageDiv = document.getElementById('message');
-        const userInfo = document.getElementById('userInfo');
-        const userEmail = document.getElementById('userEmail');
-        const postsContainer = document.getElementById('postsContainer');
-        
-        let isSignUp = true;
-        
-        // Event Listeners
-        signUpBtn.addEventListener('click', () => {
-            isSignUp = true;
-            authForm.classList.remove('hidden');
-            showMessage('Please enter your details to sign up.', 'success');
-        });
-        
-        signInBtn.addEventListener('click', () => {
-            isSignUp = false;
-            authForm.classList.remove('hidden');
-            showMessage('Please enter your details to sign in.', 'success');
-        });
-        
-        signOutBtn.addEventListener('click', () => {
-            signOut();
-        });
-        
-        authForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+        // Initialize Supabase client
+        const supabaseUrl = 'postgresql://postgres:[YOUR-PASSWORD]@db.vfkaijqjdofdgvwobhzz.supabase.co:5432/postgres';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZma2FpanFqZG9mZGd2d29iaHp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MzMyMDYsImV4cCI6MjA2ODQwOTIwNn0.IomZz0OPcDJ-nMfBaLlos9BxVuEFJRF5MZmcZQIameA';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function fetchData() {
+            const loadingElement = document.getElementById('loading');
+            const errorElement = document.getElementById('error');
+            const dataContainer = document.getElementById('data-container');
             
-            if (isSignUp) {
-                signUp(email, password);
-            } else {
-                signIn(email, password);
+            // Show loading, hide error
+            loadingElement.style.display = 'block';
+            errorElement.style.display = 'none';
+            dataContainer.innerHTML = '';
+
+            try {
+                // Replace 'your_table_name' with your actual table name
+                const { data, error } = await supabase
+                    .from('tblUSERS')
+                    .select('*');
+
+                if (error) {
+                    throw error;
+                }
+
+                if (data && data.length > 0) {
+                    displayData(data);
+                } else {
+                    dataContainer.innerHTML = '<p>No data found</p>';
+                }
+            } catch (error) {
+                errorElement.textContent = `Error: ${error.message}`;
+                errorElement.style.display = 'block';
+            } finally {
+                loadingElement.style.display = 'none';
             }
-        });
-        
-        createForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const title = document.getElementById('title').value;
-            const content = document.getElementById('content').value;
+        }
+
+        function displayData(data) {
+            const container = document.getElementById('data-container');
             
-            createPost(title, content);
-        });
-        
-        // Authentication Functions
-        async function signUp(email, password) {
-            const { user, error } = await supabase.auth.signUp({
-                email,
-                password
+            if (data.length === 0) {
+                container.innerHTML = '<p>No data available</p>';
+                return;
+            }
+
+            // Create table
+            let tableHtml = '<table>';
+            
+            // Create table headers from first object keys
+            tableHtml += '<tr>';
+            Object.keys(data[0]).forEach(key => {
+                tableHtml += `<th>${key}</th>`;
             });
-            
-            if (error) {
-                showMessage(error.message, 'error');
-            } else {
-                showMessage('Sign up successful! Please check your email for verification.', 'success');
-                authForm.reset();
-                authForm.classList.add('hidden');
-            }
-        }
-        
-        async function signIn(email, password) {
-            const { user, error } = await supabase.auth.signIn({
-                email,
-                password
+            tableHtml += '</tr>';
+
+            // Create table rows
+            data.forEach(row => {
+                tableHtml += '<tr>';
+                Object.values(row).forEach(value => {
+                    tableHtml += `<td>${value !== null ? value : 'NULL'}</td>`;
+                });
+                tableHtml += '</tr>';
             });
-            
-            if (error) {
-                showMessage(error.message, 'error');
-            } else {
-                showMessage('Sign in successful!', 'success');
-                authForm.reset();
-                authForm.classList.add('hidden');
-                updateUI();
-            }
+
+            tableHtml += '</table>';
+            container.innerHTML = tableHtml;
         }
-        
-        async function signOut() {
-            const { error } = await supabase.auth.signOut();
-            
-            if (error) {
-                showMessage(error.message, 'error');
-            } else {
-                showMessage('Sign out successful!', 'success');
-                updateUI();
-            }
-        }
-        
-        // CRUD Functions
-        async function createPost(title, content) {
-            const { data: user } = await supabase.auth.getUser();
-            
-            if (!user) {
-                showMessage('You must be signed in to create a post.', 'error');
-                return;
-            }
-            
-            const { data, error } = await supabase
-                .from('posts')
-                .insert([
-                    { title, content, user_id: user.id }
-                ]);
-            
-            if (error) {
-                showMessage(error.message, 'error');
-            } else {
-                showMessage('Post created successfully!', 'success');
-                createForm.reset();
-                fetchPosts();
-            }
-        }
-        
-        async function fetchPosts() {
-            const { data: user } = await supabase.auth.getUser();
-            
-            if (!user) {
-                postsContainer.innerHTML = '<p>Sign in to view your posts.</p>';
-                return;
-            }
-            
-            const { data: posts, error } = await supabase
-                .from('posts')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false });
-            
-            if (error) {
-                showMessage(error.message, 'error');
-                return;
-            }
-            
-            if (posts.length === 0) {
-                postsContainer.innerHTML = '<p>You have no posts yet.</p>';
-                return;
-            }
-            
-            let postsHTML = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Content</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            posts.forEach(post => {
-                postsHTML += `
-                    <tr>
-                        <td>${post.title}</td>
-                        <td>${post.content}</td>
-                        <td class="action-buttons">
-                            <button onclick="editPost(${post.id})" class="btn-secondary">Edit</button>
-                            <button onclick="deletePost(${post.id})" class="btn-danger">Delete</button>
-                        </td>
-                    </tr>
-                `;
-            });
-            
-            postsHTML += `
-                    </tbody>
-                </table>
-            `;
-            
-            postsContainer.innerHTML = postsHTML;
-        }
-        
-        async function editPost(id) {
-            // In a real app, you would show a form to edit the post
-            const newTitle = prompt('Enter new title:');
-            if (!newTitle) return;
-            
-            const newContent = prompt('Enter new content:');
-            if (!newContent) return;
-            
-            const { data, error } = await supabase
-                .from('posts')
-                .update({ title: newTitle, content: newContent })
-                .eq('id', id);
-            
-            if (error) {
-                showMessage(error.message, 'error');
-            } else {
-                showMessage('Post updated successfully!', 'success');
-                fetchPosts();
-            }
-        }
-        
-        async function deletePost(id) {
-            if (!confirm('Are you sure you want to delete this post?')) return;
-            
-            const { data, error } = await supabase
-                .from('posts')
-                .delete()
-                .eq('id', id);
-            
-            if (error) {
-                showMessage(error.message, 'error');
-            } else {
-                showMessage('Post deleted successfully!', 'success');
-                fetchPosts();
-            }
-        }
-        
-        // UI Functions
-        function showMessage(message, type) {
-            messageDiv.textContent = message;
-            messageDiv.className = `message ${type}`;
-            messageDiv.classList.remove('hidden');
-            
-            setTimeout(() => {
-                messageDiv.classList.add('hidden');
-            }, 5000);
-        }
-        
-        function updateUI() {
-            const user = supabase.auth.user();
-            
-            if (user) {
-                userEmail.textContent = user.email;
-                userInfo.classList.remove('hidden');
-                signOutBtn.classList.remove('hidden');
-                createForm.classList.remove('hidden');
-                fetchPosts();
-            } else {
-                userInfo.classList.add('hidden');
-                signOutBtn.classList.add('hidden');
-                createForm.classList.add('hidden');
-                postsContainer.innerHTML = '<p>Sign in to view your posts.</p>';
-            }
-        }
-        
-        // Initialize
-        supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN') {
-                updateUI();
-            } else if (event === 'SIGNED_OUT') {
-                updateUI();
-            }
-        });
-        
-        // Check if user is already logged in
-        updateUI();
+
+        // Optional: Load data automatically when page loads
+        // document.addEventListener('DOMContentLoaded', fetchData);
     </script>
 </body>
 </html>

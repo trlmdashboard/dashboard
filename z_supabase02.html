@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Table Reader</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8fafc;
+            color: #334155;
+        }
+        h1 {
+            color: #3b82f6;
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .button-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        button:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+        }
+        button.secondary {
+            background-color: #94a3b8;
+        }
+        button.secondary:hover {
+            background-color: #64748b;
+        }
+        button.success-btn {
+            background-color: #10b981;
+        }
+        button.success-btn:hover {
+            background-color: #059669;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 12px 15px;
+            text-align: left;
+        }
+        th {
+            background-color: #f1f5f9;
+            font-weight: 600;
+            color: #475569;
+        }
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        tr:hover {
+            background-color: #f1f5f9;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        .error {
+            color: #dc2626;
+            padding: 20px;
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        .success {
+            color: #059669;
+            padding: 20px;
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        .count-display {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 15px 0;
+            padding: 20px;
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            border-radius: 8px;
+        }
+        .instructions {
+            background-color: #f0f9ff;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #0ea5e9;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #0369a1;
+        }
+        .instructions ol {
+            padding-left: 25px;
+        }
+        .instructions li {
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+        code {
+            background-color: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #475569;
+        }
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-left: 15px;
+            gap: 8px;
+        }
+        .connected {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        .disconnected {
+            background-color: #fef2f2;
+            color: #dc2626;
+        }
+        .json-cell {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        .json-cell:hover {
+            overflow: visible;
+            white-space: normal;
+            background-color: white;
+            z-index: 100;
+            position: relative;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            font-style: italic;
+            color: #64748b;
+            text-align: center;
+        }
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .icon {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Supabase Table Reader <span id="connection-status" class="connection-status disconnected">Not Connected</span></h1>
+    
+    <div class="instructions">
+        <h3>📋 Setup Instructions</h3>
+        <ol>
+            <li>Make sure your Supabase project has the table named <code>tblUSERS</code></li>
+            <li>If Row Level Security (RLS) is enabled, create a policy to allow read access:
+                <pre>CREATE POLICY "Allow public read access" ON tblUSERS FOR SELECT USING (true);</pre>
+            </li>
+            <li>Click "Test Connection" to verify your setup</li>
+            <li>Click "Load Users Data" to fetch and display your data</li>
+        </ol>
+    </div>
+
+    <div class="card">
+        <div class="button-container">
+            <button onclick="testConnection()">
+                <div class="spinner" style="display: none;" id="test-spinner"></div>
+                <span>Test Connection</span>
+            </button>
+            <button onclick="fetchDataWithProgress()" class="success-btn">
+                <div class="spinner" style="display: none;" id="load-spinner"></div>
+                <span>Load Users Data</span>
+            </button>
+            <button onclick="clearData()" class="secondary">Clear Data</button>
+        </div>
+        
+        <div id="connection-result"></div>
+        <div id="count-container"></div>
+        <div id="loading" class="loading" style="display: none;">
+            <div>Loading data...</div>
+            <div class="spinner" style="border-top-color: #3b82f6;"></div>
+        </div>
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="data-container"></div>
+    </div>
+
+    <script>
+        // Initialize Supabase client
+        const supabaseUrl = 'https://vfkaijqjdofdgvwobhzz.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZma2FpanFqZG9mZGd2d29iaHp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MzMyMDYsImV4cCI6MjA2ODQwOTIwNn0.IomZz0OPcDJ-nMfBaLlos9BxVuEFJRF5MZmcZQIameA';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const connectionStatus = document.getElementById('connection-status');
+        const connectionResult = document.getElementById('connection-result');
+
+        // Test connection function
+        async function testConnection() {
+            const testSpinner = document.getElementById('test-spinner');
+            testSpinner.style.display = 'block';
+            connectionResult.innerHTML = '';
+            
+            try {
+                // Try to query a simple function to test connection
+                const { data, error } = await supabase.rpc('version');
+                
+                if (error) {
+                    // If RPC fails, try a simple table query instead
+                    const { error: tableError } = await supabase
+                        .from('tblUSERS')
+                        .select('count', { count: 'exact', head: true });
+                    
+                    if (tableError) {
+                        throw tableError;
+                    }
+                }
+                
+                connectionStatus.textContent = 'Connected';
+                connectionStatus.className = 'connection-status connected';
+                connectionResult.innerHTML = `
+                    <div class="success">
+                        <strong>✅ Connection successful!</strong><br>
+                        You can now load your data.
+                    </div>
+                `;
+            } catch (error) {
+                connectionStatus.textContent = 'Connection Failed';
+                connectionStatus.className = 'connection-status disconnected';
+                
+                let errorMessage = error.message;
+                if (error.message.includes('RLS')) {
+                    errorMessage += '<br><br>Your table likely has Row Level Security (RLS) enabled. ';
+                    errorMessage += 'You need to create a policy to allow read access or disable RLS for this table.';
+                } else if (error.message.includes('does not exist')) {
+                    errorMessage += '<br><br>The table "tblUSERS" does not exist in your database. ';
+                    errorMessage += 'Please check your table name or create the table in Supabase.';
+                }
+                
+                connectionResult.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Connection Error:</strong><br>${errorMessage}
+                    </div>
+                `;
+            } finally {
+                testSpinner.style.display = 'none';
+            }
+        }
+
+        // Enhanced version with progress indicator
+        async function fetchDataWithProgress() {
+            const loadingElement = document.getElementById('loading');
+            const errorElement = document.getElementById('error');
+            const dataContainer = document.getElementById('data-container');
+            const countContainer = document.getElementById('count-container');
+            const loadSpinner = document.getElementById('load-spinner');
+            
+            loadSpinner.style.display = 'block';
+            loadingElement.style.display = 'block';
+            errorElement.style.display = 'none';
+            dataContainer.innerHTML = '';
+            countContainer.innerHTML = '';
+
+            try {
+                // Get count first
+                const { count, error: countError } = await supabase
+                    .from('tblUSERS')
+                    .select('*', { count: 'exact', head: true });
+
+                if (countError) throw countError;
+
+                countContainer.innerHTML = `
+                    <div class="count-display">
+                        Total Users in Database: ${count || 0}
+                    </div>
+                `;
+
+                if (count > 0) {
+                    loadingElement.innerHTML = `Loading ${count} records...<div class="spinner" style="border-top-color: #3b82f6; margin-top: 15px;"></div>`;
+                    
+                    // Try to get data without ordering first
+                    let { data, error: dataError } = await supabase
+                        .from('tblUSERS')
+                        .select('*');
+
+                    // If that fails, try without ordering
+                    if (dataError) {
+                        console.warn("Error with initial query, trying without ordering:", dataError);
+                        ({ data, error: dataError } = await supabase
+                            .from('tblUSERS')
+                            .select('*'));
+                    }
+
+                    if (dataError) throw dataError;
+
+                    displayData(data);
+                    
+                    countContainer.innerHTML += `
+                        <div class="success">
+                            <strong>✅ Successfully loaded ${data.length} user${data.length !== 1 ? 's' : ''}</strong>
+                        </div>
+                    `;
+                } else {
+                    dataContainer.innerHTML = '<p>The users table is empty</p>';
+                    countContainer.innerHTML += `
+                        <div class="success">
+                            Connection successful but the table is empty
+                        </div>
+                    `;
+                }
+
+            } catch (error) {
+                let errorMessage = error.message;
+                if (error.message.includes('created_at')) {
+                    errorMessage = 'The "created_at" column does not exist in your table. Data was loaded successfully but without sorting.';
+                    // Even if we got an error, we might still have data
+                    if (window.lastData) {
+                        displayData(window.lastData);
+                        errorMessage += ' Displaying data without sorting.';
+                    }
+                } else if (error.message.includes('RLS')) {
+                    errorMessage += '<br><br>You need to disable RLS or create a SELECT policy for the tblUSERS table.';
+                } else if (error.message.includes('does not exist')) {
+                    errorMessage += '<br><br>Please check that the table name is correct and exists in your database.';
+                }
+                
+                errorElement.innerHTML = `
+                    <strong>⚠️ Notice:</strong> ${errorMessage}
+                `;
+                errorElement.style.display = 'block';
+            } finally {
+                loadingElement.style.display = 'none';
+                loadSpinner.style.display = 'none';
+            }
+        }
+
+        function displayData(data) {
+            const container = document.getElementById('data-container');
+            window.lastData = data; // Store for potential error handling
+            
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p>No data available</p>';
+                return;
+            }
+
+            // Create table
+            let tableHtml = `
+                <div class="table-container">
+                <table>
+                <tr>
+            `;
+            
+            // Create table headers from first object keys
+            Object.keys(data[0]).forEach(key => {
+                tableHtml += `<th>${key}</th>`;
+            });
+            tableHtml += '</tr>';
+
+            // Create table rows
+            data.forEach(row => {
+                tableHtml += '<tr>';
+                Object.values(row).forEach(value => {
+                    // Format the value for better display
+                    let displayValue = value;
+                    if (value === null || value === undefined) {
+                        displayValue = '<span style="color: #94a3b8;">NULL</span>';
+                    } else if (typeof value === 'boolean') {
+                        displayValue = value ? '✓' : '✗';
+                    } else if (typeof value === 'object') {
+                        displayValue = `<div class="json-cell">${JSON.stringify(value)}</div>`;
+                    } else if (typeof value === 'string' && value.length > 50) {
+                        displayValue = value.substring(0, 50) + '...';
+                    }
+                    tableHtml += `<td>${displayValue}</td>`;
+                });
+                tableHtml += '</tr>';
+            });
+
+            tableHtml += '</table></div>';
+            
+            // Add summary
+            tableHtml += `<div class="summary">Displaying ${data.length} of ${data.length} users</div>`;
+            
+            container.innerHTML = tableHtml;
+        }
+
+        function clearData() {
+            document.getElementById('data-container').innerHTML = '';
+            document.getElementById('count-container').innerHTML = '';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('connection-result').innerHTML = '';
+        }
+
+        // Test connection on page load
+        document.addEventListener('DOMContentLoaded', testConnection);
+    </script>
+</body>
+</html>

@@ -31,6 +31,8 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             overflow: hidden;
             position: relative;
+            height: 90vh;
+            max-height: 800px;
         }
         
         .header {
@@ -185,6 +187,7 @@
             display: none;
             width: 100%;
             height: 100%;
+            flex-direction: column;
         }
         
         .dashboard-header {
@@ -197,12 +200,12 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         
         .dashboard-content {
             padding: 20px;
-            min-height: 400px;
-            max-height: 500px;
+            flex: 1;
             overflow-y: auto;
         }
         
@@ -214,6 +217,7 @@
             padding: 10px 0;
             position: sticky;
             bottom: 0;
+            z-index: 100;
         }
         
         .nav-item {
@@ -224,6 +228,8 @@
             cursor: pointer;
             color: #6b7280;
             transition: color 0.3s;
+            flex: 1;
+            max-width: 25%;
         }
         
         .nav-item.active {
@@ -241,6 +247,7 @@
         
         .page {
             display: none;
+            animation: fadeIn 0.3s ease-in;
         }
         
         .page.active {
@@ -267,9 +274,42 @@
             margin-bottom: 15px;
         }
         
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .incentive-progress {
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: #10b981;
+            border-radius: 5px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
         @media (max-width: 480px) {
             .container {
-                border-radius: 8px;
+                border-radius: 0;
+                height: 100vh;
+                max-height: none;
+                max-width: none;
+            }
+            
+            body {
+                padding: 0;
             }
             
             .header {
@@ -282,7 +322,22 @@
             
             .dashboard-content {
                 padding: 15px;
-                min-height: 300px;
+            }
+            
+            .welcome-text {
+                font-size: 16px;
+            }
+            
+            .nav-item {
+                padding: 8px 5px;
+            }
+            
+            .nav-item i {
+                font-size: 18px;
+            }
+            
+            .nav-item span {
+                font-size: 10px;
             }
         }
     </style>
@@ -328,14 +383,26 @@
             <div class="dashboard-content">
                 <!-- Home Page -->
                 <div class="page active" id="home-page">
-                    <h2 class="page-title">Home</h2>
+                    <h2 class="page-title">Home Dashboard</h2>
                     <div class="card">
-                        <h3>Dashboard Overview</h3>
-                        <p>Welcome to your dashboard! Here you can manage your orders, view incentives, and more.</p>
+                        <h3><i class="fas fa-chart-line"></i> Overview</h3>
+                        <p>Welcome back! Here's your current status:</p>
+                        <div class="order-item">
+                            <span>Pending Orders:</span>
+                            <span>3</span>
+                        </div>
+                        <div class="order-item">
+                            <span>Completed Orders:</span>
+                            <span>12</span>
+                        </div>
+                        <div class="order-item">
+                            <span>Total Incentives:</span>
+                            <span>$245.50</span>
+                        </div>
                     </div>
                     <div class="card">
-                        <h3>Recent Activity</h3>
-                        <p>No recent activity to display.</p>
+                        <h3><i class="fas fa-bell"></i> Notifications</h3>
+                        <p>You have 2 new notifications</p>
                     </div>
                 </div>
                 
@@ -343,14 +410,18 @@
                 <div class="page" id="order-page">
                     <h2 class="page-title">Place Order</h2>
                     <div class="card">
-                        <h3>New Order</h3>
+                        <h3><i class="fas fa-cart-plus"></i> New Order</h3>
                         <div class="input-group">
                             <label for="product">Product</label>
                             <input type="text" id="product" placeholder="Enter product name">
                         </div>
                         <div class="input-group">
                             <label for="quantity">Quantity</label>
-                            <input type="number" id="quantity" placeholder="Enter quantity">
+                            <input type="number" id="quantity" placeholder="Enter quantity" min="1">
+                        </div>
+                        <div class="input-group">
+                            <label for="address">Delivery Address</label>
+                            <input type="text" id="address" placeholder="Enter delivery address">
                         </div>
                         <button>Place Order</button>
                     </div>
@@ -360,21 +431,56 @@
                 <div class="page" id="summary-page">
                     <h2 class="page-title">Order Summary</h2>
                     <div class="card">
-                        <h3>Order History</h3>
-                        <p>You haven't placed any orders yet.</p>
+                        <h3><i class="fas fa-history"></i> Recent Orders</h3>
+                        <div class="order-item">
+                            <div>
+                                <strong>Order #1001</strong>
+                                <p>2 x Wireless Earbuds</p>
+                            </div>
+                            <span class="status">Shipped</span>
+                        </div>
+                        <div class="order-item">
+                            <div>
+                                <strong>Order #1002</strong>
+                                <p>1 x Smart Watch</p>
+                            </div>
+                            <span class="status">Processing</span>
+                        </div>
+                        <div class="order-item">
+                            <div>
+                                <strong>Order #1003</strong>
+                                <p>3 Phone Cases</p>
+                            </div>
+                            <span class="status">Delivered</span>
+                        </div>
                     </div>
                 </div>
                 
                 <!-- Incentive Page -->
                 <div class="page" id="incentive-page">
-                    <h2 class="page-title">Incentives</h2>
+                    <h2 class="page-title">Incentives & Rewards</h2>
                     <div class="card">
-                        <h3>Your Incentives</h3>
-                        <p>No incentives available at this time.</p>
+                        <h3><i class="fas fa-gift"></i> Your Incentives</h3>
+                        <p>Current balance: <strong>$45.50</strong></p>
+                        <div class="incentive-progress">
+                            <div class="progress-bar" style="width: 65%"></div>
+                        </div>
+                        <p>65% towards next reward tier</p>
                     </div>
                     <div class="card">
-                        <h3>Incentive Program</h3>
-                        <p>Learn about our incentive programs and how to earn rewards.</p>
+                        <h3><i class="fas fa-award"></i> Available Rewards</h3>
+                        <div class="order-item">
+                            <span>Free Shipping</span>
+                            <span>200 points</span>
+                        </div>
+                        <div class="order-item">
+                            <span>$10 Discount</span>
+                            <span>500 points</span>
+                        </div>
+                        <div class="order-item">
+                            <span>Premium Membership</span>
+                            <span>1500 points</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -391,11 +497,11 @@
                 </div>
                 <div class="nav-item" data-page="summary-page">
                     <i class="fas fa-list"></i>
-                    <span>Order Summary</span>
+                    <span>Orders</span>
                 </div>
                 <div class="nav-item" data-page="incentive-page">
                     <i class="fas fa-gift"></i>
-                    <span>Incentive</span>
+                    <span>Incentives</span>
                 </div>
             </div>
         </div>
@@ -559,9 +665,18 @@
         
         // Show dashboard
         function showDashboard(user) {
-            welcomeText.textContent = `Welcome ${user.email.split('@')[0]}`;
-            dashboard.style.display = 'block';
+            const username = user.email.split('@')[0];
+            welcomeText.textContent = `Welcome, ${username}`;
+            dashboard.style.display = 'flex';
             loginContainer.style.display = 'none';
+            
+            // Set to full screen on mobile
+            if (window.innerWidth <= 480) {
+                document.body.style.padding = '0';
+                document.querySelector('.container').style.borderRadius = '0';
+                document.querySelector('.container').style.height = '100vh';
+                document.querySelector('.container').style.maxWidth = 'none';
+            }
         }
         
         // Show message
@@ -608,6 +723,12 @@
             } else if (event === 'SIGNED_OUT') {
                 dashboard.style.display = 'none';
                 loginContainer.style.display = 'block';
+                
+                // Reset container style
+                document.body.style.padding = '20px';
+                document.querySelector('.container').style.borderRadius = '12px';
+                document.querySelector('.container').style.height = '90vh';
+                document.querySelector('.container').style.maxWidth = '450px';
             }
         });
     </script>

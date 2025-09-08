@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Data with Targets</title>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #0062cc, #0095ff);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .data-container {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            max-height: 80vh;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        th {
+            background-color: #f1f5fd;
+            position: sticky;
+            top: 0;
+            font-weight: 600;
+            color: #0062cc;
+        }
+        
+        tr:hover {
+            background-color: #f9fafb;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #666;
+        }
+        
+        .status {
+            padding: 15px;
+            text-align: center;
+            background-color: #e8f4fd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .target-col {
+            background-color: #fff4e6;
+        }
+        
+        .target-header {
+            background-color: #ffd8b5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Loan Data with Targets</h1>
+            <p class="description">SHG and Individual Loan Data with Targets by District and Block</p>
+        </header>
+        
+        <div class="status">Loading data from Google Sheets...</div>
+        
+        <div class="data-container">
+            <div class="table-container">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>District</th>
+                            <th>Block</th>
+                            <th class="target-header">SHG Loan Target</th>
+                            <th class="target-header">Individual Loan Target</th>
+                            <th>Date</th>
+                            <th>SHG Submitted (No)</th>
+                            <th>SHG Submitted (Amt)</th>
+                            <th>SHG Sanctioned (No)</th>
+                            <th>SHG Sanctioned (Amt)</th>
+                            <th>Individual Submitted (No)</th>
+                            <th>Individual Submitted (Amt)</th>
+                            <th>Individual Sanctioned (No)</th>
+                            <th>Individual Sanctioned (Amt)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Data will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tableBody = document.getElementById('tableBody');
+            const statusElement = document.querySelector('.status');
+            
+            // Block target data
+            const blockTargets = {
+                "SALEMA": { shgTarget: 80, individualTarget: 15 },
+                "AMBASSA": { shgTarget: 105, individualTarget: 25 },
+                "CHAWMANU": { shgTarget: 75, individualTarget: 14 },
+                "DUMBURNAGAR": { shgTarget: 110, individualTarget: 21 },
+                "DURGACHOWMUHANI": { shgTarget: 180, individualTarget: 21 },
+                "GANGANAGAR": { shgTarget: 45, individualTarget: 6 },
+                "MANU": { shgTarget: 170, individualTarget: 25 },
+                "RAISHYABARI": { shgTarget: 35, individualTarget: 8 },
+                "AMARPUR": { shgTarget: 95, individualTarget: 13 },
+                "KAKRABAN": { shgTarget: 130, individualTarget: 18 },
+                "KARBOOK": { shgTarget: 105, individualTarget: 12 },
+                "KILLA": { shgTarget: 65, individualTarget: 18 },
+                "MATABARI": { shgTarget: 180, individualTarget: 25 },
+                "OMPI": { shgTarget: 85, individualTarget: 12 },
+                "SILACHARI": { shgTarget: 50, individualTarget: 12 },
+                "TEPANIA": { shgTarget: 140, individualTarget: 25 },
+                "KALYANPUR": { shgTarget: 85, individualTarget: 14 },
+                "KHOWAI": { shgTarget: 110, individualTarget: 18 },
+                "MUNGIAKAMI": { shgTarget: 45, individualTarget: 10 },
+                "PADMABIL": { shgTarget: 75, individualTarget: 10 },
+                "TELIAMURA": { shgTarget: 100, individualTarget: 18 },
+                "TULASHIKHAR": { shgTarget: 85, individualTarget: 15 },
+                "BC NAGAR": { shgTarget: 80, individualTarget: 15 },
+                "BOKAFA": { shgTarget: 85, individualTarget: 18 },
+                "HRISHYAMUKH": { shgTarget: 110, individualTarget: 19 },
+                "JOLAIBARI": { shgTarget: 135, individualTarget: 23 },
+                "POANGBARI": { shgTarget: 30, individualTarget: 8 },
+                "RAJNAGAR": { shgTarget: 105, individualTarget: 19 },
+                "RUPAICHARI": { shgTarget: 75, individualTarget: 11 },
+                "SATCHAND": { shgTarget: 130, individualTarget: 22 },
+                "DAMCHERRA": { shgTarget: 45, individualTarget: 12 },
+                "DASDA": { shgTarget: 65, individualTarget: 12 },
+                "JAMPUI HILLS": { shgTarget: 15, individualTarget: 6 },
+                "JUBARAJNAGAR": { shgTarget: 90, individualTarget: 15 },
+                "KADAMTALA": { shgTarget: 100, individualTarget: 15 },
+                "KALACHERRA": { shgTarget: 70, individualTarget: 15 },
+                "LALJURI": { shgTarget: 60, individualTarget: 10 },
+                "PANISAGAR": { shgTarget: 65, individualTarget: 15 },
+                "BISHALGARH": { shgTarget: 100, individualTarget: 16 },
+                "BOXANAGAR": { shgTarget: 70, individualTarget: 10 },
+                "CHARILAM": { shgTarget: 75, individualTarget: 14 },
+                "JAMPUIJALA": { shgTarget: 95, individualTarget: 10 },
+                "KATAHALIA": { shgTarget: 80, individualTarget: 13 },
+                "MOHANBHOG": { shgTarget: 65, individualTarget: 8 },
+                "NALCHAR": { shgTarget: 115, individualTarget: 14 },
+                "CHANDIPUR": { shgTarget: 85, individualTarget: 12 },
+                "GOURNAGAR": { shgTarget: 105, individualTarget: 21 },
+                "KUMARGHAT": { shgTarget: 135, individualTarget: 24 },
+                "PECHARTHAL": { shgTarget: 75, individualTarget: 13 },
+                "BAMUTIA": { shgTarget: 120, individualTarget: 14 },
+                "BELBARI": { shgTarget: 65, individualTarget: 14 },
+                "DUKLI": { shgTarget: 155, individualTarget: 19 },
+                "HEZAMARA": { shgTarget: 60, individualTarget: 13 },
+                "JIRANIA": { shgTarget: 105, individualTarget: 14 },
+                "LEFUNGA": { shgTarget: 55, individualTarget: 13 },
+                "MANDWI": { shgTarget: 80, individualTarget: 13 },
+                "MOHANPUR": { shgTarget: 95, individualTarget: 14 },
+                "OLD AGARTALA": { shgTarget: 105, individualTarget: 21 }
+            };
+
+            // Fetch data from Google Sheets
+            function fetchData() {
+                const url = 'https://docs.google.com/spreadsheets/d/1WC11o9YYalyiE7Ab_267sjJiyGoM0SyeKM1WieKiiBo/gviz/tq?tqx=out:csv&sheet=jsondata';
+                
+                Papa.parse(url, {
+                    download: true,
+                    header: false,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        if (results.data && results.data.length > 0) {
+                            processData(results.data);
+                            statusElement.textContent = 'Data loaded successfully!';
+                            setTimeout(() => {
+                                statusElement.style.display = 'none';
+                            }, 2000);
+                        } else {
+                            statusElement.textContent = 'Error: No data found in the response';
+                        }
+                    },
+                    error: function(error) {
+                        statusElement.textContent = 'Error fetching data: ' + error.message;
+                    }
+                });
+            }
+            
+            // Process the raw CSV data
+            function processData(data) {
+                // Define date ranges and their column indices
+                const dateRanges = [];
+                for (let day = 1; day <= 31; day++) {
+                    const dateStr = `${day.toString().padStart(2, '0')}-08-2025`;
+                    const startCol = 4 + (day - 1) * 8;
+                    dateRanges.push({
+                        date: dateStr,
+                        columns: {
+                            shgSubmittedNo: startCol,
+                            shgSubmittedAmt: startCol + 1,
+                            shgSanctionedNo: startCol + 2,
+                            shgSanctionedAmt: startCol + 3,
+                            individualSubmittedNo: startCol + 4,
+                            individualSubmittedAmt: startCol + 5,
+                            individualSanctionedNo: startCol + 6,
+                            individualSanctionedAmt: startCol + 7
+                        }
+                    });
+                }
+                
+                // Add September dates
+                for (let day = 1; day <= 7; day++) {
+                    const dateStr = `${day.toString().padStart(2, '0')}-09-2025`;
+                    const startCol = 252 + (day - 1) * 8;
+                    dateRanges.push({
+                        date: dateStr,
+                        columns: {
+                            shgSubmittedNo: startCol,
+                            shgSubmittedAmt: startCol + 1,
+                            shgSanctionedNo: startCol + 2,
+                            shgSanctionedAmt: startCol + 3,
+                            individualSubmittedNo: startCol + 4,
+                            individualSubmittedAmt: startCol + 5,
+                            individualSanctionedNo: startCol + 6,
+                            individualSanctionedAmt: startCol + 7
+                        }
+                    });
+                }
+                
+                // Process each row
+                for (let i = 0; i < data.length; i++) {
+                    const row = data[i];
+                    const district = row[0] || '';
+                    const block = row[1] || '';
+                    
+                    // Skip rows without district and block
+                    if (!district && !block) continue;
+                    
+                    // Get targets for this block
+                    const blockKey = block.trim().toUpperCase();
+                    const targets = blockTargets[blockKey] || { shgTarget: 0, individualTarget: 0 };
+                    
+                    // Create an entry for each date
+                    for (const dateRange of dateRanges) {
+                        const shgSubmittedNo = row[dateRange.columns.shgSubmittedNo] || '0';
+                        const shgSubmittedAmt = row[dateRange.columns.shgSubmittedAmt] || '0';
+                        const shgSanctionedNo = row[dateRange.columns.shgSanctionedNo] || '0';
+                        const shgSanctionedAmt = row[dateRange.columns.shgSanctionedAmt] || '0';
+                        const individualSubmittedNo = row[dateRange.columns.individualSubmittedNo] || '0';
+                        const individualSubmittedAmt = row[dateRange.columns.individualSubmittedAmt] || '0';
+                        const individualSanctionedNo = row[dateRange.columns.individualSanctionedNo] || '0';
+                        const individualSanctionedAmt = row[dateRange.columns.individualSanctionedAmt] || '0';
+                        
+                        // Only add rows with data
+                        if (shgSubmittedNo !== '0' || shgSubmittedAmt !== '0' || 
+                            shgSanctionedNo !== '0' || shgSanctionedAmt !== '0' ||
+                            individualSubmittedNo !== '0' || individualSubmittedAmt !== '0' ||
+                            individualSanctionedNo !== '0' || individualSanctionedAmt !== '0') {
+                            
+                            const tableRow = document.createElement('tr');
+                            tableRow.innerHTML = `
+                                <td>${district}</td>
+                                <td>${block}</td>
+                                <td class="target-col">${targets.shgTarget}</td>
+                                <td class="target-col">${targets.individualTarget}</td>
+                                <td>${dateRange.date}</td>
+                                <td>${shgSubmittedNo}</td>
+                                <td>${shgSubmittedAmt}</td>
+                                <td>${shgSanctionedNo}</td>
+                                <td>${shgSanctionedAmt}</td>
+                                <td>${individualSubmittedNo}</td>
+                                <td>${individualSubmittedAmt}</td>
+                                <td>${individualSanctionedNo}</td>
+                                <td>${individualSanctionedAmt}</td>
+                            `;
+                            tableBody.appendChild(tableRow);
+                        }
+                    }
+                }
+            }
+            
+            // Initial data fetch
+            fetchData();
+        });
+    </script>
+</body>
+</html>

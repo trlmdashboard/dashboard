@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Target Achievement Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            padding: 40px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #3498db, #2c3e50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+        
+        .dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+        
+        .loan-category {
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .loan-category:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .category-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .category-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+        }
+        
+        .shg-icon {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+        }
+        
+        .individual-icon {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+        
+        .category-name h2 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        
+        .category-name p {
+            color: #7f8c8d;
+            font-size: 0.95rem;
+        }
+        
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            margin-top: 10px;
+        }
+        
+        .stat-box {
+            background-color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            min-width: 160px;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .shg-target .stat-value {
+            color: #3498db;
+        }
+        
+        .shg-achieved .stat-value {
+            color: #2c3e50;
+        }
+        
+        .individual-target .stat-value {
+            color: #2ecc71;
+        }
+        
+        .individual-achieved .stat-value {
+            color: #27ae60;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+        
+        .progress-container {
+            margin-top: 25px;
+        }
+        
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .progress-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .progress-percentage {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .progress-bar {
+            height: 22px;
+            background-color: #ecf0f1;
+            border-radius: 11px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 11px;
+            width: 0;
+            transition: width 1.5s ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .shg-progress {
+            background: linear-gradient(90deg, #3498db, #2c3e50);
+        }
+        
+        .individual-progress {
+            background: linear-gradient(90deg, #2ecc71, #27ae60);
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background-image: linear-gradient(
+                -45deg, 
+                rgba(255, 255, 255, 0.2) 25%, 
+                transparent 25%, 
+                transparent 50%, 
+                rgba(255, 255, 255, 0.2) 50%, 
+                rgba(255, 255, 255, 0.2) 75%, 
+                transparent 75%, 
+                transparent
+            );
+            z-index: 1;
+            background-size: 35px 35px;
+            animation: moveStripes 2s linear infinite;
+        }
+        
+        @keyframes moveStripes {
+            0% {background-position: 0 0;}
+            100% {background-position: 35px 0;}
+        }
+        
+        .summary {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .total-achievement h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+        
+        .total-achievement p {
+            color: #7f8c8d;
+            line-height: 1.6;
+        }
+        
+        .overall-progress {
+            text-align: center;
+        }
+        
+        .overall-progress h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .overall-value {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: #e74c3c;
+        }
+        
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            padding-top: 20px;
+            border-top: 1px solid #ecf0f1;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .animate-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .animate-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .reset-btn {
+            background-color: #95a5a6;
+        }
+        
+        .reset-btn:hover {
+            background-color: #7f8c8d;
+            box-shadow: 0 5px 15px rgba(149, 165, 166, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .category-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .summary {
+                flex-direction: column;
+                gap: 25px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .animate-btn {
+                width: 100%;
+                max-width: 250px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-chart-line"></i> Loan Target Achievement</h1>
+            <p class="subtitle">Track progress of SHG and Individual loan categories with animated progress bars</p>
+        </header>
+        
+        <div class="dashboard">
+            <!-- SHG Loan Category -->
+            <div class="loan-category">
+                <div class="category-header">
+                    <div class="category-title">
+                        <div class="category-icon shg-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="category-name">
+                            <h2>SHG Loan Category</h2>
+                            <p>Self Help Group Loans - Collective borrowing</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stats">
+                        <div class="stat-box shg-target">
+                            <div class="stat-value">₹42.5L</div>
+                            <div class="stat-label">Target Amount</div>
+                        </div>
+                        <div class="stat-box shg-achieved">
+                            <div class="stat-value">₹38.2L</div>
+                            <div class="stat-label">Achieved Amount</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-info">
+                        <span class="progress-label">Achievement Progress</span>
+                        <span class="progress-percentage shg-percentage">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill shg-progress" id="shg-progress"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Individual Loan Category -->
+            <div class="loan-category">
+                <div class="category-header">
+                    <div class="category-title">
+                        <div class="category-icon individual-icon">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="category-name">
+                            <h2>Individual Loan Category</h2>
+                            <p>Personal loans for individual borrowers</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stats">
+                        <div class="stat-box individual-target">
+                            <div class="stat-value">₹28.7L</div>
+                            <div class="stat-label">Target Amount</div>
+                        </div>
+                        <div class="stat-box individual-achieved">
+                            <div class="stat-value">₹24.9L</div>
+                            <div class="stat-label">Achieved Amount</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-info">
+                        <span class="progress-label">Achievement Progress</span>
+                        <span class="progress-percentage individual-percentage">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill individual-progress" id="individual-progress"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="summary">
+                <div class="total-achievement">
+                    <h3>Total Achievement</h3>
+                    <p>The dashboard shows real-time progress of loan disbursement against targets. SHG loans have higher targets due to group lending models, while individual loans show strong performance in personal lending segments.</p>
+                </div>
+                <div class="overall-progress">
+                    <h3>Overall Progress</h3>
+                    <div class="overall-value">84.6%</div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="animate-btn" id="animateBtn">
+                    <i class="fas fa-play"></i> Animate Progress Bars
+                </button>
+                <button class="animate-btn reset-btn" id="resetBtn">
+                    <i class="fas fa-redo"></i> Reset Animation
+                </button>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Loan Dashboard • Data updated as of today • Animated with CSS & JavaScript</p>
+            <p>SHG: Self Help Group | Individual: Personal Loan Category</p>
+        </footer>
+    </div>
+
+    <script>
+        // Loan data
+        const loanData = {
+            shg: {
+                target: 4250000, // ₹42.5L
+                achieved: 3820000, // ₹38.2L
+                percentage: 0,
+                progressBar: document.getElementById('shg-progress'),
+                percentageElement: document.querySelector('.shg-percentage')
+            },
+            individual: {
+                target: 2870000, // ₹28.7L
+                achieved: 2490000, // ₹24.9L
+                percentage: 0,
+                progressBar: document.getElementById('individual-progress'),
+                percentageElement: document.querySelector('.individual-percentage')
+            }
+        };
+        
+        // Calculate percentages
+        function calculatePercentages() {
+            loanData.shg.percentage = Math.round((loanData.shg.achieved / loanData.shg.target) * 100);
+            loanData.individual.percentage = Math.round((loanData.individual.achieved / loanData.individual.target) * 100);
+        }
+        
+        // Animate progress bars
+        function animateProgressBars() {
+            // Reset widths to 0 first
+            loanData.shg.progressBar.style.width = '0%';
+            loanData.individual.progressBar.style.width = '0%';
+            loanData.shg.percentageElement.textContent = '0%';
+            loanData.individual.percentageElement.textContent = '0%';
+            
+            // Calculate percentages
+            calculatePercentages();
+            
+            // Animate SHG progress bar
+            setTimeout(() => {
+                loanData.shg.progressBar.style.width = loanData.shg.percentage + '%';
+                animateCounter(loanData.shg.percentageElement, 0, loanData.shg.percentage, 1500);
+            }, 300);
+            
+            // Animate Individual progress bar
+            setTimeout(() => {
+                loanData.individual.progressBar.style.width = loanData.individual.percentage + '%';
+                animateCounter(loanData.individual.percentageElement, 0, loanData.individual.percentage, 1500);
+            }, 800);
+        }
+        
+        // Animate percentage counter
+        function animateCounter(element, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const value = Math.floor(progress * (end - start) + start);
+                element.textContent = value + '%';
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+        
+        // Reset animation
+        function resetAnimation() {
+            loanData.shg.progressBar.style.width = '0%';
+            loanData.individual.progressBar.style.width = '0%';
+            loanData.shg.percentageElement.textContent = '0%';
+            loanData.individual.percentageElement.textContent = '0%';
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            calculatePercentages();
+            
+            // Set initial percentage values (without animation)
+            loanData.shg.percentageElement.textContent = loanData.shg.percentage + '%';
+            loanData.individual.percentageElement.textContent = loanData.individual.percentage + '%';
+            
+            // Set up button event listeners
+            document.getElementById('animateBtn').addEventListener('click', animateProgressBars);
+            document.getElementById('resetBtn').addEventListener('click', resetAnimation);
+            
+            // Auto-animate after a short delay
+            setTimeout(animateProgressBars, 1000);
+        });
+    </script>
+</body>
+</html>

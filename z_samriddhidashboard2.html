@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animated Donut Charts</title>
+    <title>Loan Performance Donut Charts</title>
     <style>
         * {
             margin: 0;
@@ -41,7 +41,7 @@
         
         .chart-title {
             font-size: 1.8rem;
-            font-weight: 600;
+            font-weight: 700;
             margin-bottom: 25px;
             text-align: center;
         }
@@ -97,37 +97,53 @@
             font-weight: 600;
         }
         
-        .stats {
-            display: flex;
-            justify-content: space-between;
+        /* Combined Target/Achievement card */
+        .combined-card {
             width: 100%;
             max-width: 280px;
-            margin-top: 15px;
-        }
-        
-        .stat-item {
+            border-radius: 12px;
+            padding: 20px;
             text-align: center;
-            padding: 12px;
-            border-radius: 10px;
-            flex: 1;
-            margin: 0 5px;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-top: 10px;
         }
         
-        .red-stat {
+        .red-card {
             background-color: #ffebee;
-            color: #c62828;
             border: 2px solid #ffcdd2;
+            color: #c62828;
         }
         
-        .blue-stat {
+        .blue-card {
             background-color: #e3f2fd;
-            color: #1565c0;
             border: 2px solid #bbdefb;
+            color: #1565c0;
+        }
+        
+        .combined-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .combined-stats {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .stat-column {
+            flex: 1;
+            padding: 0 10px;
+        }
+        
+        .stat-column:first-child {
+            border-right: 2px dashed rgba(0,0,0,0.1);
         }
         
         .stat-value {
-            font-size: 2.2rem;
+            font-size: 2.5rem;
             font-weight: 800;
             margin-bottom: 8px;
         }
@@ -135,6 +151,7 @@
         .stat-label {
             font-size: 1.1rem;
             font-weight: 700;
+            opacity: 0.9;
         }
         
         /* Animation for the donut charts */
@@ -168,7 +185,7 @@
             }
             
             .stat-value {
-                font-size: 2rem;
+                font-size: 2.2rem;
             }
             
             .chart-title {
@@ -202,15 +219,17 @@
             }
             
             .stat-value {
-                font-size: 1.8rem;
+                font-size: 2rem;
             }
             
-            .stats {
+            .combined-card {
                 max-width: 100%;
+                padding: 16px;
             }
             
-            .stat-item {
-                padding: 10px;
+            .combined-title {
+                font-size: 1.3rem;
+                margin-bottom: 16px;
             }
         }
         
@@ -234,7 +253,7 @@
             }
             
             .stat-value {
-                font-size: 1.6rem;
+                font-size: 1.8rem;
             }
             
             .stat-label {
@@ -245,8 +264,13 @@
                 font-size: 1.1rem;
             }
             
-            .stat-item {
-                padding: 8px;
+            .combined-card {
+                padding: 14px;
+            }
+            
+            .combined-title {
+                font-size: 1.2rem;
+                margin-bottom: 14px;
             }
         }
         
@@ -260,7 +284,7 @@
             }
             
             .stat-value {
-                font-size: 1.4rem;
+                font-size: 1.6rem;
             }
         }
         
@@ -273,13 +297,23 @@
         .chart-wrapper {
             transition: transform 0.3s ease;
         }
+        
+        .combined-card:hover {
+            transform: translateY(-5px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+        
+        .combined-card {
+            transition: all 0.3s ease;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Red-themed donut chart -->
+        <!-- SHG Loan donut chart -->
         <div class="chart-container">
-            <h2 class="chart-title red-title">Performance</h2>
+            <h2 class="chart-title red-title">SHG Loan</h2>
             <div class="chart-wrapper">
                 <svg class="chart" viewBox="0 0 100 100">
                     <!-- Background circle -->
@@ -293,21 +327,24 @@
                     <div class="target-label">Achievement</div>
                 </div>
             </div>
-            <div class="stats">
-                <div class="stat-item red-stat">
-                    <div class="stat-value" id="red-target">85%</div>
-                    <div class="stat-label">Target</div>
-                </div>
-                <div class="stat-item red-stat">
-                    <div class="stat-value" id="red-achievement">72%</div>
-                    <div class="stat-label">Achieved</div>
+            <div class="combined-card red-card">
+                <div class="combined-title">Target vs Achievement</div>
+                <div class="combined-stats">
+                    <div class="stat-column">
+                        <div class="stat-value" id="red-target">85%</div>
+                        <div class="stat-label">Target</div>
+                    </div>
+                    <div class="stat-column">
+                        <div class="stat-value" id="red-achievement">72%</div>
+                        <div class="stat-label">Achieved</div>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <!-- Blue-themed donut chart -->
+        <!-- Individual Loan donut chart -->
         <div class="chart-container">
-            <h2 class="chart-title blue-title">Progress</h2>
+            <h2 class="chart-title blue-title">Individual Loan</h2>
             <div class="chart-wrapper">
                 <svg class="chart" viewBox="0 0 100 100">
                     <!-- Background circle -->
@@ -321,14 +358,17 @@
                     <div class="target-label">Achievement</div>
                 </div>
             </div>
-            <div class="stats">
-                <div class="stat-item blue-stat">
-                    <div class="stat-value" id="blue-target">90%</div>
-                    <div class="stat-label">Target</div>
-                </div>
-                <div class="stat-item blue-stat">
-                    <div class="stat-value" id="blue-achievement">84%</div>
-                    <div class="stat-label">Achieved</div>
+            <div class="combined-card blue-card">
+                <div class="combined-title">Target vs Achievement</div>
+                <div class="combined-stats">
+                    <div class="stat-column">
+                        <div class="stat-value" id="blue-target">90%</div>
+                        <div class="stat-label">Target</div>
+                    </div>
+                    <div class="stat-column">
+                        <div class="stat-value" id="blue-achievement">84%</div>
+                        <div class="stat-label">Achieved</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -336,42 +376,42 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Red chart data
-            const redTarget = 85;
-            const redAchievement = 72;
-            const redPercentage = Math.round((redAchievement / redTarget) * 100);
+            // SHG Loan chart data
+            const shgTarget = 85;
+            const shgAchievement = 72;
+            const shgPercentage = Math.round((shgAchievement / shgTarget) * 100);
             
-            // Blue chart data
-            const blueTarget = 90;
-            const blueAchievement = 84;
-            const bluePercentage = Math.round((blueAchievement / blueTarget) * 100);
+            // Individual Loan chart data
+            const individualTarget = 90;
+            const individualAchievement = 84;
+            const individualPercentage = Math.round((individualAchievement / individualTarget) * 100);
             
             // Set the text values
-            document.getElementById('red-target').textContent = redTarget + '%';
-            document.getElementById('red-achievement').textContent = redAchievement + '%';
+            document.getElementById('red-target').textContent = shgTarget + '%';
+            document.getElementById('red-achievement').textContent = shgAchievement + '%';
             
-            document.getElementById('blue-target').textContent = blueTarget + '%';
-            document.getElementById('blue-achievement').textContent = blueAchievement + '%';
+            document.getElementById('blue-target').textContent = individualTarget + '%';
+            document.getElementById('blue-achievement').textContent = individualAchievement + '%';
             
             // Calculate the dash offset for the donut charts
             // Circumference = 2 * π * radius = 2 * 3.14159 * 45 ≈ 283
             const circumference = 2 * Math.PI * 45;
             
-            // Red chart animation
-            const redDonut = document.getElementById('red-donut');
-            const redPercentText = document.getElementById('red-percent');
-            const redDashOffset = circumference - (redPercentage / 100) * circumference;
-            redDonut.style.setProperty('--dash-offset', redDashOffset);
+            // SHG Loan chart animation
+            const shgDonut = document.getElementById('red-donut');
+            const shgPercentText = document.getElementById('red-percent');
+            const shgDashOffset = circumference - (shgPercentage / 100) * circumference;
+            shgDonut.style.setProperty('--dash-offset', shgDashOffset);
             
-            // Blue chart animation
-            const blueDonut = document.getElementById('blue-donut');
-            const bluePercentText = document.getElementById('blue-percent');
-            const blueDashOffset = circumference - (bluePercentage / 100) * circumference;
-            blueDonut.style.setProperty('--dash-offset', blueDashOffset);
+            // Individual Loan chart animation
+            const individualDonut = document.getElementById('blue-donut');
+            const individualPercentText = document.getElementById('blue-percent');
+            const individualDashOffset = circumference - (individualPercentage / 100) * circumference;
+            individualDonut.style.setProperty('--dash-offset', individualDashOffset);
             
             // Animate the percentage counters
-            animateValue(redPercentText, 0, redPercentage, 1800);
-            animateValue(bluePercentText, 0, bluePercentage, 1800);
+            animateValue(shgPercentText, 0, shgPercentage, 1800);
+            animateValue(individualPercentText, 0, individualPercentage, 1800);
             
             // Function to animate number values
             function animateValue(element, start, end, duration) {
@@ -397,6 +437,20 @@
                 
                 wrapper.addEventListener('mouseleave', function() {
                     this.style.transform = 'scale(1)';
+                });
+            });
+            
+            // Add hover effect to combined cards
+            const combinedCards = document.querySelectorAll('.combined-card');
+            combinedCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.boxShadow = '0 8px 16px rgba(0,0,0,0.15)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
                 });
             });
         });

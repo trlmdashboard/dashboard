@@ -25,25 +25,24 @@
         .container {
             display: flex;
             flex-wrap: wrap;
-            justify-content: center;
-            gap: 40px;
+            justify-content: space-between;
+            gap: 20px;
             width: 100%;
             max-width: 1200px;
         }
         
         .chart-container {
             flex: 1;
-            min-width: 300px;
-            max-width: 450px;
+            min-width: 280px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
         
         .chart-title {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             text-align: center;
         }
         
@@ -58,7 +57,7 @@
         .chart-wrapper {
             position: relative;
             width: 100%;
-            max-width: 300px;
+            max-width: 280px;
             margin-bottom: 30px;
         }
         
@@ -74,12 +73,14 @@
             transform: translate(-50%, -50%);
             text-align: center;
             font-weight: 700;
+            width: 100%;
         }
         
         .achievement-percent {
-            font-size: 2.5rem;
+            font-size: 3.5rem;
             line-height: 1;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            font-weight: 800;
         }
         
         .red-percent {
@@ -91,45 +92,49 @@
         }
         
         .target-label {
-            font-size: 1.1rem;
+            font-size: 1.3rem;
             color: #555;
+            font-weight: 600;
         }
         
         .stats {
             display: flex;
             justify-content: space-between;
             width: 100%;
-            max-width: 300px;
-            margin-top: 10px;
+            max-width: 280px;
+            margin-top: 15px;
         }
         
         .stat-item {
             text-align: center;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 10px;
             flex: 1;
             margin: 0 5px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
         }
         
         .red-stat {
             background-color: #ffebee;
             color: #c62828;
+            border: 2px solid #ffcdd2;
         }
         
         .blue-stat {
             background-color: #e3f2fd;
             color: #1565c0;
+            border: 2px solid #bbdefb;
         }
         
         .stat-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 5px;
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 8px;
         }
         
         .stat-label {
-            font-size: 0.9rem;
-            font-weight: 600;
+            font-size: 1.1rem;
+            font-weight: 700;
         }
         
         /* Animation for the donut charts */
@@ -143,44 +148,130 @@
         }
         
         .donut-ring {
-            animation: draw-circle 1.5s ease-out forwards;
+            animation: draw-circle 1.8s ease-out forwards;
             stroke-dasharray: 283;
             stroke-dashoffset: 283;
         }
         
-        /* Mobile responsiveness */
-        @media (max-width: 768px) {
+        /* Mobile responsiveness - Keep side by side */
+        @media (max-width: 1024px) {
             .container {
-                flex-direction: column;
-                align-items: center;
-                gap: 60px;
+                gap: 15px;
             }
             
             .chart-container {
-                min-width: 100%;
+                min-width: 250px;
             }
             
             .achievement-percent {
-                font-size: 2rem;
+                font-size: 3rem;
             }
             
             .stat-value {
-                font-size: 1.5rem;
+                font-size: 2rem;
+            }
+            
+            .chart-title {
+                font-size: 1.6rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: row;
+                justify-content: space-around;
+                gap: 10px;
+            }
+            
+            .chart-container {
+                min-width: 48%;
+                max-width: 48%;
+            }
+            
+            .chart-wrapper {
+                max-width: 100%;
+            }
+            
+            .achievement-percent {
+                font-size: 2.8rem;
+            }
+            
+            .chart-title {
+                font-size: 1.4rem;
+                margin-bottom: 20px;
+            }
+            
+            .stat-value {
+                font-size: 1.8rem;
+            }
+            
+            .stats {
+                max-width: 100%;
+            }
+            
+            .stat-item {
+                padding: 10px;
             }
         }
         
         @media (max-width: 480px) {
-            .chart-wrapper {
-                max-width: 250px;
+            .container {
+                gap: 8px;
+            }
+            
+            .chart-container {
+                min-width: 48%;
+                max-width: 48%;
             }
             
             .achievement-percent {
-                font-size: 1.8rem;
+                font-size: 2.5rem;
             }
             
             .chart-title {
-                font-size: 1.3rem;
+                font-size: 1.2rem;
+                margin-bottom: 15px;
             }
+            
+            .stat-value {
+                font-size: 1.6rem;
+            }
+            
+            .stat-label {
+                font-size: 1rem;
+            }
+            
+            .target-label {
+                font-size: 1.1rem;
+            }
+            
+            .stat-item {
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .achievement-percent {
+                font-size: 2.2rem;
+            }
+            
+            .chart-title {
+                font-size: 1.1rem;
+            }
+            
+            .stat-value {
+                font-size: 1.4rem;
+            }
+        }
+        
+        /* Add some interactive effects */
+        .chart-wrapper:hover {
+            transform: scale(1.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .chart-wrapper {
+            transition: transform 0.3s ease;
         }
     </style>
 </head>
@@ -188,7 +279,7 @@
     <div class="container">
         <!-- Red-themed donut chart -->
         <div class="chart-container">
-            <h2 class="chart-title red-title">Performance Chart</h2>
+            <h2 class="chart-title red-title">Performance</h2>
             <div class="chart-wrapper">
                 <svg class="chart" viewBox="0 0 100 100">
                     <!-- Background circle -->
@@ -216,7 +307,7 @@
         
         <!-- Blue-themed donut chart -->
         <div class="chart-container">
-            <h2 class="chart-title blue-title">Progress Chart</h2>
+            <h2 class="chart-title blue-title">Progress</h2>
             <div class="chart-wrapper">
                 <svg class="chart" viewBox="0 0 100 100">
                     <!-- Background circle -->
@@ -279,8 +370,8 @@
             blueDonut.style.setProperty('--dash-offset', blueDashOffset);
             
             // Animate the percentage counters
-            animateValue(redPercentText, 0, redPercentage, 1500);
-            animateValue(bluePercentText, 0, bluePercentage, 1500);
+            animateValue(redPercentText, 0, redPercentage, 1800);
+            animateValue(bluePercentText, 0, bluePercentage, 1800);
             
             // Function to animate number values
             function animateValue(element, start, end, duration) {
@@ -302,7 +393,6 @@
             chartWrappers.forEach(wrapper => {
                 wrapper.addEventListener('mouseenter', function() {
                     this.style.transform = 'scale(1.05)';
-                    this.style.transition = 'transform 0.3s ease';
                 });
                 
                 wrapper.addEventListener('mouseleave', function() {

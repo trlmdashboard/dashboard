@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Donut Charts</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            width: 100%;
+            max-width: 1200px;
+        }
+        
+        .chart-container {
+            flex: 1;
+            min-width: 300px;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .red-title {
+            color: #c62828;
+        }
+        
+        .blue-title {
+            color: #1565c0;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 30px;
+        }
+        
+        .chart {
+            width: 100%;
+            height: auto;
+        }
+        
+        .chart-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        .achievement-percent {
+            font-size: 2.5rem;
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+        
+        .red-percent {
+            color: #c62828;
+        }
+        
+        .blue-percent {
+            color: #1565c0;
+        }
+        
+        .target-label {
+            font-size: 1.1rem;
+            color: #555;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 300px;
+            margin-top: 10px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            flex: 1;
+            margin: 0 5px;
+        }
+        
+        .red-stat {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        
+        .blue-stat {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        /* Animation for the donut charts */
+        @keyframes draw-circle {
+            from {
+                stroke-dashoffset: 283;
+            }
+            to {
+                stroke-dashoffset: var(--dash-offset);
+            }
+        }
+        
+        .donut-ring {
+            animation: draw-circle 1.5s ease-out forwards;
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+                gap: 60px;
+            }
+            
+            .chart-container {
+                min-width: 100%;
+            }
+            
+            .achievement-percent {
+                font-size: 2rem;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .chart-wrapper {
+                max-width: 250px;
+            }
+            
+            .achievement-percent {
+                font-size: 1.8rem;
+            }
+            
+            .chart-title {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Red-themed donut chart -->
+        <div class="chart-container">
+            <h2 class="chart-title red-title">Performance Chart</h2>
+            <div class="chart-wrapper">
+                <svg class="chart" viewBox="0 0 100 100">
+                    <!-- Background circle -->
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#f5f5f5" stroke-width="10"/>
+                    <!-- Animated donut ring -->
+                    <circle class="donut-ring" id="red-donut" cx="50" cy="50" r="45" fill="none" stroke="#c62828" stroke-width="10" 
+                            stroke-linecap="round" transform="rotate(-90 50 50)"/>
+                </svg>
+                <div class="chart-text">
+                    <div class="achievement-percent red-percent" id="red-percent">0%</div>
+                    <div class="target-label">Achievement</div>
+                </div>
+            </div>
+            <div class="stats">
+                <div class="stat-item red-stat">
+                    <div class="stat-value" id="red-target">85%</div>
+                    <div class="stat-label">Target</div>
+                </div>
+                <div class="stat-item red-stat">
+                    <div class="stat-value" id="red-achievement">72%</div>
+                    <div class="stat-label">Achieved</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Blue-themed donut chart -->
+        <div class="chart-container">
+            <h2 class="chart-title blue-title">Progress Chart</h2>
+            <div class="chart-wrapper">
+                <svg class="chart" viewBox="0 0 100 100">
+                    <!-- Background circle -->
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#f5f5f5" stroke-width="10"/>
+                    <!-- Animated donut ring -->
+                    <circle class="donut-ring" id="blue-donut" cx="50" cy="50" r="45" fill="none" stroke="#1565c0" stroke-width="10" 
+                            stroke-linecap="round" transform="rotate(-90 50 50)"/>
+                </svg>
+                <div class="chart-text">
+                    <div class="achievement-percent blue-percent" id="blue-percent">0%</div>
+                    <div class="target-label">Achievement</div>
+                </div>
+            </div>
+            <div class="stats">
+                <div class="stat-item blue-stat">
+                    <div class="stat-value" id="blue-target">90%</div>
+                    <div class="stat-label">Target</div>
+                </div>
+                <div class="stat-item blue-stat">
+                    <div class="stat-value" id="blue-achievement">84%</div>
+                    <div class="stat-label">Achieved</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Red chart data
+            const redTarget = 85;
+            const redAchievement = 72;
+            const redPercentage = Math.round((redAchievement / redTarget) * 100);
+            
+            // Blue chart data
+            const blueTarget = 90;
+            const blueAchievement = 84;
+            const bluePercentage = Math.round((blueAchievement / blueTarget) * 100);
+            
+            // Set the text values
+            document.getElementById('red-target').textContent = redTarget + '%';
+            document.getElementById('red-achievement').textContent = redAchievement + '%';
+            
+            document.getElementById('blue-target').textContent = blueTarget + '%';
+            document.getElementById('blue-achievement').textContent = blueAchievement + '%';
+            
+            // Calculate the dash offset for the donut charts
+            // Circumference = 2 * π * radius = 2 * 3.14159 * 45 ≈ 283
+            const circumference = 2 * Math.PI * 45;
+            
+            // Red chart animation
+            const redDonut = document.getElementById('red-donut');
+            const redPercentText = document.getElementById('red-percent');
+            const redDashOffset = circumference - (redPercentage / 100) * circumference;
+            redDonut.style.setProperty('--dash-offset', redDashOffset);
+            
+            // Blue chart animation
+            const blueDonut = document.getElementById('blue-donut');
+            const bluePercentText = document.getElementById('blue-percent');
+            const blueDashOffset = circumference - (bluePercentage / 100) * circumference;
+            blueDonut.style.setProperty('--dash-offset', blueDashOffset);
+            
+            // Animate the percentage counters
+            animateValue(redPercentText, 0, redPercentage, 1500);
+            animateValue(bluePercentText, 0, bluePercentage, 1500);
+            
+            // Function to animate number values
+            function animateValue(element, start, end, duration) {
+                let startTimestamp = null;
+                const step = (timestamp) => {
+                    if (!startTimestamp) startTimestamp = timestamp;
+                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                    const currentValue = Math.floor(progress * (end - start) + start);
+                    element.textContent = currentValue + '%';
+                    if (progress < 1) {
+                        window.requestAnimationFrame(step);
+                    }
+                };
+                window.requestAnimationFrame(step);
+            }
+            
+            // Add hover effect to charts
+            const chartWrappers = document.querySelectorAll('.chart-wrapper');
+            chartWrappers.forEach(wrapper => {
+                wrapper.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.05)';
+                    this.style.transition = 'transform 0.3s ease';
+                });
+                
+                wrapper.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

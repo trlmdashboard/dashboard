@@ -1,864 +1,421 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loan Performance Dashboard</title>
+    <title>Comprehensive Loan Target & Submission Report</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
         }
-        
-        .header {
+        h1 {
+            color: #2c3e50;
             text-align: center;
             margin-bottom: 30px;
-            width: 100%;
-        }
-        
-        .header h1 {
-            color: #333;
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            color: #666;
-            font-size: 1.1rem;
-        }
-        
-        .data-status {
-            margin-top: 10px;
-            padding: 8px 16px;
-            background-color: #e3f2fd;
-            border-radius: 20px;
-            display: inline-block;
-            font-size: 0.9rem;
-            color: #1565c0;
-            font-weight: 600;
-        }
-        
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            gap: 30px;
-            width: 100%;
-            max-width: 1200px;
-        }
-        
-        .chart-container {
-            flex: 1;
-            min-width: 320px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .chart-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 25px;
-            text-align: center;
-        }
-        
-        .red-title {
-            color: #c62828;
-        }
-        
-        .blue-title {
-            color: #1565c0;
-        }
-        
-        .chart-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 280px;
-            margin-bottom: 30px;
-        }
-        
-        .chart {
-            width: 100%;
-            height: auto;
-        }
-        
-        .chart-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            font-weight: 700;
-            width: 100%;
-        }
-        
-        .achievement-percent {
-            font-size: 3.5rem;
-            line-height: 1;
-            margin-bottom: 8px;
-            font-weight: 800;
-        }
-        
-        .red-percent {
-            color: #c62828;
-        }
-        
-        .blue-percent {
-            color: #1565c0;
-        }
-        
-        /* Enhanced Combined Target/Submitted/Sanctioned card */
-        .combined-card {
-            width: 100%;
-            max-width: 320px;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            margin-top: 10px;
-        }
-        
-        .red-card {
-            background-color: #ffebee;
-            border: 2px solid #ffcdd2;
-            color: #c62828;
-        }
-        
-        .blue-card {
-            background-color: #e3f2fd;
-            border: 2px solid #bbdefb;
-            color: #1565c0;
-        }
-        
-        .combined-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
             padding-bottom: 10px;
-            border-bottom: 2px dashed rgba(0,0,0,0.1);
+            border-bottom: 2px solid #3498db;
         }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-        }
-        
-        .stat-column {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 10px 5px;
-        }
-        
-        .stat-column:not(:last-child) {
-            border-right: 2px dashed rgba(0,0,0,0.1);
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            opacity: 0.9;
-        }
-        
-        .stat-value {
-            font-size: 1.6rem;
-            font-weight: 800;
-            margin-bottom: 5px;
-            line-height: 1.2;
-        }
-        
-        .stat-amount {
-            font-size: 0.85rem;
-            font-weight: 600;
-            opacity: 0.9;
-            margin-top: 2px;
-        }
-        
-        /* Loading state */
-        .loading {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-        }
-        
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Animation for the donut charts */
-        @keyframes draw-circle {
-            from {
-                stroke-dashoffset: 283;
-            }
-            to {
-                stroke-dashoffset: var(--dash-offset);
-            }
-        }
-        
-        .donut-ring {
-            animation: draw-circle 1.8s ease-out forwards;
-            stroke-dasharray: 283;
-            stroke-dashoffset: 283;
-        }
-        
-        /* Mobile responsiveness */
-        @media (max-width: 1024px) {
-            .container {
-                gap: 20px;
-            }
-            
-            .chart-container {
-                min-width: 300px;
-            }
-            
-            .achievement-percent {
-                font-size: 3rem;
-            }
-            
-            .combined-card {
-                max-width: 300px;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-                align-items: center;
-                gap: 40px;
-            }
-            
-            .chart-container {
-                min-width: 100%;
-                max-width: 400px;
-            }
-            
-            .chart-wrapper {
-                max-width: 280px;
-            }
-            
-            .combined-card {
-                max-width: 400px;
-            }
-            
-            .header h1 {
-                font-size: 1.8rem;
-            }
-            
-            .header p {
-                font-size: 1rem;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .stats-grid {
-                gap: 10px;
-            }
-            
-            .stat-value {
-                font-size: 1.4rem;
-            }
-            
-            .stat-label {
-                font-size: 0.8rem;
-            }
-            
-            .stat-amount {
-                font-size: 0.75rem;
-            }
-            
-            .achievement-percent {
-                font-size: 2.8rem;
-            }
-        }
-        
-        /* Interactive effects */
-        .chart-wrapper:hover {
-            transform: scale(1.05);
-            transition: transform 0.3s ease;
-        }
-        
-        .chart-wrapper {
-            transition: transform 0.3s ease;
-        }
-        
-        .combined-card:hover {
-            transform: translateY(-5px);
-            transition: transform 0.3s ease;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-        }
-        
-        .combined-card {
-            transition: all 0.3s ease;
-        }
-        
-        /* Error state */
-        .error-message {
-            color: #d32f2f;
-            background-color: #ffebee;
-            padding: 15px;
-            border-radius: 8px;
+        h2 {
+            color: #34495e;
             text-align: center;
+            margin: 30px 0 15px 0;
+        }
+        .container {
+            max-width: 95%;
+            margin: 0 auto;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
             margin: 20px 0;
-            font-weight: 600;
-            border: 1px solid #ffcdd2;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background-color: white;
         }
-        
-        .refresh-btn {
-            background-color: #1565c0;
+        th {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
             color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background-color 0.3s;
+            padding: 14px 8px;
+            text-align: center;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-right: 1px solid #2980b9;
         }
-        
-        .refresh-btn:hover {
-            background-color: #0d47a1;
+        th:last-child {
+            border-right: none;
+        }
+        td {
+            border: 1px solid #ddd;
+            padding: 10px 8px;
+            text-align: right;
+            min-width: 120px;
+        }
+        td:first-child {
+            text-align: left;
+            font-weight: bold;
+            background-color: #f8f9fa;
+            position: sticky;
+            left: 0;
+            z-index: 5;
+            min-width: 180px;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        tr:hover {
+            background-color: #e3f2fd;
+        }
+        .section-header {
+            background-color: #e8f4fc !important;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .total-row {
+            background-color: #2c3e50 !important;
+            color: white;
+            font-weight: bold;
+        }
+        .total-row td {
+            border-color: #2c3e50;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-size: 18px;
+        }
+        .error {
+            background-color: #ffe6e6;
+            color: #c0392b;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            margin: 20px auto;
+            max-width: 600px;
+            border: 1px solid #c0392b;
+        }
+        .note {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 12px;
+            margin-top: 10px;
+            font-style: italic;
+        }
+        .summary-box {
+            background: white;
+            padding: 15px;
+            margin: 20px auto;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 400px;
+            text-align: center;
+            border-left: 4px solid #3498db;
+        }
+        @media print {
+            body {
+                background-color: white;
+            }
+            table {
+                box-shadow: none;
+            }
+            .no-print {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Loan Performance Dashboard</h1>
-        <p>Real-time tracking of SHG and Individual Loan performance</p>
-        <div class="data-status" id="dataStatus">Loading data...</div>
+    <h1>Comprehensive District-wise Loan Target & Submission Report</h1>
+    <div class="summary-box no-print">
+        <p>Data loaded from Google Sheets</p>
+        <p>Report generated on: <span id="currentDate"></span></p>
     </div>
-    
-    <div id="loading" class="loading">
-        <div class="spinner"></div>
-        <p>Fetching data from Google Sheets...</p>
-    </div>
-    
-    <div class="container" id="dashboard" style="display: none;">
-        <!-- SHG Loan donut chart -->
-        <div class="chart-container">
-            <h2 class="chart-title red-title">SHG Loan</h2>
-            <div class="chart-wrapper">
-                <svg class="chart" viewBox="0 0 100 100">
-                    <!-- Background circle -->
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="#f5f5f5" stroke-width="10"/>
-                    <!-- Animated donut ring -->
-                    <circle class="donut-ring" id="red-donut" cx="50" cy="50" r="45" fill="none" stroke="#c62828" stroke-width="10" 
-                            stroke-linecap="round" transform="rotate(-90 50 50)"/>
-                </svg>
-                <div class="chart-text">
-                    <div class="achievement-percent red-percent" id="red-percent">0%</div>
-                </div>
-            </div>
-            <div class="combined-card red-card">
-                <div class="combined-title">Target vs Submitted vs Sanctioned</div>
-                <div class="stats-grid">
-                    <div class="stat-column">
-                        <div class="stat-label">Target</div>
-                        <div class="stat-value" id="shg-target-count">0</div>
-                        <div class="stat-amount" id="shg-target-amount">₹0</div>
-                    </div>
-                    <div class="stat-column">
-                        <div class="stat-label">Submitted</div>
-                        <div class="stat-value" id="shg-submitted-count">0</div>
-                        <div class="stat-amount" id="shg-submitted-amount">₹0</div>
-                    </div>
-                    <div class="stat-column">
-                        <div class="stat-label">Sanctioned</div>
-                        <div class="stat-value" id="shg-sanctioned-count">0</div>
-                        <div class="stat-amount" id="shg-sanctioned-amount">₹0</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Individual Loan donut chart -->
-        <div class="chart-container">
-            <h2 class="chart-title blue-title">Individual Loan</h2>
-            <div class="chart-wrapper">
-                <svg class="chart" viewBox="0 0 100 100">
-                    <!-- Background circle -->
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="#f5f5f5" stroke-width="10"/>
-                    <!-- Animated donut ring -->
-                    <circle class="donut-ring" id="blue-donut" cx="50" cy="50" r="45" fill="none" stroke="#1565c0" stroke-width="10" 
-                            stroke-linecap="round" transform="rotate(-90 50 50)"/>
-                </svg>
-                <div class="chart-text">
-                    <div class="achievement-percent blue-percent" id="blue-percent">0%</div>
-                </div>
-            </div>
-            <div class="combined-card blue-card">
-                <div class="combined-title">Target vs Submitted vs Sanctioned</div>
-                <div class="stats-grid">
-                    <div class="stat-column">
-                        <div class="stat-label">Target</div>
-                        <div class="stat-value" id="individual-target-count">0</div>
-                        <div class="stat-amount" id="individual-target-amount">₹0</div>
-                    </div>
-                    <div class="stat-column">
-                        <div class="stat-label">Submitted</div>
-                        <div class="stat-value" id="individual-submitted-count">0</div>
-                        <div class="stat-amount" id="individual-submitted-amount">₹0</div>
-                    </div>
-                    <div class="stat-column">
-                        <div class="stat-label">Sanctioned</div>
-                        <div class="stat-value" id="individual-sanctioned-count">0</div>
-                        <div class="stat-amount" id="individual-sanctioned-amount">₹0</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div id="errorContainer" class="error-message" style="display: none;">
-        <p id="errorMessage">Failed to load data. Please check your internet connection and try again.</p>
-        <button class="refresh-btn" onclick="loadData()">Refresh Data</button>
+    <div class="container">
+        <div id="output" class="loading">Loading and processing data from Google Sheet...</div>
     </div>
 
     <script>
-        // Google Sheets CSV URL
-        //const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSKZv2oeWp8NIvfF8RX1gmUi710FpEPs-2BAhUaxq4Tr6HvY02XcoyMuO77cmFtre_u81u7dyg0tzJI/pub?gid=670451665&single=true&output=csv';
-        const SHEET_URL = "https://docs.google.com/spreadsheets/d/2PACX-1vSKZv2oeWp8NIvfF8RX1gmUi710FpEPs-2BAhUaxq4Tr6HvY02XcoyMuO77cmFtre_u81u7dyg0tzJI/gviz/tq?tqx=out:csv&sheet=jsondata";    
-        // DOM Elements
-        const loadingEl = document.getElementById('loading');
-        const dashboardEl = document.getElementById('dashboard');
-        const errorContainerEl = document.getElementById('errorContainer');
-        const errorMessageEl = document.getElementById('errorMessage');
-        const dataStatusEl = document.getElementById('dataStatus');
-        
-        // SHG Loan Elements
-        const shgTargetCountEl = document.getElementById('shg-target-count');
-        const shgTargetAmountEl = document.getElementById('shg-target-amount');
-        const shgSubmittedCountEl = document.getElementById('shg-submitted-count');
-        const shgSubmittedAmountEl = document.getElementById('shg-submitted-amount');
-        const shgSanctionedCountEl = document.getElementById('shg-sanctioned-count');
-        const shgSanctionedAmountEl = document.getElementById('shg-sanctioned-amount');
-        
-        // Individual Loan Elements
-        const individualTargetCountEl = document.getElementById('individual-target-count');
-        const individualTargetAmountEl = document.getElementById('individual-target-amount');
-        const individualSubmittedCountEl = document.getElementById('individual-submitted-count');
-        const individualSubmittedAmountEl = document.getElementById('individual-submitted-amount');
-        const individualSanctionedCountEl = document.getElementById('individual-sanctioned-count');
-        const individualSanctionedAmountEl = document.getElementById('individual-sanctioned-amount');
-        
-        // Chart Elements
-        const redPercentEl = document.getElementById('red-percent');
-        const bluePercentEl = document.getElementById('blue-percent');
-        const redDonutEl = document.getElementById('red-donut');
-        const blueDonutEl = document.getElementById('blue-donut');
-        
-        // Format number with commas
-        function formatNumber(num) {
-            const n = parseFloat(num) || 0;
-            return n.toLocaleString('en-IN');
-        }
-        
-        // Format currency (Indian Rupees)
-        function formatCurrency(amount) {
-            const amt = parseFloat(amount) || 0;
-            return '₹' + amt.toLocaleString('en-IN');
-        }
-        
-        // Parse CSV data with better handling
-        function parseCSV(csvText) {
+        async function loadAndProcessCSV() {
             try {
-                // Split into lines
-                const lines = csvText.split('\n').filter(line => line.trim() !== '');
+                // Google Sheet CSV export URL
+                const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSKZv2oeWp8NIvfF8RX1gmUi710FpEPs-2BAhUaxq4Tr6HvY02XcoyMuO77cmFtre_u81u7dyg0tzJI/pub?output=csv';
                 
-                if (lines.length < 2) {
-                    console.error('CSV file has no data rows');
-                    return [];
+                // Fetch CSV data
+                const response = await fetch(csvUrl);
+                const csvText = await response.text();
+                
+                // Parse CSV
+                const rows = csvText.split('\n').filter(row => row.trim() !== '');
+                
+                if (rows.length === 0) {
+                    throw new Error('No data found in CSV');
                 }
                 
-                // Parse headers - handle quoted headers
-                const headers = parseCSVLine(lines[0]);
+                // Get headers
+                const headers = rows[0].split(',').map(h => h.trim());
                 
-                // Parse data rows
-                const data = [];
-                for (let i = 1; i < lines.length; i++) {
-                    const rowData = parseCSVLine(lines[i]);
-                    const rowObject = {};
+                // Find column indices for all required columns
+                const columnIndices = {
+                    // District column
+                    district: findColumnIndex(headers, ['district', 'dist']),
                     
-                    headers.forEach((header, index) => {
-                        // Clean up header names
-                        const cleanHeader = header.trim();
-                        rowObject[cleanHeader] = rowData[index] ? rowData[index].trim() : '0';
-                    });
+                    // SHG Loan Target
+                    shgTargetCount: findColumnIndex(headers, ['no. of shg loan target', 'shg loan target count', 'number of shg loan target']),
+                    shgTargetAmount: findColumnIndex(headers, ['amt of shg loan target', 'shg loan target amount', 'amount of shg loan target']),
                     
-                    data.push(rowObject);
-                }
-                
-                console.log('Parsed CSV data:', data);
-                return data;
-            } catch (error) {
-                console.error('Error parsing CSV:', error);
-                return [];
-            }
-        }
-        
-        // Parse a single CSV line with comma separation
-        function parseCSVLine(line) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    result.push(current);
-                    current = '';
-                } else {
-                    current += char;
-                }
-            }
-            
-            // Add the last field
-            result.push(current);
-            return result;
-        }
-        
-        // Calculate totals from data
-        function calculateTotals(data) {
-            console.log('Calculating totals from data:', data);
-            
-            let shgTargetCount = 0;
-            let shgTargetAmount = 0;
-            let shgSubmittedCount = 0;
-            let shgSubmittedAmount = 0;
-            let shgSanctionedCount = 0;
-            let shgSanctionedAmount = 0;
-            
-            let individualTargetCount = 0;
-            let individualTargetAmount = 0;
-            let individualSubmittedCount = 0;
-            let individualSubmittedAmount = 0;
-            let individualSanctionedCount = 0;
-            let individualSanctionedAmount = 0;
-            
-            if (data.length === 0) {
-                console.error('No data to calculate totals');
-                // Return default values
-                return getDefaultTotals();
-            }
-            
-            data.forEach((row, index) => {
-                console.log(`Row ${index} data:`, row);
-                
-                // Helper function to parse values safely
-                const parseValue = (value) => {
-                    if (!value || value === '') return 0;
-                    // Remove any commas or non-numeric characters except decimal point
-                    const cleaned = String(value).replace(/[^0-9.-]/g, '');
-                    const parsed = parseFloat(cleaned);
-                    return isNaN(parsed) ? 0 : parsed;
+                    // SHG Loan Submitted upto 17 Nov 2025
+                    shgSubmittedCountNov: findColumnIndex(headers, ['no. of shg loan submitted upto 17 nov 2025', 'shg loan submitted count nov', 'shg submitted upto 17 nov']),
+                    shgSubmittedAmountNov: findColumnIndex(headers, ['amt of shg loan submitted upto 17 nov 2025', 'shg loan submitted amount nov', 'shg amount upto 17 nov']),
+                    
+                    // SHG Loan Submitted for Dec 2025
+                    shgSubmittedCountDec: findColumnIndex(headers, ['sub total of shg loan submitted from 1-31 dec 2025', 'shg loan submitted count dec', 'shg submitted dec 2025']),
+                    shgSubmittedAmountDec: findColumnIndex(headers, ['sub total amt of shg loan submitted from 1-31 dec 2025', 'shg loan submitted amount dec', 'shg amount dec 2025']),
+                    
+                    // Individual Loan Target
+                    individualTargetCount: findColumnIndex(headers, ['no. of individual loan target', 'individual loan target count', 'number of individual loan target']),
+                    individualTargetAmount: findColumnIndex(headers, ['amt of individual loan target', 'individual loan target amount', 'amount of individual loan target']),
+                    
+                    // Individual Loan Submitted upto 17 Nov 2025
+                    individualSubmittedCountNov: findColumnIndex(headers, ['no. of individual loan submitted upto 17 nov 2025', 'individual loan submitted count nov', 'individual submitted upto 17 nov']),
+                    individualSubmittedAmountNov: findColumnIndex(headers, ['amt of individual loan submitted upto 17 nov 2025', 'individual loan submitted amount nov', 'individual amount upto 17 nov']),
+                    
+                    // Individual Loan Submitted for Dec 2025
+                    individualSubmittedCountDec: findColumnIndex(headers, ['sub total of individual loan submitted from 1-31 dec 2025', 'individual loan submitted count dec', 'individual submitted dec 2025']),
+                    individualSubmittedAmountDec: findColumnIndex(headers, ['sub total amt of individual loan submitted from 1-31 dec 2025', 'individual loan submitted amount dec', 'individual amount dec 2025'])
                 };
                 
-                // SHG Loan calculations
-                shgTargetCount += parseValue(row['No. of SHG Loan Target']);
-                shgTargetAmount += parseValue(row['Amt of SHG Loan Target']);
+                // Validate that all required columns were found
+                const missingColumns = Object.entries(columnIndices)
+                    .filter(([key, value]) => value === -1)
+                    .map(([key]) => key);
                 
-                // SHG Submitted (upto 17 Nov + Dec subtotal)
-                const shgSubmittedUpto17Nov = parseValue(row['No. of SHG Loan Submitted upto 17 Nov 2025']);
-                const shgSubmittedDecSubtotal = parseValue(row['Sub Total of SHG Loan Submitted from 1-31 Dec 2025']);
-                shgSubmittedCount += shgSubmittedUpto17Nov + shgSubmittedDecSubtotal;
-                
-                const shgAmountUpto17Nov = parseValue(row['Amt of SHG Loan Submitted upto 17 Nov 2025']);
-                const shgAmountDecSubtotal = parseValue(row['Sub Total Amt of SHG Loan Submitted from 1-31 Dec 2025']);
-                shgSubmittedAmount += shgAmountUpto17Nov + shgAmountDecSubtotal;
-                
-                // SHG Sanctioned
-                shgSanctionedCount += parseValue(row['Total SHG Loan Sanctioned']);
-                shgSanctionedAmount += parseValue(row['Total SHG Loan Amt Sanctioned']);
-                
-                // Individual Loan calculations
-                individualTargetCount += parseValue(row['No. of Individual Loan Target']);
-                individualTargetAmount += parseValue(row['Amt of Individual Loan Target']);
-                
-                // Individual Submitted (upto 17 Nov + Dec subtotal)
-                const individualSubmittedUpto17Nov = parseValue(row['No. of Individual Loan Submitted upto 17 Nov 2025']);
-                const individualSubmittedDecSubtotal = parseValue(row['Sub Total of Individual Loan Submitted from 1-31 Dec 2025']);
-                individualSubmittedCount += individualSubmittedUpto17Nov + individualSubmittedDecSubtotal;
-                
-                const individualAmountUpto17Nov = parseValue(row['Amt of Individual Loan Submitted upto 17 Nov 2025']);
-                const individualAmountDecSubtotal = parseValue(row['Sub Total Amt of Individual Loan Submitted from 1-31 Dec 2025']);
-                individualSubmittedAmount += individualAmountUpto17Nov + individualAmountDecSubtotal;
-                
-                // Individual Sanctioned
-                individualSanctionedCount += parseValue(row['Total No of Individual Loan Sanctioned']);
-                individualSanctionedAmount += parseValue(row['Total Individual Loan Amt Sanctioned']);
-            });
-            
-            console.log('Calculated totals:', {
-                shgTargetCount,
-                shgTargetAmount,
-                shgSubmittedCount,
-                shgSubmittedAmount,
-                shgSanctionedCount,
-                shgSanctionedAmount,
-                individualTargetCount,
-                individualTargetAmount,
-                individualSubmittedCount,
-                individualSubmittedAmount,
-                individualSanctionedCount,
-                individualSanctionedAmount
-            });
-            
-            return {
-                shg: {
-                    targetCount: shgTargetCount,
-                    targetAmount: shgTargetAmount,
-                    submittedCount: shgSubmittedCount,
-                    submittedAmount: shgSubmittedAmount,
-                    sanctionedCount: shgSanctionedCount,
-                    sanctionedAmount: shgSanctionedAmount,
-                    achievementPercentage: shgTargetCount > 0 ? Math.round((shgSubmittedCount / shgTargetCount) * 100) : 0
-                },
-                individual: {
-                    targetCount: individualTargetCount,
-                    targetAmount: individualTargetAmount,
-                    submittedCount: individualSubmittedCount,
-                    submittedAmount: individualSubmittedAmount,
-                    sanctionedCount: individualSanctionedCount,
-                    sanctionedAmount: individualSanctionedAmount,
-                    achievementPercentage: individualTargetCount > 0 ? Math.round((individualSubmittedCount / individualTargetCount) * 100) : 0
+                if (missingColumns.length > 0) {
+                    console.warn('Missing columns:', missingColumns);
                 }
-            };
-        }
-        
-        // Return default totals for testing
-        function getDefaultTotals() {
-            return {
-                shg: {
-                    targetCount: 1000,
-                    targetAmount: 50000000,
-                    submittedCount: 750,
-                    submittedAmount: 37500000,
-                    sanctionedCount: 600,
-                    sanctionedAmount: 30000000,
-                    achievementPercentage: 75
-                },
-                individual: {
-                    targetCount: 800,
-                    targetAmount: 40000000,
-                    submittedCount: 672,
-                    submittedAmount: 33600000,
-                    sanctionedCount: 500,
-                    sanctionedAmount: 25000000,
-                    achievementPercentage: 84
+                
+                // Initialize aggregation object
+                const districtData = {};
+                
+                // Process each data row
+                for (let i = 1; i < rows.length; i++) {
+                    const cells = rows[i].split(',');
+                    const district = cells[columnIndices.district]?.trim();
+                    
+                    if (!district || district === '') continue;
+                    
+                    // Initialize district if not exists
+                    if (!districtData[district]) {
+                        districtData[district] = {
+                            // SHG Totals
+                            shgTargetCount: 0,
+                            shgTargetAmount: 0,
+                            shgSubmittedCountNov: 0,
+                            shgSubmittedAmountNov: 0,
+                            shgSubmittedCountDec: 0,
+                            shgSubmittedAmountDec: 0,
+                            
+                            // Individual Totals
+                            individualTargetCount: 0,
+                            individualTargetAmount: 0,
+                            individualSubmittedCountNov: 0,
+                            individualSubmittedAmountNov: 0,
+                            individualSubmittedCountDec: 0,
+                            individualSubmittedAmountDec: 0
+                        };
+                    }
+                    
+                    // Aggregate SHG data
+                    aggregateData(districtData[district], 'shgTargetCount', cells[columnIndices.shgTargetCount]);
+                    aggregateData(districtData[district], 'shgTargetAmount', cells[columnIndices.shgTargetAmount]);
+                    aggregateData(districtData[district], 'shgSubmittedCountNov', cells[columnIndices.shgSubmittedCountNov]);
+                    aggregateData(districtData[district], 'shgSubmittedAmountNov', cells[columnIndices.shgSubmittedAmountNov]);
+                    aggregateData(districtData[district], 'shgSubmittedCountDec', cells[columnIndices.shgSubmittedCountDec]);
+                    aggregateData(districtData[district], 'shgSubmittedAmountDec', cells[columnIndices.shgSubmittedAmountDec]);
+                    
+                    // Aggregate Individual data
+                    aggregateData(districtData[district], 'individualTargetCount', cells[columnIndices.individualTargetCount]);
+                    aggregateData(districtData[district], 'individualTargetAmount', cells[columnIndices.individualTargetAmount]);
+                    aggregateData(districtData[district], 'individualSubmittedCountNov', cells[columnIndices.individualSubmittedCountNov]);
+                    aggregateData(districtData[district], 'individualSubmittedAmountNov', cells[columnIndices.individualSubmittedAmountNov]);
+                    aggregateData(districtData[district], 'individualSubmittedCountDec', cells[columnIndices.individualSubmittedCountDec]);
+                    aggregateData(districtData[district], 'individualSubmittedAmountDec', cells[columnIndices.individualSubmittedAmountDec]);
                 }
-            };
-        }
-        
-        // Update UI with data
-        function updateUI(totals) {
-            console.log('Updating UI with totals:', totals);
-            
-            // Update SHG Loan data
-            shgTargetCountEl.textContent = formatNumber(totals.shg.targetCount);
-            shgTargetAmountEl.textContent = formatCurrency(totals.shg.targetAmount);
-            shgSubmittedCountEl.textContent = formatNumber(totals.shg.submittedCount);
-            shgSubmittedAmountEl.textContent = formatCurrency(totals.shg.submittedAmount);
-            shgSanctionedCountEl.textContent = formatNumber(totals.shg.sanctionedCount);
-            shgSanctionedAmountEl.textContent = formatCurrency(totals.shg.sanctionedAmount);
-            
-            // Update Individual Loan data
-            individualTargetCountEl.textContent = formatNumber(totals.individual.targetCount);
-            individualTargetAmountEl.textContent = formatCurrency(totals.individual.targetAmount);
-            individualSubmittedCountEl.textContent = formatNumber(totals.individual.submittedCount);
-            individualSubmittedAmountEl.textContent = formatCurrency(totals.individual.submittedAmount);
-            individualSanctionedCountEl.textContent = formatNumber(totals.individual.sanctionedCount);
-            individualSanctionedAmountEl.textContent = formatCurrency(totals.individual.sanctionedAmount);
-            
-            // Update chart percentages
-            redPercentEl.textContent = totals.shg.achievementPercentage + '%';
-            bluePercentEl.textContent = totals.individual.achievementPercentage + '%';
-            
-            // Update donut charts
-            const circumference = 2 * Math.PI * 45;
-            
-            // SHG chart
-            const shgDashOffset = circumference - (totals.shg.achievementPercentage / 100) * circumference;
-            redDonutEl.style.setProperty('--dash-offset', shgDashOffset);
-            
-            // Individual chart
-            const individualDashOffset = circumference - (totals.individual.achievementPercentage / 100) * circumference;
-            blueDonutEl.style.setProperty('--dash-offset', individualDashOffset);
-            
-            // Update status
-            const now = new Date();
-            dataStatusEl.textContent = `Data loaded: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
-            dataStatusEl.style.backgroundColor = '#e8f5e9';
-            dataStatusEl.style.color = '#2e7d32';
-            
-            // Hide loading, show dashboard
-            loadingEl.style.display = 'none';
-            dashboardEl.style.display = 'flex';
-        }
-        
-        // Function to animate number values
-        function animateValue(element, start, end, duration) {
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                const currentValue = Math.floor(progress * (end - start) + start);
-                element.textContent = currentValue + '%';
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                }
-            };
-            window.requestAnimationFrame(step);
-        }
-        
-        // Load data from Google Sheets
-        async function loadData() {
-            try {
-                console.log('Loading data from:', SHEET_URL);
                 
-                // Show loading, hide dashboard and error
-                loadingEl.style.display = 'flex';
-                dashboardEl.style.display = 'none';
-                errorContainerEl.style.display = 'none';
-                dataStatusEl.textContent = 'Loading data...';
-                dataStatusEl.style.backgroundColor = '#e3f2fd';
-                dataStatusEl.style.color = '#1565c0';
+                // Convert to array and sort districts
+                const districts = Object.keys(districtData);
+                districts.sort();
                 
-                // Add timestamp to avoid caching
-                const timestamp = new Date().getTime();
-                const urlWithTimestamp = SHEET_URL + (SHEET_URL.includes('?') ? '&' : '?') + '_=' + timestamp;
+                // Calculate grand totals
+                const grandTotals = {
+                    shgTargetCount: 0,
+                    shgTargetAmount: 0,
+                    shgSubmittedCountNov: 0,
+                    shgSubmittedAmountNov: 0,
+                    shgSubmittedCountDec: 0,
+                    shgSubmittedAmountDec: 0,
+                    individualTargetCount: 0,
+                    individualTargetAmount: 0,
+                    individualSubmittedCountNov: 0,
+                    individualSubmittedAmountNov: 0,
+                    individualSubmittedCountDec: 0,
+                    individualSubmittedAmountDec: 0
+                };
                 
-                // Fetch CSV data with timeout
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                // Create HTML table
+                let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>District</th>
+                                <th colspan="6" class="section-header">SHG Loans</th>
+                                <th colspan="6" class="section-header">Individual Loans</th>
+                            </tr>
+                            <tr>
+                                <th></th>
+                                <!-- SHG Sub-headers -->
+                                <th>No. of Target</th>
+                                <th>Amt of Target (₹)</th>
+                                <th>No. Submitted (upto 17 Nov)</th>
+                                <th>Amt Submitted (upto 17 Nov) (₹)</th>
+                                <th>No. Submitted (Dec 2025)</th>
+                                <th>Amt Submitted (Dec 2025) (₹)</th>
+                                <!-- Individual Sub-headers -->
+                                <th>No. of Target</th>
+                                <th>Amt of Target (₹)</th>
+                                <th>No. Submitted (upto 17 Nov)</th>
+                                <th>Amt Submitted (upto 17 Nov) (₹)</th>
+                                <th>No. Submitted (Dec 2025)</th>
+                                <th>Amt Submitted (Dec 2025) (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
                 
-                const response = await fetch(urlWithTimestamp, {
-                    signal: controller.signal,
-                    mode: 'cors',
-                    cache: 'no-cache'
+                // Add district rows
+                districts.forEach(district => {
+                    const data = districtData[district];
+                    
+                    html += `<tr>`;
+                    html += `<td>${district}</td>`;
+                    
+                    // SHG data
+                    html += `<td>${formatNumber(data.shgTargetCount)}</td>`;
+                    html += `<td>${formatCurrency(data.shgTargetAmount)}</td>`;
+                    html += `<td>${formatNumber(data.shgSubmittedCountNov)}</td>`;
+                    html += `<td>${formatCurrency(data.shgSubmittedAmountNov)}</td>`;
+                    html += `<td>${formatNumber(data.shgSubmittedCountDec)}</td>`;
+                    html += `<td>${formatCurrency(data.shgSubmittedAmountDec)}</td>`;
+                    
+                    // Individual data
+                    html += `<td>${formatNumber(data.individualTargetCount)}</td>`;
+                    html += `<td>${formatCurrency(data.individualTargetAmount)}</td>`;
+                    html += `<td>${formatNumber(data.individualSubmittedCountNov)}</td>`;
+                    html += `<td>${formatCurrency(data.individualSubmittedAmountNov)}</td>`;
+                    html += `<td>${formatNumber(data.individualSubmittedCountDec)}</td>`;
+                    html += `<td>${formatCurrency(data.individualSubmittedAmountDec)}</td>`;
+                    
+                    html += `</tr>`;
+                    
+                    // Update grand totals
+                    Object.keys(grandTotals).forEach(key => {
+                        grandTotals[key] += data[key];
+                    });
                 });
                 
-                clearTimeout(timeoutId);
+                // Add grand totals row
+                html += `
+                        </tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <td><strong>GRAND TOTAL</strong></td>
+                                <!-- SHG grand totals -->
+                                <td><strong>${formatNumber(grandTotals.shgTargetCount)}</strong></td>
+                                <td><strong>${formatCurrency(grandTotals.shgTargetAmount)}</strong></td>
+                                <td><strong>${formatNumber(grandTotals.shgSubmittedCountNov)}</strong></td>
+                                <td><strong>${formatCurrency(grandTotals.shgSubmittedAmountNov)}</strong></td>
+                                <td><strong>${formatNumber(grandTotals.shgSubmittedCountDec)}</strong></td>
+                                <td><strong>${formatCurrency(grandTotals.shgSubmittedAmountDec)}</strong></td>
+                                <!-- Individual grand totals -->
+                                <td><strong>${formatNumber(grandTotals.individualTargetCount)}</strong></td>
+                                <td><strong>${formatCurrency(grandTotals.individualTargetAmount)}</strong></td>
+                                <td><strong>${formatNumber(grandTotals.individualSubmittedCountNov)}</strong></td>
+                                <td><strong>${formatCurrency(grandTotals.individualSubmittedAmountNov)}</strong></td>
+                                <td><strong>${formatNumber(grandTotals.individualSubmittedCountDec)}</strong></td>
+                                <td><strong>${formatCurrency(grandTotals.individualSubmittedAmountDec)}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    
+                    <div class="note">
+                        * All amounts are in Indian Rupees (₹)<br>
+                        * Data source: Google Sheets | Last updated: ${new Date().toLocaleDateString()}
+                    </div>
+                `;
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status} ${response.statusText}`);
-                }
-                
-                const csvText = await response.text();
-                console.log('CSV text received (first 500 chars):', csvText.substring(0, 500));
-                
-                if (!csvText || csvText.trim() === '') {
-                    throw new Error('CSV file is empty');
-                }
-                
-                // Parse CSV data
-                const data = parseCSV(csvText);
-                
-                // Calculate totals
-                let totals;
-                if (data.length > 0) {
-                    totals = calculateTotals(data);
-                } else {
-                    console.log('Using default data for demo');
-                    totals = getDefaultTotals();
-                }
-                
-                // Update UI
-                updateUI(totals);
-                
-                // Add hover effects
-                addHoverEffects();
+                document.getElementById('output').innerHTML = html;
                 
             } catch (error) {
-                console.error('Error loading data:', error);
-                
-                // Hide loading, show error
-                loadingEl.style.display = 'none';
-                dashboardEl.style.display = 'flex'; // Still show dashboard with demo data
-                errorContainerEl.style.display = 'block';
-                
-                if (error.name === 'AbortError') {
-                    errorMessageEl.textContent = 'Request timed out. Please check your internet connection.';
-                } else {
-                    errorMessageEl.textContent = `Error: ${error.message}. Using demo data.`;
-                }
-                
-                // Use demo data
-                const demoTotals = getDefaultTotals();
-                updateUI(demoTotals);
-                
-                dataStatusEl.textContent = 'Using demo data - Check console for errors';
-                dataStatusEl.style.backgroundColor = '#fff3e0';
-                dataStatusEl.style.color = '#ef6c00';
+                console.error('Error:', error);
+                document.getElementById('output').innerHTML = 
+                    `<div class="error">
+                        <h3>Error Loading Data</h3>
+                        <p>${error.message}</p>
+                        <p>Please check the console for more details.</p>
+                    </div>`;
             }
         }
         
-        // Add hover effects
-        function addHoverEffects() {
-            const chartWrappers = document.querySelectorAll('.chart-wrapper');
-            chartWrappers.forEach(wrapper => {
-                wrapper.addEventListener('mouseenter', function() {
-                    this.style.transform = 'scale(1.05)';
-                });
-                
-                wrapper.addEventListener('mouseleave', function() {
-                    this.style.transform = 'scale(1)';
-                });
-            });
-            
-            const combinedCards = document.querySelectorAll('.combined-card');
-            combinedCards.forEach(card => {
-                card.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-5px)';
-                    this.style.boxShadow = '0 8px 16px rgba(0,0,0,0.15)';
-                });
-                
-                card.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0)';
-                    this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
-                });
-            });
+        // Helper function to find column index
+        function findColumnIndex(headers, possibleNames) {
+            for (const name of possibleNames) {
+                const index = headers.findIndex(h => 
+                    h.toLowerCase().includes(name.toLowerCase())
+                );
+                if (index !== -1) return index;
+            }
+            return -1;
         }
         
-        // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
-            loadData();
-            
-            // Auto-refresh every 2 minutes
-            setInterval(loadData, 2 * 60 * 1000);
+        // Helper function to aggregate data
+        function aggregateData(obj, key, value) {
+            if (value !== undefined && value !== '') {
+                const numValue = parseFloat(value) || 0;
+                obj[key] += numValue;
+            }
+        }
+        
+        // Helper function to format numbers
+        function formatNumber(num) {
+            return Number.isInteger(num) ? num.toLocaleString() : num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+        
+        // Helper function to format currency
+        function formatCurrency(amount) {
+            if (amount >= 10000000) {
+                return `₹${(amount / 10000000).toFixed(2)} Cr`;
+            } else if (amount >= 100000) {
+                return `₹${(amount / 100000).toFixed(2)} L`;
+            } else {
+                return `₹${formatNumber(amount)}`;
+            }
+        }
+        
+        // Set current date
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-IN', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         });
+        
+        // Load data when page loads
+        window.addEventListener('DOMContentLoaded', loadAndProcessCSV);
+        
+        // Auto-refresh every 5 minutes
+        setInterval(loadAndProcessCSV, 300000);
+        
     </script>
 </body>
 </html>

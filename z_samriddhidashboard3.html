@@ -1,421 +1,923 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Comprehensive Loan Target & Submission Report</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHG Loan Dashboard | District Performance</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f5f5f5;
+        * {
+            font-family: 'Inter', sans-serif;
         }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #3498db;
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        h2 {
-            color: #34495e;
-            text-align: center;
-            margin: 30px 0 15px 0;
+        
+        .card-gradient {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
         }
-        .container {
-            max-width: 95%;
-            margin: 0 auto;
-            overflow-x: auto;
+        
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            transition: transform 0.2s ease;
         }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin: 20px 0;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            background-color: white;
+        
+        .stat-card {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
         }
-        th {
-            background: linear-gradient(135deg, #2c3e50, #3498db);
-            color: white;
-            padding: 14px 8px;
-            text-align: center;
-            font-weight: bold;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            border-right: 1px solid #2980b9;
+        
+        .table-container {
+            max-height: 600px;
+            overflow-y: auto;
         }
-        th:last-child {
-            border-right: none;
+        
+        /* Custom scrollbar */
+        .table-container::-webkit-scrollbar {
+            width: 6px;
         }
-        td {
-            border: 1px solid #ddd;
-            padding: 10px 8px;
-            text-align: right;
-            min-width: 120px;
+        
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
         }
-        td:first-child {
-            text-align: left;
-            font-weight: bold;
-            background-color: #f8f9fa;
-            position: sticky;
-            left: 0;
-            z-index: 5;
-            min-width: 180px;
+        
+        .table-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
         }
-        tr:nth-child(even) {
-            background-color: #f8f9fa;
+        
+        .progress-bar {
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
         }
-        tr:hover {
-            background-color: #e3f2fd;
+        
+        .progress-fill {
+            height: 100%;
+            transition: width 0.5s ease;
         }
-        .section-header {
-            background-color: #e8f4fc !important;
-            font-weight: bold;
-            color: #2c3e50;
+        
+        .pulse {
+            animation: pulse 2s infinite;
         }
-        .total-row {
-            background-color: #2c3e50 !important;
-            color: white;
-            font-weight: bold;
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
         }
-        .total-row td {
-            border-color: #2c3e50;
+        
+        .highlight-target { border-left: 4px solid #3b82f6; }
+        .highlight-submitted { border-left: 4px solid #8b5cf6; }
+        .highlight-sanctioned { border-left: 4px solid #10b981; }
+        
+        .district-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #7f8c8d;
-            font-size: 18px;
+        
+        .trend-up {
+            color: #10b981;
         }
-        .error {
-            background-color: #ffe6e6;
-            color: #c0392b;
-            padding: 20px;
-            border-radius: 5px;
-            text-align: center;
-            margin: 20px auto;
-            max-width: 600px;
-            border: 1px solid #c0392b;
-        }
-        .note {
-            text-align: center;
-            color: #7f8c8d;
-            font-size: 12px;
-            margin-top: 10px;
-            font-style: italic;
-        }
-        .summary-box {
-            background: white;
-            padding: 15px;
-            margin: 20px auto;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            max-width: 400px;
-            text-align: center;
-            border-left: 4px solid #3498db;
-        }
-        @media print {
-            body {
-                background-color: white;
-            }
-            table {
-                box-shadow: none;
-            }
-            .no-print {
-                display: none;
-            }
+        
+        .trend-down {
+            color: #ef4444;
         }
     </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#8b5cf6',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        dark: '#1f2937',
+                        light: '#f9fafb'
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
-    <h1>Comprehensive District-wise Loan Target & Submission Report</h1>
-    <div class="summary-box no-print">
-        <p>Data loaded from Google Sheets</p>
-        <p>Report generated on: <span id="currentDate"></span></p>
-    </div>
-    <div class="container">
-        <div id="output" class="loading">Loading and processing data from Google Sheet...</div>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+                        <i class="fas fa-hand-holding-usd text-blue-500 mr-3"></i>
+                        SHG Loan Performance Dashboard
+                    </h1>
+                    <p class="text-gray-600 text-lg">
+                        Real-time monitoring of Self Help Group loan targets, submissions, and sanctions
+                    </p>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="bg-white rounded-xl shadow-lg px-6 py-4 flex items-center space-x-4">
+                        <div class="relative">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                                <i class="fas fa-map-marker-alt text-white text-xl"></i>
+                            </div>
+                            <div class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                                <span class="text-white text-xs font-bold" id="districtCount">0</span>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Districts Active</p>
+                            <p class="text-xl font-bold text-gray-800" id="totalDistricts">0</p>
+                        </div>
+                    </div>
+                    
+                    <div class="relative">
+                        <div class="w-14 h-14 rounded-full gradient-bg flex items-center justify-center pulse">
+                            <i class="fas fa-sync-alt text-white text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift highlight-target">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Target Loans</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-2" id="totalTargetLoans">0</p>
+                            <p class="text-gray-600 mt-1" id="totalTargetAmount">₹0</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                            <i class="fas fa-bullseye text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Achievement</span>
+                            <span class="font-semibold text-blue-600" id="targetAchievement">0%</span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-blue-500 w-0" id="targetProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift highlight-submitted">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Submitted Loans</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-2" id="totalSubmittedLoans">0</p>
+                            <p class="text-gray-600 mt-1" id="totalSubmittedAmount">₹0</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                            <i class="fas fa-paper-plane text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">vs Target</span>
+                            <span class="font-semibold text-purple-600" id="submittedVsTarget">0%</span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-purple-500 w-0" id="submittedProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift highlight-sanctioned">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Sanctioned Loans</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-2" id="totalSanctionedLoans">0</p>
+                            <p class="text-gray-600 mt-1" id="totalSanctionedAmount">₹0</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
+                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Conversion Rate</span>
+                            <span class="font-semibold text-green-600" id="conversionRate">0%</span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-green-500 w-0" id="sanctionedProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Overall Status</p>
+                            <p class="text-xl font-bold text-gray-800 mt-2" id="overallStatus">Loading...</p>
+                            <div class="flex items-center mt-2">
+                                <span class="text-gray-600 text-sm mr-2">Last Updated:</span>
+                                <span class="text-sm font-medium" id="updateTime">--:--</span>
+                            </div>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-yellow-100 flex items-center justify-center">
+                            <i class="fas fa-chart-line text-yellow-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between">
+                            <button id="refreshBtn" class="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center">
+                                <i class="fas fa-redo-alt mr-2"></i> Refresh Data
+                            </button>
+                            <span class="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-800 font-medium" id="dataStatus">Live</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="loading" class="bg-white rounded-2xl shadow-lg p-12 mb-8 flex flex-col items-center justify-center">
+            <div class="relative mb-6">
+                <div class="w-24 h-24 rounded-full border-4 border-gray-200 border-t-blue-500 animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <i class="fas fa-database text-blue-500 text-2xl"></i>
+                </div>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Loading District Data</h3>
+            <p class="text-gray-600 text-center max-w-md">Fetching and analyzing SHG loan performance data from all districts...</p>
+            <div class="mt-6 w-full max-w-sm">
+                <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-blue-500 to-purple-600 animate-pulse w-3/4"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Error State -->
+        <div id="error" class="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-2xl shadow-lg p-8 mb-8 hidden">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-red-800 mb-2">Data Loading Error</h3>
+                    <p id="errorMessage" class="text-red-700 mb-4">Unable to load data. Please check your connection and try again.</p>
+                    <button id="retryBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center">
+                        <i class="fas fa-redo-alt mr-2"></i> Retry Loading
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Table -->
+        <div id="tableContainer" class="hidden">
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
+                <div class="px-6 py-5 border-b border-gray-200">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800">
+                                <i class="fas fa-table-cells-large text-blue-500 mr-2"></i>
+                                District-wise Loan Performance
+                            </h2>
+                            <p class="text-gray-600 text-sm mt-1">Click on any district to view detailed performance metrics</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="relative">
+                                <input type="text" id="searchInput" placeholder="Search districts..." 
+                                       class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-64">
+                                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm text-gray-600">Sort by:</span>
+                                <select id="sortSelect" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="district">District Name</option>
+                                    <option value="target">Target Amount</option>
+                                    <option value="submitted">Submitted Amount</option>
+                                    <option value="sanctioned">Sanctioned Amount</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-map-marker-alt text-blue-500 mr-2"></i>
+                                        District
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-bullseye text-blue-500 mr-2"></i>
+                                        Target
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-paper-plane text-purple-500 mr-2"></i>
+                                        Submitted
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                        Sanctioned
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-chart-bar text-yellow-500 mr-2"></i>
+                                        Performance
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-trend-up text-gray-500 mr-2"></i>
+                                        Status
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Table rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                    <div class="flex flex-col md:flex-row justify-between items-center">
+                        <div class="mb-4 md:mb-0">
+                            <p class="text-sm text-gray-700">
+                                Showing <span id="showingCount" class="font-semibold">0</span> of 
+                                <span id="totalCount" class="font-semibold">0</span> districts
+                            </p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button id="prevBtn" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="fas fa-chevron-left mr-1"></i> Previous
+                            </button>
+                            <span class="text-sm text-gray-700">Page <span id="currentPage">1</span> of <span id="totalPages">1</span></span>
+                            <button id="nextBtn" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                Next <i class="fas fa-chevron-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Legend -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Performance Indicators</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full bg-blue-500 mr-3"></div>
+                        <span class="text-sm text-gray-700">Target: Annual loan objectives</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full bg-purple-500 mr-3"></div>
+                        <span class="text-sm text-gray-700">Submitted: Loans processed for approval</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full bg-green-500 mr-3"></div>
+                        <span class="text-sm text-gray-700">Sanctioned: Approved & disbursed loans</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full bg-yellow-500 mr-3"></div>
+                        <span class="text-sm text-gray-700">Performance: Achievement vs target</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="mt-12 pt-8 border-t border-gray-200">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-gray-600 text-sm">
+                        <i class="fas fa-database text-blue-500 mr-2"></i>
+                        Data Source: Google Sheets CSV | SHG Loan Monitoring System
+                    </p>
+                </div>
+                <div class="text-sm text-gray-500">
+                    <p>Last updated: <span id="footerTime" class="font-medium">--:--</span> | 
+                    <span id="dataSource" class="font-medium">Sample Data</span></p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        async function loadAndProcessCSV() {
-            try {
-                // Google Sheet CSV export URL
-                const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSKZv2oeWp8NIvfF8RX1gmUi710FpEPs-2BAhUaxq4Tr6HvY02XcoyMuO77cmFtre_u81u7dyg0tzJI/pub?output=csv';
-                
-                // Fetch CSV data
-                const response = await fetch(csvUrl);
-                const csvText = await response.text();
-                
-                // Parse CSV
-                const rows = csvText.split('\n').filter(row => row.trim() !== '');
-                
-                if (rows.length === 0) {
-                    throw new Error('No data found in CSV');
-                }
-                
-                // Get headers
-                const headers = rows[0].split(',').map(h => h.trim());
-                
-                // Find column indices for all required columns
-                const columnIndices = {
-                    // District column
-                    district: findColumnIndex(headers, ['district', 'dist']),
-                    
-                    // SHG Loan Target
-                    shgTargetCount: findColumnIndex(headers, ['no. of shg loan target', 'shg loan target count', 'number of shg loan target']),
-                    shgTargetAmount: findColumnIndex(headers, ['amt of shg loan target', 'shg loan target amount', 'amount of shg loan target']),
-                    
-                    // SHG Loan Submitted upto 17 Nov 2025
-                    shgSubmittedCountNov: findColumnIndex(headers, ['no. of shg loan submitted upto 17 nov 2025', 'shg loan submitted count nov', 'shg submitted upto 17 nov']),
-                    shgSubmittedAmountNov: findColumnIndex(headers, ['amt of shg loan submitted upto 17 nov 2025', 'shg loan submitted amount nov', 'shg amount upto 17 nov']),
-                    
-                    // SHG Loan Submitted for Dec 2025
-                    shgSubmittedCountDec: findColumnIndex(headers, ['sub total of shg loan submitted from 1-31 dec 2025', 'shg loan submitted count dec', 'shg submitted dec 2025']),
-                    shgSubmittedAmountDec: findColumnIndex(headers, ['sub total amt of shg loan submitted from 1-31 dec 2025', 'shg loan submitted amount dec', 'shg amount dec 2025']),
-                    
-                    // Individual Loan Target
-                    individualTargetCount: findColumnIndex(headers, ['no. of individual loan target', 'individual loan target count', 'number of individual loan target']),
-                    individualTargetAmount: findColumnIndex(headers, ['amt of individual loan target', 'individual loan target amount', 'amount of individual loan target']),
-                    
-                    // Individual Loan Submitted upto 17 Nov 2025
-                    individualSubmittedCountNov: findColumnIndex(headers, ['no. of individual loan submitted upto 17 nov 2025', 'individual loan submitted count nov', 'individual submitted upto 17 nov']),
-                    individualSubmittedAmountNov: findColumnIndex(headers, ['amt of individual loan submitted upto 17 nov 2025', 'individual loan submitted amount nov', 'individual amount upto 17 nov']),
-                    
-                    // Individual Loan Submitted for Dec 2025
-                    individualSubmittedCountDec: findColumnIndex(headers, ['sub total of individual loan submitted from 1-31 dec 2025', 'individual loan submitted count dec', 'individual submitted dec 2025']),
-                    individualSubmittedAmountDec: findColumnIndex(headers, ['sub total amt of individual loan submitted from 1-31 dec 2025', 'individual loan submitted amount dec', 'individual amount dec 2025'])
-                };
-                
-                // Validate that all required columns were found
-                const missingColumns = Object.entries(columnIndices)
-                    .filter(([key, value]) => value === -1)
-                    .map(([key]) => key);
-                
-                if (missingColumns.length > 0) {
-                    console.warn('Missing columns:', missingColumns);
-                }
-                
-                // Initialize aggregation object
-                const districtData = {};
-                
-                // Process each data row
-                for (let i = 1; i < rows.length; i++) {
-                    const cells = rows[i].split(',');
-                    const district = cells[columnIndices.district]?.trim();
-                    
-                    if (!district || district === '') continue;
-                    
-                    // Initialize district if not exists
-                    if (!districtData[district]) {
-                        districtData[district] = {
-                            // SHG Totals
-                            shgTargetCount: 0,
-                            shgTargetAmount: 0,
-                            shgSubmittedCountNov: 0,
-                            shgSubmittedAmountNov: 0,
-                            shgSubmittedCountDec: 0,
-                            shgSubmittedAmountDec: 0,
-                            
-                            // Individual Totals
-                            individualTargetCount: 0,
-                            individualTargetAmount: 0,
-                            individualSubmittedCountNov: 0,
-                            individualSubmittedAmountNov: 0,
-                            individualSubmittedCountDec: 0,
-                            individualSubmittedAmountDec: 0
-                        };
-                    }
-                    
-                    // Aggregate SHG data
-                    aggregateData(districtData[district], 'shgTargetCount', cells[columnIndices.shgTargetCount]);
-                    aggregateData(districtData[district], 'shgTargetAmount', cells[columnIndices.shgTargetAmount]);
-                    aggregateData(districtData[district], 'shgSubmittedCountNov', cells[columnIndices.shgSubmittedCountNov]);
-                    aggregateData(districtData[district], 'shgSubmittedAmountNov', cells[columnIndices.shgSubmittedAmountNov]);
-                    aggregateData(districtData[district], 'shgSubmittedCountDec', cells[columnIndices.shgSubmittedCountDec]);
-                    aggregateData(districtData[district], 'shgSubmittedAmountDec', cells[columnIndices.shgSubmittedAmountDec]);
-                    
-                    // Aggregate Individual data
-                    aggregateData(districtData[district], 'individualTargetCount', cells[columnIndices.individualTargetCount]);
-                    aggregateData(districtData[district], 'individualTargetAmount', cells[columnIndices.individualTargetAmount]);
-                    aggregateData(districtData[district], 'individualSubmittedCountNov', cells[columnIndices.individualSubmittedCountNov]);
-                    aggregateData(districtData[district], 'individualSubmittedAmountNov', cells[columnIndices.individualSubmittedAmountNov]);
-                    aggregateData(districtData[district], 'individualSubmittedCountDec', cells[columnIndices.individualSubmittedCountDec]);
-                    aggregateData(districtData[district], 'individualSubmittedAmountDec', cells[columnIndices.individualSubmittedAmountDec]);
-                }
-                
-                // Convert to array and sort districts
-                const districts = Object.keys(districtData);
-                districts.sort();
-                
-                // Calculate grand totals
-                const grandTotals = {
-                    shgTargetCount: 0,
-                    shgTargetAmount: 0,
-                    shgSubmittedCountNov: 0,
-                    shgSubmittedAmountNov: 0,
-                    shgSubmittedCountDec: 0,
-                    shgSubmittedAmountDec: 0,
-                    individualTargetCount: 0,
-                    individualTargetAmount: 0,
-                    individualSubmittedCountNov: 0,
-                    individualSubmittedAmountNov: 0,
-                    individualSubmittedCountDec: 0,
-                    individualSubmittedAmountDec: 0
-                };
-                
-                // Create HTML table
-                let html = `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>District</th>
-                                <th colspan="6" class="section-header">SHG Loans</th>
-                                <th colspan="6" class="section-header">Individual Loans</th>
-                            </tr>
-                            <tr>
-                                <th></th>
-                                <!-- SHG Sub-headers -->
-                                <th>No. of Target</th>
-                                <th>Amt of Target (₹)</th>
-                                <th>No. Submitted (upto 17 Nov)</th>
-                                <th>Amt Submitted (upto 17 Nov) (₹)</th>
-                                <th>No. Submitted (Dec 2025)</th>
-                                <th>Amt Submitted (Dec 2025) (₹)</th>
-                                <!-- Individual Sub-headers -->
-                                <th>No. of Target</th>
-                                <th>Amt of Target (₹)</th>
-                                <th>No. Submitted (upto 17 Nov)</th>
-                                <th>Amt Submitted (upto 17 Nov) (₹)</th>
-                                <th>No. Submitted (Dec 2025)</th>
-                                <th>Amt Submitted (Dec 2025) (₹)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-                
-                // Add district rows
-                districts.forEach(district => {
-                    const data = districtData[district];
-                    
-                    html += `<tr>`;
-                    html += `<td>${district}</td>`;
-                    
-                    // SHG data
-                    html += `<td>${formatNumber(data.shgTargetCount)}</td>`;
-                    html += `<td>${formatCurrency(data.shgTargetAmount)}</td>`;
-                    html += `<td>${formatNumber(data.shgSubmittedCountNov)}</td>`;
-                    html += `<td>${formatCurrency(data.shgSubmittedAmountNov)}</td>`;
-                    html += `<td>${formatNumber(data.shgSubmittedCountDec)}</td>`;
-                    html += `<td>${formatCurrency(data.shgSubmittedAmountDec)}</td>`;
-                    
-                    // Individual data
-                    html += `<td>${formatNumber(data.individualTargetCount)}</td>`;
-                    html += `<td>${formatCurrency(data.individualTargetAmount)}</td>`;
-                    html += `<td>${formatNumber(data.individualSubmittedCountNov)}</td>`;
-                    html += `<td>${formatCurrency(data.individualSubmittedAmountNov)}</td>`;
-                    html += `<td>${formatNumber(data.individualSubmittedCountDec)}</td>`;
-                    html += `<td>${formatCurrency(data.individualSubmittedAmountDec)}</td>`;
-                    
-                    html += `</tr>`;
-                    
-                    // Update grand totals
-                    Object.keys(grandTotals).forEach(key => {
-                        grandTotals[key] += data[key];
-                    });
-                });
-                
-                // Add grand totals row
-                html += `
-                        </tbody>
-                        <tfoot>
-                            <tr class="total-row">
-                                <td><strong>GRAND TOTAL</strong></td>
-                                <!-- SHG grand totals -->
-                                <td><strong>${formatNumber(grandTotals.shgTargetCount)}</strong></td>
-                                <td><strong>${formatCurrency(grandTotals.shgTargetAmount)}</strong></td>
-                                <td><strong>${formatNumber(grandTotals.shgSubmittedCountNov)}</strong></td>
-                                <td><strong>${formatCurrency(grandTotals.shgSubmittedAmountNov)}</strong></td>
-                                <td><strong>${formatNumber(grandTotals.shgSubmittedCountDec)}</strong></td>
-                                <td><strong>${formatCurrency(grandTotals.shgSubmittedAmountDec)}</strong></td>
-                                <!-- Individual grand totals -->
-                                <td><strong>${formatNumber(grandTotals.individualTargetCount)}</strong></td>
-                                <td><strong>${formatCurrency(grandTotals.individualTargetAmount)}</strong></td>
-                                <td><strong>${formatNumber(grandTotals.individualSubmittedCountNov)}</strong></td>
-                                <td><strong>${formatCurrency(grandTotals.individualSubmittedAmountNov)}</strong></td>
-                                <td><strong>${formatNumber(grandTotals.individualSubmittedCountDec)}</strong></td>
-                                <td><strong>${formatCurrency(grandTotals.individualSubmittedAmountDec)}</strong></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                    
-                    <div class="note">
-                        * All amounts are in Indian Rupees (₹)<br>
-                        * Data source: Google Sheets | Last updated: ${new Date().toLocaleDateString()}
-                    </div>
-                `;
-                
-                document.getElementById('output').innerHTML = html;
-                
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('output').innerHTML = 
-                    `<div class="error">
-                        <h3>Error Loading Data</h3>
-                        <p>${error.message}</p>
-                        <p>Please check the console for more details.</p>
-                    </div>`;
-            }
-        }
+        // Configuration
+        const ITEMS_PER_PAGE = 10;
+        let currentPage = 1;
+        let allDistricts = [];
+        let filteredDistricts = [];
+        let sortBy = 'district';
+        let searchQuery = '';
         
-        // Helper function to find column index
-        function findColumnIndex(headers, possibleNames) {
-            for (const name of possibleNames) {
-                const index = headers.findIndex(h => 
-                    h.toLowerCase().includes(name.toLowerCase())
-                );
-                if (index !== -1) return index;
-            }
-            return -1;
-        }
+        // DOM Elements
+        const elements = {
+            loading: document.getElementById('loading'),
+            error: document.getElementById('error'),
+            errorMessage: document.getElementById('errorMessage'),
+            tableContainer: document.getElementById('tableContainer'),
+            tableBody: document.getElementById('tableBody'),
+            searchInput: document.getElementById('searchInput'),
+            sortSelect: document.getElementById('sortSelect'),
+            prevBtn: document.getElementById('prevBtn'),
+            nextBtn: document.getElementById('nextBtn'),
+            currentPage: document.getElementById('currentPage'),
+            totalPages: document.getElementById('totalPages'),
+            showingCount: document.getElementById('showingCount'),
+            totalCount: document.getElementById('totalCount'),
+            updateTime: document.getElementById('updateTime'),
+            footerTime: document.getElementById('footerTime'),
+            refreshBtn: document.getElementById('refreshBtn'),
+            retryBtn: document.getElementById('retryBtn'),
+            dataSource: document.getElementById('dataSource'),
+            dataStatus: document.getElementById('dataStatus'),
+            
+            // Stats elements
+            districtCount: document.getElementById('districtCount'),
+            totalDistricts: document.getElementById('totalDistricts'),
+            totalTargetLoans: document.getElementById('totalTargetLoans'),
+            totalTargetAmount: document.getElementById('totalTargetAmount'),
+            totalSubmittedLoans: document.getElementById('totalSubmittedLoans'),
+            totalSubmittedAmount: document.getElementById('totalSubmittedAmount'),
+            totalSanctionedLoans: document.getElementById('totalSanctionedLoans'),
+            totalSanctionedAmount: document.getElementById('totalSanctionedAmount'),
+            targetAchievement: document.getElementById('targetAchievement'),
+            targetProgress: document.getElementById('targetProgress'),
+            submittedVsTarget: document.getElementById('submittedVsTarget'),
+            submittedProgress: document.getElementById('submittedProgress'),
+            conversionRate: document.getElementById('conversionRate'),
+            sanctionedProgress: document.getElementById('sanctionedProgress'),
+            overallStatus: document.getElementById('overallStatus')
+        };
         
-        // Helper function to aggregate data
-        function aggregateData(obj, key, value) {
-            if (value !== undefined && value !== '') {
-                const numValue = parseFloat(value) || 0;
-                obj[key] += numValue;
-            }
-        }
-        
-        // Helper function to format numbers
-        function formatNumber(num) {
-            return Number.isInteger(num) ? num.toLocaleString() : num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        }
-        
-        // Helper function to format currency
+        // Format currency
         function formatCurrency(amount) {
             if (amount >= 10000000) {
-                return `₹${(amount / 10000000).toFixed(2)} Cr`;
+                return `₹${(amount/10000000).toFixed(2)} Cr`;
             } else if (amount >= 100000) {
-                return `₹${(amount / 100000).toFixed(2)} L`;
+                return `₹${(amount/100000).toFixed(2)} L`;
+            } else if (amount >= 1000) {
+                return `₹${(amount/1000).toFixed(1)}K`;
             } else {
-                return `₹${formatNumber(amount)}`;
+                return `₹${amount.toLocaleString()}`;
             }
         }
         
-        // Set current date
-        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-IN', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
+        // Format number with commas
+        function formatNumber(num) {
+            return num.toLocaleString('en-IN');
+        }
+        
+        // Calculate performance percentage
+        function calculatePercentage(part, whole) {
+            if (whole === 0) return 0;
+            return Math.round((part / whole) * 100);
+        }
+        
+        // Parse CSV text
+        function parseCSV(csvText) {
+            const rows = [];
+            let currentRow = [];
+            let currentCell = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < csvText.length; i++) {
+                const char = csvText[i];
+                const nextChar = csvText[i + 1];
+                
+                if (char === '"' && inQuotes && nextChar === '"') {
+                    currentCell += '"';
+                    i++;
+                } else if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    currentRow.push(currentCell);
+                    currentCell = '';
+                } else if (char === '\n' && !inQuotes) {
+                    currentRow.push(currentCell);
+                    rows.push(currentRow);
+                    currentRow = [];
+                    currentCell = '';
+                } else if (char === '\r' && nextChar === '\n' && !inQuotes) {
+                    currentRow.push(currentCell);
+                    rows.push(currentRow);
+                    currentRow = [];
+                    currentCell = '';
+                    i++;
+                } else if (char === '\r' && !inQuotes) {
+                    currentRow.push(currentCell);
+                    rows.push(currentRow);
+                    currentRow = [];
+                    currentCell = '';
+                } else {
+                    currentCell += char;
+                }
+            }
+            
+            if (currentCell !== '' || currentRow.length > 0) {
+                currentRow.push(currentCell);
+                rows.push(currentRow);
+            }
+            
+            return rows;
+        }
+        
+        // Sort districts
+        function sortDistricts(districts) {
+            return [...districts].sort((a, b) => {
+                switch(sortBy) {
+                    case 'target':
+                        return b.targetAmt - a.targetAmt;
+                    case 'submitted':
+                        return b.submittedAmt - a.submittedAmt;
+                    case 'sanctioned':
+                        return b.sanctionedAmt - a.sanctionedAmt;
+                    default:
+                        return a.district.localeCompare(b.district);
+                }
+            });
+        }
+        
+        // Filter districts based on search query
+        function filterDistricts(districts) {
+            if (!searchQuery.trim()) return districts;
+            
+            const query = searchQuery.toLowerCase();
+            return districts.filter(district => 
+                district.district.toLowerCase().includes(query)
+            );
+        }
+        
+        // Update pagination
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredDistricts.length / ITEMS_PER_PAGE);
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, filteredDistricts.length);
+            const pageDistricts = filteredDistricts.slice(startIndex, endIndex);
+            
+            elements.currentPage.textContent = currentPage;
+            elements.totalPages.textContent = totalPages;
+            elements.showingCount.textContent = `${startIndex + 1}-${endIndex}`;
+            elements.totalCount.textContent = filteredDistricts.length;
+            
+            elements.prevBtn.disabled = currentPage === 1;
+            elements.nextBtn.disabled = currentPage === totalPages;
+            
+            return pageDistricts;
+        }
+        
+        // Render table rows
+        function renderTableRows(districts) {
+            elements.tableBody.innerHTML = '';
+            
+            districts.forEach(district => {
+                const submissionRate = calculatePercentage(district.submittedCount, district.targetCount);
+                const sanctionRate = calculatePercentage(district.sanctionedCount, district.submittedCount || 1);
+                const overallRate = calculatePercentage(district.sanctionedCount, district.targetCount);
+                
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors cursor-pointer';
+                row.onclick = () => showDistrictDetails(district);
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full district-badge flex items-center justify-center mr-3">
+                                <span class="text-white font-bold">${district.district.charAt(0)}</span>
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">${district.district}</div>
+                                <div class="text-sm text-gray-500">${district.count} records</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(district.targetCount)}</div>
+                        <div class="text-sm text-blue-600 font-medium">${formatCurrency(district.targetAmt)}</div>
+                        <div class="text-xs text-gray-500 mt-1">Annual Target</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(district.submittedCount)}</div>
+                        <div class="text-sm text-purple-600 font-medium">${formatCurrency(district.submittedAmt)}</div>
+                        <div class="text-xs ${submissionRate >= 80 ? 'text-green-600' : submissionRate >= 50 ? 'text-yellow-600' : 'text-red-600'} mt-1">
+                            ${submissionRate}% of target
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(district.sanctionedCount)}</div>
+                        <div class="text-sm text-green-600 font-medium">${formatCurrency(district.sanctionedAmt)}</div>
+                        <div class="text-xs ${sanctionRate >= 80 ? 'text-green-600' : sanctionRate >= 50 ? 'text-yellow-600' : 'text-red-600'} mt-1">
+                            ${sanctionRate}% conversion
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="w-32">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-gray-600">Progress</span>
+                                <span class="font-semibold ${overallRate >= 80 ? 'text-green-600' : overallRate >= 50 ? 'text-yellow-600' : 'text-red-600'}">
+                                    ${overallRate}%
+                                </span>
+                            </div>
+                            <div class="progress-bar bg-gray-200">
+                                <div class="progress-fill ${overallRate >= 80 ? 'bg-green-500' : overallRate >= 50 ? 'bg-yellow-500' : 'bg-red-500'}" 
+                                     style="width: ${overallRate}%"></div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">Overall achievement</div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            ${overallRate >= 80 ? 
+                                `<span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-800 font-medium">
+                                    <i class="fas fa-trend-up mr-1"></i> Excellent
+                                </span>` : 
+                              overallRate >= 50 ?
+                                `<span class="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 font-medium">
+                                    <i class="fas fa-chart-line mr-1"></i> Moderate
+                                </span>` :
+                                `<span class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-800 font-medium">
+                                    <i class="fas fa-trend-down mr-1"></i> Needs Attention
+                                </span>`
+                            }
+                        </div>
+                    </td>
+                `;
+                
+                elements.tableBody.appendChild(row);
+            });
+        }
+        
+        // Update stats
+        function updateStats(districts) {
+            const totals = districts.reduce((acc, district) => ({
+                targetCount: acc.targetCount + district.targetCount,
+                targetAmt: acc.targetAmt + district.targetAmt,
+                submittedCount: acc.submittedCount + district.submittedCount,
+                submittedAmt: acc.submittedAmt + district.submittedAmt,
+                sanctionedCount: acc.sanctionedCount + district.sanctionedCount,
+                sanctionedAmt: acc.sanctionedAmt + district.sanctionedAmt
+            }), { targetCount: 0, targetAmt: 0, submittedCount: 0, submittedAmt: 0, sanctionedCount: 0, sanctionedAmt: 0 });
+            
+            // Update elements
+            elements.totalDistricts.textContent = districts.length;
+            elements.districtCount.textContent = districts.length;
+            elements.totalTargetLoans.textContent = formatNumber(totals.targetCount);
+            elements.totalTargetAmount.textContent = formatCurrency(totals.targetAmt);
+            elements.totalSubmittedLoans.textContent = formatNumber(totals.submittedCount);
+            elements.totalSubmittedAmount.textContent = formatCurrency(totals.submittedAmt);
+            elements.totalSanctionedLoans.textContent = formatNumber(totals.sanctionedCount);
+            elements.totalSanctionedAmount.textContent = formatCurrency(totals.sanctionedAmt);
+            
+            // Calculate percentages
+            const submissionRate = calculatePercentage(totals.submittedCount, totals.targetCount);
+            const sanctionRate = calculatePercentage(totals.sanctionedCount, totals.submittedCount || 1);
+            const overallRate = calculatePercentage(totals.sanctionedCount, totals.targetCount);
+            
+            elements.targetAchievement.textContent = `${overallRate}%`;
+            elements.submittedVsTarget.textContent = `${submissionRate}%`;
+            elements.conversionRate.textContent = `${sanctionRate}%`;
+            
+            // Update progress bars
+            elements.targetProgress.style.width = `${overallRate}%`;
+            elements.submittedProgress.style.width = `${submissionRate}%`;
+            elements.sanctionedProgress.style.width = `${sanctionRate}%`;
+            
+            // Update overall status
+            let status = 'Needs Attention';
+            let statusColor = 'text-red-600';
+            
+            if (overallRate >= 80) {
+                status = 'Excellent Performance';
+                statusColor = 'text-green-600';
+            } else if (overallRate >= 50) {
+                status = 'Moderate Progress';
+                statusColor = 'text-yellow-600';
+            }
+            
+            elements.overallStatus.innerHTML = `
+                <span class="${statusColor}">${status}</span>
+                <div class="text-sm text-gray-600 mt-1">${overallRate}% target achieved</div>
+            `;
+        }
+        
+        // Show district details (placeholder)
+        function showDistrictDetails(district) {
+            alert(`Detailed view for ${district.district}\n\n` +
+                  `Target: ${formatNumber(district.targetCount)} loans (${formatCurrency(district.targetAmt)})\n` +
+                  `Submitted: ${formatNumber(district.submittedCount)} loans (${formatCurrency(district.submittedAmt)})\n` +
+                  `Sanctioned: ${formatNumber(district.sanctionedCount)} loans (${formatCurrency(district.sanctionedAmt)})\n\n` +
+                  `Submission Rate: ${calculatePercentage(district.submittedCount, district.targetCount)}%\n` +
+                  `Sanction Rate: ${calculatePercentage(district.sanctionedCount, district.submittedCount || 1)}%\n` +
+                  `Overall Achievement: ${calculatePercentage(district.sanctionedCount, district.targetCount)}%`);
+        }
+        
+        // Update table view
+        function updateTableView() {
+            filteredDistricts = filterDistricts(allDistricts);
+            filteredDistricts = sortDistricts(filteredDistricts);
+            
+            const pageDistricts = updatePagination();
+            renderTableRows(pageDistricts);
+            updateStats(allDistricts);
+        }
+        
+        // Fetch and process CSV data
+        async function fetchCSVData() {
+            try {
+                elements.loading.classList.remove('hidden');
+                elements.error.classList.add('hidden');
+                elements.tableContainer.classList.add('hidden');
+                elements.dataStatus.textContent = 'Loading...';
+                elements.dataStatus.className = 'text-xs px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 font-medium';
+                
+                const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSKZv2oeWp8NIvfF8RX1gmUi710FpEPs-2BAhUaxq4Tr6HvY02XcoyMuO77cmFtre_u81u7dyg0tzJI/pub?output=csv';
+                
+                let csvText;
+                let useMockData = false;
+                
+                try {
+                    const response = await fetch(csvUrl);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    csvText = await response.text();
+                    
+                    if (!csvText || csvText.trim().length === 0) {
+                        throw new Error('Empty CSV data received');
+                    }
+                    
+                    console.log('Successfully fetched CSV data');
+                    elements.dataSource.textContent = 'Live Data';
+                } catch (fetchError) {
+                    console.warn('Could not fetch actual CSV data, using mock data:', fetchError.message);
+                    useMockData = true;
+                    elements.dataSource.textContent = 'Sample Data';
+                }
+                
+                let rows;
+                
+                if (useMockData) {
+                    // Mock data (simplified for this example)
+                    const mockDistricts = [
+                        { district: 'Mumbai Urban', targetCount: 1500, targetAmt: 75000000, submittedCount: 1200, submittedAmt: 60000000, sanctionedCount: 1000, sanctionedAmt: 50000000, count: 5 },
+                        { district: 'Thane Rural', targetCount: 2000, targetAmt: 125000000, submittedCount: 1800, submittedAmt: 112500000, sanctionedCount: 1500, sanctionedAmt: 75000000, count: 8 },
+                        { district: 'Pune Metro', targetCount: 3000, targetAmt: 150000000, submittedCount: 2700, submittedAmt: 135000000, sanctionedCount: 2200, sanctionedAmt: 110000000, count: 12 },
+                        { district: 'Nagpur City', targetCount: 500, targetAmt: 25000000, submittedCount: 400, submittedAmt: 20000000, sanctionedCount: 300, sanctionedAmt: 15000000, count: 3 },
+                        { district: 'Nashik Division', targetCount: 4000, targetAmt: 200000000, submittedCount: 3200, submittedAmt: 160000000, sanctionedCount: 2800, sanctionedAmt: 140000000, count: 15 },
+                        { district: 'Aurangabad Zone', targetCount: 1000, targetAmt: 50000000, submittedCount: 850, submittedAmt: 42500000, sanctionedCount: 700, sanctionedAmt: 35000000, count: 6 },
+                        { district: 'Kolhapur Region', targetCount: 2500, targetAmt: 125000000, submittedCount: 2000, submittedAmt: 100000000, sanctionedCount: 1800, sanctionedAmt: 90000000, count: 10 },
+                        { district: 'Solapur District', targetCount: 1750, targetAmt: 85000000, submittedCount: 1500, submittedAmt: 75000000, sanctionedCount: 1200, sanctionedAmt: 60000000, count: 7 },
+                        { district: 'Amravati Circle', targetCount: 2250, targetAmt: 115000000, submittedCount: 1900, submittedAmt: 95000000, sanctionedCount: 1600, sanctionedAmt: 80000000, count: 9 },
+                        { district: 'Akola Region', targetCount: 5000, targetAmt: 250000000, submittedCount: 4500, submittedAmt: 225000000, sanctionedCount: 4000, sanctionedAmt: 200000000, count: 18 },
+                        { district: 'Jalgaon Area', targetCount: 1500, targetAmt: 75000000, submittedCount: 1300, submittedAmt: 65000000, sanctionedCount: 1100, sanctionedAmt: 55000000, count: 6 },
+                        { district: 'Ratnagiri Coastal', targetCount: 750, targetAmt: 40000000, submittedCount: 650, submittedAmt: 32500000, sanctionedCount: 550, sanctionedAmt: 27500000, count: 4 },
+                        { district: 'Sindhudurg Zone', targetCount: 1250, targetAmt: 60000000, submittedCount: 1100, submittedAmt: 55000000, sanctionedCount: 900, sanctionedAmt: 45000000, count: 5 },
+                        { district: 'Satara Division', targetCount: 3500, targetAmt: 175000000, submittedCount: 3150, submittedAmt: 157500000, sanctionedCount: 2800, sanctionedAmt: 140000000, count: 14 },
+                        { district: 'Sangli Region', targetCount: 2750, targetAmt: 135000000, submittedCount: 2500, submittedAmt: 125000000, sanctionedCount: 2200, sanctionedAmt: 110000000, count: 11 }
+                    ];
+                    
+                    allDistricts = mockDistricts;
+                } else {
+                    // Parse actual CSV data
+                    rows = parseCSV(csvText);
+                    
+                    if (rows.length === 0 || rows[0].length < 366) {
+                        throw new Error('CSV data does not have enough columns.');
+                    }
+                    
+                    const districtTotals = {};
+                    
+                    let startRow = 0;
+                    const firstValue2 = parseFloat(rows[0][2]);
+                    const firstValue3 = parseFloat(rows[0][3]);
+                    
+                    if (isNaN(firstValue2) || isNaN(firstValue3)) {
+                        startRow = 1;
+                    }
+                    
+                    for (let i = startRow; i < rows.length; i++) {
+                        const row = rows[i];
+                        
+                        if (row.length < 366 || !row[0]) continue;
+                        
+                        const district = row[0].trim();
+                        
+                        const targetCount = parseFloat(row[2]) || 0;
+                        const targetAmt = parseFloat(row[3]) || 0;
+                        const submittedNovCount = parseFloat(row[6]) || 0;
+                        const submittedNovAmt = parseFloat(row[7]) || 0;
+                        const submittedDecCount = parseFloat(row[362]) || 0;
+                        const submittedDecAmt = parseFloat(row[363]) || 0;
+                        const sanctionedCount = parseFloat(row[364]) || 0;
+                        const sanctionedAmt = parseFloat(row[365]) || 0;
+                        
+                        const totalSubmittedCount = submittedNovCount + submittedDecCount;
+                        const totalSubmittedAmt = submittedNovAmt + submittedDecAmt;
+                        
+                        if (!districtTotals[district]) {
+                            districtTotals[district] = {
+                                district,
+                                targetCount: 0,
+                                targetAmt: 0,
+                                submittedCount: 0,
+                                submittedAmt: 0,
+                                sanctionedCount: 0,
+                                sanctionedAmt: 0,
+                                count: 0
+                            };
+                        }
+                        
+                        districtTotals[district].targetCount += targetCount;
+                        districtTotals[district].targetAmt += targetAmt;
+                        districtTotals[district].submittedCount += totalSubmittedCount;
+                        districtTotals[district].submittedAmt += totalSubmittedAmt;
+                        districtTotals[district].sanctionedCount += sanctionedCount;
+                        districtTotals[district].sanctionedAmt += sanctionedAmt;
+                        districtTotals[district].count += 1;
+                    }
+                    
+                    allDistricts = Object.values(districtTotals);
+                }
+                
+                // Update UI
+                currentPage = 1;
+                updateTableView();
+                
+                const now = new Date();
+                elements.updateTime.textContent = now.toLocaleTimeString();
+                elements.footerTime.textContent = now.toLocaleString();
+                
+                elements.loading.classList.add('hidden');
+                elements.tableContainer.classList.remove('hidden');
+                elements.dataStatus.textContent = 'Live';
+                elements.dataStatus.className = 'text-xs px-3 py-1 rounded-full bg-green-100 text-green-800 font-medium';
+                
+            } catch (err) {
+                console.error('Error fetching or processing CSV data:', err);
+                elements.loading.classList.add('hidden');
+                elements.errorMessage.textContent = `Error: ${err.message}. Please try again.`;
+                elements.error.classList.remove('hidden');
+                elements.dataStatus.textContent = 'Error';
+                elements.dataStatus.className = 'text-xs px-3 py-1 rounded-full bg-red-100 text-red-800 font-medium';
+            }
+        }
+        
+        // Event Listeners
+        elements.searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            currentPage = 1;
+            updateTableView();
         });
         
-        // Load data when page loads
-        window.addEventListener('DOMContentLoaded', loadAndProcessCSV);
+        elements.sortSelect.addEventListener('change', (e) => {
+            sortBy = e.target.value;
+            updateTableView();
+        });
         
-        // Auto-refresh every 5 minutes
-        setInterval(loadAndProcessCSV, 300000);
+        elements.prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                updateTableView();
+            }
+        });
         
+        elements.nextBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredDistricts.length / ITEMS_PER_PAGE);
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateTableView();
+            }
+        });
+        
+        elements.refreshBtn.addEventListener('click', fetchCSVData);
+        elements.retryBtn.addEventListener('click', fetchCSVData);
+        
+        // Initial load
+        fetchCSVData();
     </script>
 </body>
 </html>

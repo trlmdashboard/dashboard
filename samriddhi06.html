@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Samriddhi 2.0 Campaign Progress Dashboard</title>
+    <title>Samriddhi Campaign 2.0 Dashboard</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
@@ -95,81 +95,6 @@
         .ticket-size {
             color: #8b5cf6;
         }
-        
-        /* Animation for score counter */
-        .counter-animation {
-            animation: counterPop 0.5s ease-out;
-        }
-        
-        @keyframes counterPop {
-            0% { 
-                transform: scale(0.8); 
-                opacity: 0.5;
-            }
-            50% { 
-                transform: scale(1.1); 
-            }
-            100% { 
-                transform: scale(1); 
-                opacity: 1;
-            }
-        }
-        
-        /* Row appear animation */
-        .row-appear {
-            animation: rowSlideIn 0.6s ease-out forwards;
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        
-        @keyframes rowSlideIn {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        /* Progress bar fill animation */
-        .progress-animate {
-            transition: width 1.5s cubic-bezier(0.22, 0.61, 0.36, 1);
-        }
-        
-        /* Shimmer effect for loading */
-        .shimmer {
-            background: linear-gradient(90deg, 
-                rgba(255,255,255,0) 0%, 
-                rgba(255,255,255,0.4) 50%, 
-                rgba(255,255,255,0) 100%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-        }
-        
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-        
-        /* Bounce animation for numbers */
-        .number-bounce {
-            display: inline-block;
-            animation: numberBounce 0.3s ease;
-        }
-        
-        @keyframes numberBounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-        
-        /* Flash animation for updates */
-        .flash-update {
-            animation: flashUpdate 0.8s ease;
-        }
-        
-        @keyframes flashUpdate {
-            0% { background-color: transparent; }
-            20% { background-color: rgba(59, 130, 246, 0.2); }
-            100% { background-color: transparent; }
-        }
     </style>
     
     <script>
@@ -201,7 +126,7 @@
                 <div>
                     <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
                         <i class="fas fa-hand-holding-usd text-blue-500 mr-3"></i>
-                        Samriddhi 2.0 Campaign Progress Dashboard
+                        Samriddhi Campaign 2.0 Dashboard
                     </h1>
                     <p class="text-gray-600 text-lg">
                         Real-time monitoring of Self Help Group loan targets, submissions, and sanctions
@@ -251,7 +176,7 @@
                             <span class="font-semibold text-blue-600" id="targetAchievement">0%</span>
                         </div>
                         <div class="progress-bar bg-gray-200">
-                            <div class="progress-fill bg-blue-500 progress-animate w-0" id="targetProgress"></div>
+                            <div class="progress-fill bg-blue-500 w-0" id="targetProgress"></div>
                         </div>
                     </div>
                 </div>
@@ -273,7 +198,7 @@
                             <span class="font-semibold text-purple-600" id="submittedVsTarget">0%</span>
                         </div>
                         <div class="progress-bar bg-gray-200">
-                            <div class="progress-fill bg-purple-500 progress-animate w-0" id="submittedProgress"></div>
+                            <div class="progress-fill bg-purple-500 w-0" id="submittedProgress"></div>
                         </div>
                     </div>
                 </div>
@@ -295,7 +220,7 @@
                             <span class="font-semibold text-green-600" id="conversionRate">0%</span>
                         </div>
                         <div class="progress-bar bg-gray-200">
-                            <div class="progress-fill bg-green-500 progress-animate w-0" id="sanctionedProgress"></div>
+                            <div class="progress-fill bg-green-500 w-0" id="sanctionedProgress"></div>
                         </div>
                     </div>
                 </div>
@@ -338,7 +263,7 @@
             <p class="text-gray-600 text-center max-w-md">Fetching and analyzing SHG loan performance data from all districts...</p>
             <div class="mt-6 w-full max-w-sm">
                 <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div class="h-full bg-gradient-to-r from-blue-500 to-purple-600 animate-pulse w-3/4 shimmer"></div>
+                    <div class="h-full bg-gradient-to-r from-blue-500 to-purple-600 animate-pulse w-3/4"></div>
                 </div>
             </div>
         </div>
@@ -562,73 +487,6 @@
             overallStatus: document.getElementById('overallStatus')
         };
         
-        // Animate number counter
-        function animateCounter(element, finalValue, duration = 800) {
-            const startValue = parseFloat(element.textContent.replace(/[^0-9.-]+/g, '')) || 0;
-            const startTime = performance.now();
-            const isCurrency = element.textContent.includes('₹');
-            const isPercentage = element.textContent.includes('%');
-            const suffix = element.textContent.match(/[a-zA-Z%]+$/)?.[0] || '';
-            
-            function updateCounter(currentTime) {
-                const elapsedTime = currentTime - startTime;
-                const progress = Math.min(elapsedTime / duration, 1);
-                
-                // Easing function for smooth animation
-                const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-                const currentValue = startValue + (finalValue - startValue) * easeOutQuart;
-                
-                if (isCurrency) {
-                    element.textContent = formatCurrency(currentValue);
-                } else if (isPercentage) {
-                    element.textContent = `${Math.round(currentValue)}%`;
-                } else {
-                    element.textContent = formatNumber(Math.round(currentValue));
-                }
-                
-                if (progress < 1) {
-                    requestAnimationFrame(updateCounter);
-                } else {
-                    // Final bounce animation
-                    element.classList.add('number-bounce');
-                    setTimeout(() => {
-                        element.classList.remove('number-bounce');
-                    }, 300);
-                }
-            }
-            
-            requestAnimationFrame(updateCounter);
-        }
-        
-        // Animate percentage counter
-        function animatePercentage(element, finalValue, duration = 800) {
-            const startValue = parseFloat(element.textContent.replace('%', '')) || 0;
-            const startTime = performance.now();
-            
-            function updateCounter(currentTime) {
-                const elapsedTime = currentTime - startTime;
-                const progress = Math.min(elapsedTime / duration, 1);
-                
-                // Easing function for smooth animation
-                const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-                const currentValue = startValue + (finalValue - startValue) * easeOutQuart;
-                
-                element.textContent = `${Math.round(currentValue)}%`;
-                
-                if (progress < 1) {
-                    requestAnimationFrame(updateCounter);
-                } else {
-                    // Final bounce animation
-                    element.classList.add('number-bounce');
-                    setTimeout(() => {
-                        element.classList.remove('number-bounce');
-                    }, 300);
-                }
-            }
-            
-            requestAnimationFrame(updateCounter);
-        }
-        
         // Format currency - Amounts are in lakh, convert to Cr for display (divide by 100)
         function formatCurrency(amount) {
             // Amounts are in lakh, convert to Cr for display
@@ -758,19 +616,18 @@
             return pageDistricts;
         }
         
-        // Render table rows with animation
+        // Render table rows
         function renderTableRows(districts) {
             elements.tableBody.innerHTML = '';
             
-            districts.forEach((district, index) => {
+            districts.forEach(district => {
                 const submissionRate = calculatePercentage(district.submittedCount, district.targetCount);
                 const sanctionRate = calculatePercentage(district.sanctionedCount, district.submittedCount || 1);
                 const overallRate = calculatePercentage(district.sanctionedCount, district.targetCount);
                 const ticketSize = calculateTicketSize(district.sanctionedAmt, district.sanctionedCount);
                 
                 const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50 transition-colors cursor-pointer row-appear';
-                row.style.animationDelay = `${index * 0.05}s`;
+                row.className = 'hover:bg-gray-50 transition-colors cursor-pointer';
                 row.onclick = () => showDistrictDetails(district);
                 
                 row.innerHTML = `
@@ -786,41 +643,41 @@
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-semibold text-gray-900 counter-animation">${formatNumber(district.targetCount)}</div>
-                        <div class="text-sm text-blue-600 font-medium counter-animation">${formatCurrency(district.targetAmt)}</div>
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(district.targetCount)}</div>
+                        <div class="text-sm text-blue-600 font-medium">${formatCurrency(district.targetAmt)}</div>
                         <div class="text-xs text-gray-500 mt-1">Campaign Target</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-semibold text-gray-900 counter-animation">${formatNumber(district.submittedCount)}</div>
-                        <div class="text-sm text-purple-600 font-medium counter-animation">${formatCurrency(district.submittedAmt)}</div>
-                        <div class="text-xs ${submissionRate >= 80 ? 'text-green-600' : submissionRate >= 50 ? 'text-yellow-600' : 'text-red-600'} mt-1 counter-animation">
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(district.submittedCount)}</div>
+                        <div class="text-sm text-purple-600 font-medium">${formatCurrency(district.submittedAmt)}</div>
+                        <div class="text-xs ${submissionRate >= 80 ? 'text-green-600' : submissionRate >= 50 ? 'text-yellow-600' : 'text-red-600'} mt-1">
                             ${submissionRate}% of target
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-semibold text-gray-900 counter-animation">${formatNumber(district.sanctionedCount)}</div>
-                        <div class="text-sm text-green-600 font-medium counter-animation">${formatCurrency(district.sanctionedAmt)}</div>
-                        <div class="text-xs ${sanctionRate >= 80 ? 'text-green-600' : sanctionRate >= 50 ? 'text-yellow-600' : 'text-red-600'} mt-1 counter-animation">
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(district.sanctionedCount)}</div>
+                        <div class="text-sm text-green-600 font-medium">${formatCurrency(district.sanctionedAmt)}</div>
+                        <div class="text-xs ${sanctionRate >= 80 ? 'text-green-600' : sanctionRate >= 50 ? 'text-yellow-600' : 'text-red-600'} mt-1">
                             ${sanctionRate}% conversion
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-semibold text-gray-900 counter-animation">${formatTicketSize(ticketSize)}</div>
-                        <div class="text-sm text-indigo-600 font-medium ticket-size counter-animation">
+                        <div class="text-sm font-semibold text-gray-900">${formatTicketSize(ticketSize)}</div>
+                        <div class="text-sm text-indigo-600 font-medium ticket-size">
                             Avg. per loan
                         </div>
-                        <div class="text-xs text-gray-500 mt-1 counter-animation">${formatNumber(district.sanctionedCount)} loans</div>
+                        <div class="text-xs text-gray-500 mt-1">${formatNumber(district.sanctionedCount)} loans</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="w-32">
                             <div class="flex justify-between text-xs mb-1">
                                 <span class="text-gray-600">Progress</span>
-                                <span class="font-semibold ${overallRate >= 80 ? 'text-green-600' : overallRate >= 50 ? 'text-yellow-600' : 'text-red-600'} counter-animation">
+                                <span class="font-semibold ${overallRate >= 80 ? 'text-green-600' : overallRate >= 50 ? 'text-yellow-600' : 'text-red-600'}">
                                     ${overallRate}%
                                 </span>
                             </div>
                             <div class="progress-bar bg-gray-200">
-                                <div class="progress-fill ${overallRate >= 80 ? 'bg-green-500' : overallRate >= 50 ? 'bg-yellow-500' : 'bg-red-500'} progress-animate" 
+                                <div class="progress-fill ${overallRate >= 80 ? 'bg-green-500' : overallRate >= 50 ? 'bg-yellow-500' : 'bg-red-500'}" 
                                      style="width: ${overallRate}%"></div>
                             </div>
                             <div class="text-xs text-gray-500 mt-1">Overall achievement</div>
@@ -829,14 +686,14 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             ${overallRate >= 80 ? 
-                                `<span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-800 font-medium counter-animation">
+                                `<span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-800 font-medium">
                                     <i class="fas fa-trend-up mr-1"></i> Excellent
                                 </span>` : 
                               overallRate >= 50 ?
-                                `<span class="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 font-medium counter-animation">
+                                `<span class="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 font-medium">
                                     <i class="fas fa-chart-line mr-1"></i> Moderate
                                 </span>` :
-                                `<span class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-800 font-medium counter-animation">
+                                `<span class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-800 font-medium">
                                     <i class="fas fa-trend-down mr-1"></i> Needs Attention
                                 </span>`
                             }
@@ -848,7 +705,7 @@
             });
         }
         
-        // Update stats with animation
+        // Update stats
         function updateStats(districts) {
             const totals = districts.reduce((acc, district) => ({
                 targetCount: acc.targetCount + district.targetCount,
@@ -859,40 +716,31 @@
                 sanctionedAmt: acc.sanctionedAmt + district.sanctionedAmt
             }), { targetCount: 0, targetAmt: 0, submittedCount: 0, submittedAmt: 0, sanctionedCount: 0, sanctionedAmt: 0 });
             
-            // Animate the stats counters
-            animateCounter(elements.totalDistricts, districts.length, 600);
-            animateCounter(elements.districtCount, districts.length, 600);
-            animateCounter(elements.totalTargetLoans, totals.targetCount, 800);
-            animateCounter(elements.totalTargetAmount, totals.targetAmt, 800);
-            animateCounter(elements.totalSubmittedLoans, totals.submittedCount, 800);
-            animateCounter(elements.totalSubmittedAmount, totals.submittedAmt, 800);
-            animateCounter(elements.totalSanctionedLoans, totals.sanctionedCount, 800);
-            animateCounter(elements.totalSanctionedAmount, totals.sanctionedAmt, 800);
+            // Update elements
+            elements.totalDistricts.textContent = districts.length;
+            elements.districtCount.textContent = districts.length;
+            elements.totalTargetLoans.textContent = formatNumber(totals.targetCount);
+            elements.totalTargetAmount.textContent = formatCurrency(totals.targetAmt);
+            elements.totalSubmittedLoans.textContent = formatNumber(totals.submittedCount);
+            elements.totalSubmittedAmount.textContent = formatCurrency(totals.submittedAmt);
+            elements.totalSanctionedLoans.textContent = formatNumber(totals.sanctionedCount);
+            elements.totalSanctionedAmount.textContent = formatCurrency(totals.sanctionedAmt);
             
             // Calculate percentages
             const submissionRate = calculatePercentage(totals.submittedCount, totals.targetCount);
             const sanctionRate = calculatePercentage(totals.sanctionedCount, totals.submittedCount || 1);
             const overallRate = calculatePercentage(totals.sanctionedCount, totals.targetCount);
             
-            // Animate percentage counters
-            animatePercentage(elements.targetAchievement, overallRate, 800);
-            animatePercentage(elements.submittedVsTarget, submissionRate, 800);
-            animatePercentage(elements.conversionRate, sanctionRate, 800);
+            elements.targetAchievement.textContent = `${overallRate}%`;
+            elements.submittedVsTarget.textContent = `${submissionRate}%`;
+            elements.conversionRate.textContent = `${sanctionRate}%`;
             
-            // Animate progress bars with delay
-            setTimeout(() => {
-                elements.targetProgress.style.width = `${overallRate}%`;
-                elements.submittedProgress.style.width = `${submissionRate}%`;
-                elements.sanctionedProgress.style.width = `${sanctionRate}%`;
-                
-                // Add flash effect to progress bars
-                [elements.targetProgress, elements.submittedProgress, elements.sanctionedProgress].forEach(bar => {
-                    bar.classList.add('flash-update');
-                    setTimeout(() => bar.classList.remove('flash-update'), 800);
-                });
-            }, 300);
+            // Update progress bars
+            elements.targetProgress.style.width = `${overallRate}%`;
+            elements.submittedProgress.style.width = `${submissionRate}%`;
+            elements.sanctionedProgress.style.width = `${sanctionRate}%`;
             
-            // Update overall status with animation
+            // Update overall status
             let status = 'Needs Attention';
             let statusColor = 'text-red-600';
             
@@ -905,17 +753,9 @@
             }
             
             elements.overallStatus.innerHTML = `
-                <span class="${statusColor} counter-animation">${status}</span>
-                <div class="text-sm text-gray-600 mt-1 counter-animation">${overallRate}% target achieved</div>
+                <span class="${statusColor}">${status}</span>
+                <div class="text-sm text-gray-600 mt-1">${overallRate}% target achieved</div>
             `;
-            
-            // Add counter animation class to status
-            setTimeout(() => {
-                elements.overallStatus.querySelectorAll('.counter-animation').forEach(el => {
-                    el.classList.add('counter-animation');
-                    setTimeout(() => el.classList.remove('counter-animation'), 500);
-                });
-            }, 100);
         }
         
         // Show district details (placeholder)
@@ -934,7 +774,7 @@
                   `📋 Records: ${district.count} data entries`);
         }
         
-        // Update table view with animations
+        // Update table view
         function updateTableView() {
             filteredDistricts = filterDistricts(allDistricts);
             filteredDistricts = sortDistricts(filteredDistricts);
@@ -942,10 +782,6 @@
             const pageDistricts = updatePagination();
             renderTableRows(pageDistricts);
             updateStats(allDistricts);
-            
-            // Animate pagination counters
-            animateCounter(elements.showingCount, parseInt(elements.showingCount.textContent.split('-')[0]) || 0, 500);
-            animateCounter(elements.totalCount, filteredDistricts.length, 500);
         }
         
         // Fetch and process CSV data
@@ -1042,29 +878,18 @@
                 
                 allDistricts = Object.values(districtTotals);
                 
-                // Update UI with animations
+                // Update UI
                 currentPage = 1;
-                
-                // Hide loading with animation
-                setTimeout(() => {
-                    elements.loading.classList.add('hidden');
-                    elements.tableContainer.classList.remove('hidden');
-                    elements.dataStatus.textContent = 'Live';
-                    elements.dataStatus.className = 'text-xs px-3 py-1 rounded-full bg-green-100 text-green-800 font-medium';
-                    
-                    // Update table with animations
-                    updateTableView();
-                    
-                    // Add flash animation to table container
-                    elements.tableContainer.classList.add('flash-update');
-                    setTimeout(() => {
-                        elements.tableContainer.classList.remove('flash-update');
-                    }, 800);
-                }, 800);
+                updateTableView();
                 
                 const now = new Date();
                 elements.updateTime.textContent = now.toLocaleTimeString();
                 elements.footerTime.textContent = now.toLocaleString();
+                
+                elements.loading.classList.add('hidden');
+                elements.tableContainer.classList.remove('hidden');
+                elements.dataStatus.textContent = 'Live';
+                elements.dataStatus.className = 'text-xs px-3 py-1 rounded-full bg-green-100 text-green-800 font-medium';
                 
             } catch (err) {
                 console.error('Error fetching or processing CSV data:', err);

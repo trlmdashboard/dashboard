@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samriddhi Campaign 2.0 Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-gradient {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            transition: transform 0.2s ease;
+        }
+        
+        .stat-card {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .table-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        /* Custom scrollbar */
+        .table-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .table-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .highlight-target { border-left: 4px solid #3b82f6; }
+        .highlight-submitted { border-left: 4px solid #8b5cf6; }
+        .highlight-sanctioned { border-left: 4px solid #10b981; }
+        .highlight-individual-target { border-left: 4px solid #0ea5e9; }
+        .highlight-individual-submitted { border-left: 4px solid #a855f7; }
+        .highlight-individual-sanctioned { border-left: 4px solid #059669; }
+        
+        .district-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .trend-up {
+            color: #10b981;
+        }
+        
+        .trend-down {
+            color: #ef4444;
+        }
+        
+        .ticket-size {
+            color: #8b5cf6;
+        }
+        
+        /* Popup Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 1400px;
+            max-height: 85vh;
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            color: white;
+        }
+        
+        .modal-body {
+            padding: 0;
+            max-height: 65vh;
+            overflow-y: auto;
+        }
+        
+        .close-modal {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .close-modal:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .block-badge {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#8b5cf6',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        dark: '#1f2937',
+                        light: '#f9fafb'
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+                        <i class="fas fa-hand-holding-usd text-blue-500 mr-3"></i>
+                        Samriddhi Campaign 2.0 Dashboard
+                    </h1>
+                    <p class="text-gray-600 text-lg">
+                        Real-time monitoring of Self Help Group loan targets, submissions, and sanctions
+                    </p>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="bg-white rounded-xl shadow-lg px-6 py-4 flex items-center space-x-4">
+                        <div class="relative">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                                <i class="fas fa-map-marker-alt text-white text-xl"></i>
+                            </div>
+                            <div class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                                <span class="text-white text-xs font-bold" id="districtCount">0</span>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Districts Active</p>
+                            <p class="text-xl font-bold text-gray-800" id="totalDistricts">0</p>
+                        </div>
+                    </div>
+                    
+                    <div class="relative">
+                        <div class="w-14 h-14 rounded-full gradient-bg flex items-center justify-center pulse">
+                            <i class="fas fa-sync-alt text-white text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift highlight-target">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Target Loans</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-2" id="totalTargetLoans">0</p>
+                            <p class="text-gray-600 mt-1" id="totalTargetAmount">₹0</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                            <i class="fas fa-bullseye text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Achievement</span>
+                            <span class="font-semibold text-blue-600" id="targetAchievement">0%</span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-blue-500 w-0" id="targetProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift highlight-submitted">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Submitted Loans</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-2" id="totalSubmittedLoans">0</p>
+                            <p class="text-gray-600 mt-1" id="totalSubmittedAmount">₹0</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                            <i class="fas fa-paper-plane text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">vs Target</span>
+                            <span class="font-semibold text-purple-600" id="submittedVsTarget">0%</span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-purple-500 w-0" id="submittedProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift highlight-sanctioned">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Sanctioned Loans</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-2" id="totalSanctionedLoans">0</p>
+                            <p class="text-gray-600 mt-1" id="totalSanctionedAmount">₹0</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
+                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Conversion Rate</span>
+                            <span class="font-semibold text-green-600" id="conversionRate">0%</span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-green-500 w-0" id="sanctionedProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Overall Status</p>
+                            <p class="text-xl font-bold text-gray-800 mt-2" id="overallStatus">Loading...</p>
+                            <div class="flex items-center mt-2">
+                                <span class="text-gray-600 text-sm mr-2">Last Updated:</span>
+                                <span class="text-sm font-medium" id="updateTime">--:--</span>
+                            </div>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-yellow-100 flex items-center justify-center">
+                            <i class="fas fa-chart-line text-yellow-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between">
+                            <button id="refreshBtn" class="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center">
+                                <i class="fas fa-redo-alt mr-2"></i> Refresh Data
+                            </button>
+                            <span class="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-800 font-medium" id="dataStatus">Live</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="loading" class="bg-white rounded-2xl shadow-lg p-12 mb-8 flex flex-col items-center justify-center">
+            <div class="relative mb-6">
+                <div class="w-24 h-24 rounded-full border-4 border-gray-200 border-t-blue-500 animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <i class="fas fa-database text-blue-500 text-2xl"></i>
+                </div>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Loading District Data</h3>
+            <p class="text-gray-600 text-center max-w-md">Fetching and analyzing SHG loan performance data from all districts...</p>
+            <div class="mt-6 w-full max-w-sm">
+                <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-blue-500 to-purple-600 animate-pulse w-3/4"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Error State -->
+        <div id="error" class="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-2xl shadow-lg p-8 mb-8 hidden">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-red-800 mb-2">Data Loading Error</h3>
+                    <p id="errorMessage" class="text-red-700 mb-4">Unable to load data. Please check your connection and try again.</p>
+                    <button id="retryBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center">
+                        <i class="fas fa-redo-alt mr-2"></i> Retry Loading
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Table -->
+        <div id="tableContainer" class="hidden">
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
+                <div class="px-6 py-5 border-b border-gray-200">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800">
+                                <i class="fas fa-table-cells-large text-blue-500 mr-2"></i>
+                                District-wise Loan Performance
+                            </h2>
+                            <p class="text-gray-600 text-sm mt-1">Click on any district to view block-wise performance details</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="relative">
+                                <input type="text" id="searchInput" placeholder="Search districts..." 
+                                       class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-64">
+                                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm text-gray-600">Sort by:</span>
+                                <select id="sortSelect" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="district">District Name</option>
+                                    <option value="target">Target Amount</option>
+                                    <option value="submitted">Submitted Amount</option>
+                                    <option value="sanctioned">Sanctioned Amount</option>
+                                    <option value="ticket">Ticket Size</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-map-marker-alt text-blue-500 mr-2"></i>
+                                        District
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-bullseye text-blue-500 mr-2"></i>
+                                        Target
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-paper-plane text-purple-500 mr-2"></i>
+                                        Submitted
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                        Sanctioned
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-money-bill-wave text-indigo-500 mr-2"></i>
+                                        Ticket Size
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-chart-bar text-yellow-500 mr-2"></i>
+                                        Performance
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-trend-up text-gray-500 mr-2"></i>
+                                        Status
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Table rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                    <div class="flex flex-col md:flex-row justify-between items-center">
+                        <div class="mb-4 md:mb-0">
+                            <p class="text-sm text-gray-700">
+                                Showing <span id="showingCount" class="font-semibold">0</span> of 
+                                <span id="totalCount" class="font-semibold">0</span> districts
+                            </p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button id="prevBtn" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="fas fa-chevron-left mr-1"></i> Previous
+                            </button>
+                            <span class="text-sm text-gray-700">Page <span id="currentPage">1</span> of <span id="totalPages">1</span></span>
+                            <button id="nextBtn" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                Next <i class="fas fa-chevron-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Individual Loan Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift highlight-individual-target">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Individual Target Loans</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-2" id="totalIndividualTargetLoans">0</p>
+                            <p class="text-gray-600 mt-1" id="totalIndividualTargetAmount">₹0</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-sky-100 flex items-center justify-center">
+                            <i class="fas fa-user-check text-sky-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Achievement</span>
+                            <span class="font-semibold text-sky-600" id="individualTargetAchievement">0%</span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-sky-500 w-0" id="individualTargetProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift highlight-individual-submitted">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Individual Submitted Loans</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-2" id="totalIndividualSubmittedLoans">0</p>
+                            <p class="text-gray-600 mt-1" id="totalIndividualSubmittedAmount">₹0</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                            <i class="fas fa-user-tag text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">vs Target</span>
+                            <span class="font-semibold text-purple-600" id="individualSubmittedVsTarget">0%</span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-purple-500 w-0" id="individualSubmittedProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift highlight-individual-sanctioned">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Individual Sanctioned Loans</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-2" id="totalIndividualSanctionedLoans">0</p>
+                            <p class="text-gray-600 mt-1" id="totalIndividualSanctionedAmount">₹0</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center">
+                            <i class="fas fa-user-check text-emerald-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Conversion Rate</span>
+                            <span class="font-semibold text-emerald-600" id="individualConversionRate">0%</span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-emerald-500 w-0" id="individualSanctionedProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Individual Overall Status</p>
+                            <p class="text-xl font-bold text-gray-800 mt-2" id="individualOverallStatus">Loading...</p>
+                            <div class="flex items-center mt-2">
+                                <span class="text-gray-600 text-sm mr-2">Performance:</span>
+                                <span class="text-sm font-medium" id="individualPerformance">--%</span>
+                            </div>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center">
+                            <i class="fas fa-users text-amber-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">Individual Loans</span>
+                            <span class="text-xs px-3 py-1 rounded-full bg-sky-100 text-sky-800 font-medium" id="individualDataStatus">Live</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Legend -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Performance Indicators</h3>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full bg-blue-500 mr-3"></div>
+                        <span class="text-sm text-gray-700">Target: Campaign loan objectives</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full bg-purple-500 mr-3"></div>
+                        <span class="text-sm text-gray-700">Submitted: Loans processed for approval</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full bg-green-500 mr-3"></div>
+                        <span class="text-sm text-gray-700">Sanctioned: Approved & disbursed loans</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full bg-indigo-500 mr-3"></div>
+                        <span class="text-sm text-gray-700">Ticket Size: Average loan amount sanctioned</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full bg-yellow-500 mr-3"></div>
+                        <span class="text-sm text-gray-700">Performance: Achievement vs target</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="mt-12 pt-8 border-t border-gray-200">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-gray-600 text-sm">
+                        <i class="fas fa-database text-blue-500 mr-2"></i>
+                        Data Source: Google Sheets CSV | SHG Loan Monitoring System
+                    </p>
+                </div>
+                <div class="text-sm text-gray-500">
+                    <p>Last updated: <span id="footerTime" class="font-medium">--:--</span> | 
+                    <span id="dataSource" class="font-medium">Live Data</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Block-wise Data Modal -->
+    <div id="blockModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="text-2xl font-bold" id="modalDistrictTitle">
+                        <i class="fas fa-map-marker-alt mr-3"></i>
+                        <span id="selectedDistrictName">Loading...</span> - Block-wise Performance
+                    </h2>
+                    <p class="text-white/90 mt-1 text-sm" id="modalDistrictStats">Loading block data...</p>
+                </div>
+                <button class="close-modal" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="blockLoading" class="p-12 flex flex-col items-center justify-center">
+                    <div class="relative mb-6">
+                        <div class="w-16 h-16 rounded-full border-4 border-gray-200 border-t-blue-500 animate-spin"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i class="fas fa-table-cells text-blue-500 text-xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Loading Block Data</h3>
+                    <p class="text-gray-600 text-center max-w-md">Fetching block-wise performance data...</p>
+                </div>
+                
+                <div id="blockError" class="p-8 hidden">
+                    <div class="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl p-6">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                                    <i class="fas fa-exclamation-triangle text-red-600"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-md font-semibold text-red-800 mb-1">Block Data Loading Error</h3>
+                                <p id="blockErrorMessage" class="text-red-700">Unable to load block data.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="blockTableContainer" class="hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-th-large text-blue-500 mr-2"></i>
+                                            Block
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-bullseye text-blue-500 mr-2"></i>
+                                            Target
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-paper-plane text-purple-500 mr-2"></i>
+                                            Submitted
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                            Sanctioned
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-money-bill-wave text-indigo-500 mr-2"></i>
+                                            Ticket Size
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-chart-bar text-yellow-500 mr-2"></i>
+                                            Performance
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-trend-up text-gray-500 mr-2"></i>
+                                            Status
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="blockTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Block rows will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <p class="text-sm text-gray-700">
+                                Total Blocks: <span id="blockCount" class="font-semibold">0</span>
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                <i class="fas fa-info-circle text-blue-500 mr-1"></i>
+                                Showing block-wise data for <span id="currentDistrictName" class="font-semibold">selected district</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const ITEMS_PER_PAGE = 10;
+        let currentPage = 1;
+        let allDistricts = [];
+        let filteredDistricts = [];
+        let sortBy = 'district';
+        let searchQuery = '';
+        let allCSVData = [];
+        
+        // DOM Elements
+        const elements = {
+            loading: document.getElementById('loading'),
+            error: document.getElementById('error'),
+            errorMessage: document.getElementById('errorMessage'),
+            tableContainer: document.getElementById('tableContainer'),
+            tableBody: document.getElementById('tableBody'),
+            searchInput: document.getElementById('searchInput'),
+            sortSelect: document.getElementById('sortSelect'),
+            prevBtn: document.getElementById('prevBtn'),
+            nextBtn: document.getElementById('nextBtn'),
+            currentPage: document.getElementById('currentPage'),
+            totalPages: document.getElementById('totalPages'),
+            showingCount: document.getElementById('showingCount'),
+            totalCount: document.getElementById('totalCount'),
+            updateTime: document.getElementById('updateTime'),
+            footerTime: document.getElementById('footerTime'),
+            refreshBtn: document.getElementById('refreshBtn'),
+            retryBtn: document.getElementById('retryBtn'),
+            dataSource: document.getElementById('dataSource'),
+            dataStatus: document.getElementById('dataStatus'),
+            
+            // Stats elements
+            districtCount: document.getElementById('districtCount'),
+            totalDistricts: document.getElementById('totalDistricts'),
+            totalTargetLoans: document.getElementById('totalTargetLoans'),
+            totalTargetAmount: document.getElementById('totalTargetAmount'),
+            totalSubmittedLoans: document.getElementById('totalSubmittedLoans'),
+            totalSubmittedAmount: document.getElementById('totalSubmittedAmount'),
+            totalSanctionedLoans: document.getElementById('totalSanctionedLoans'),
+            totalSanctionedAmount: document.getElementById('totalSanctionedAmount'),
+            targetAchievement: document.getElementById('targetAchievement'),
+            targetProgress: document.getElementById('targetProgress'),
+            submittedVsTarget: document.getElementById('submittedVsTarget'),
+            submittedProgress: document.getElementById('submittedProgress'),
+            conversionRate: document.getElementById('conversionRate'),
+            sanctionedProgress: document.getElementById('sanctionedProgress'),
+            overallStatus: document.getElementById('overallStatus'),
+            
+            // Individual Loan Stats elements
+            totalIndividualTargetLoans: document.getElementById('totalIndividualTargetLoans'),
+            totalIndividualTargetAmount: document.getElementById('totalIndividualTargetAmount'),
+            totalIndividualSubmittedLoans: document.getElementById('totalIndividualSubmittedLoans'),
+            totalIndividualSubmittedAmount: document.getElementById('totalIndividualSubmittedAmount'),
+            totalIndividualSanctionedLoans: document.getElementById('totalIndividualSanctionedLoans'),
+            totalIndividualSanctionedAmount: document.getElementById('totalIndividualSanctionedAmount'),
+            individualTargetAchievement: document.getElementById('individualTargetAchievement'),
+            individualTargetProgress: document.getElementById('individualTargetProgress'),
+            individualSubmittedVsTarget: document.getElementById('individualSubmittedVsTarget'),
+            individualSubmittedProgress: document.getElementById('individualSubmittedProgress'),
+            individualConversionRate: document.getElementById('individualConversionRate'),
+            individualSanctionedProgress: document.getElementById('individualSanctionedProgress'),
+            individualOverallStatus: document.getElementById('individualOverallStatus'),
+            individualPerformance: document.getElementById('individualPerformance'),
+            individualDataStatus: document.getElementById('individualDataStatus'),
+            
+            // Modal elements
+            blockModal: document.getElementById('blockModal'),
+            closeModal: document.getElementById('closeModal'),
+            modalDistrictTitle: document.getElementById('modalDistrictTitle'),
+            selectedDistrictName: document.getElementById('selectedDistrictName'),
+            modalDistrictStats: document.getElementById('modalDistrictStats'),
+            blockLoading: document.getElementById('blockLoading'),
+            blockError: document.getElementById('blockError'),
+            blockErrorMessage: document.getElementById('blockErrorMessage'),
+            blockTableContainer: document.getElementById('blockTableContainer'),
+            blockTableBody: document.getElementById('blockTableBody'),
+            blockCount: document.getElementById('blockCount'),
+            currentDistrictName: document.getElementById('currentDistrictName')
+        };
+        
+        // Format currency - Amounts are in lakh, convert to Cr for display (divide by 100)
+        function formatCurrency(amount) {
+            // Amounts are in lakh, convert to Cr for display
+            if (amount >= 100) {
+                return `₹${(amount/100).toFixed(2)} Cr`;
+            } else {
+                return `₹${amount.toFixed(2)} L`;
+            }
+        }
+        
+        // Format ticket size currency - Include "Lakh" after amount
+        function formatTicketSize(amount) {
+            // For ticket size, show amount as-is (in lakh) with "Lakh" text
+            return `₹${amount.toFixed(2)} Lakh`;
+        }
+        
+        // Format number with commas
+        function formatNumber(num) {
+            return num.toLocaleString('en-IN');
+        }
+        
+        // Calculate performance percentage
+        function calculatePercentage(part, whole) {
+            if (whole === 0) return 0;
+            return Math.round((part / whole) * 100);
+        }
+        
+        // Calculate ticket size (Loan Sanctioned amount / No. of Loans)
+        function calculateTicketSize(sanctionedAmt, sanctionedCount) {
+            if (sanctionedCount === 0) return 0;
+            return sanctionedAmt / sanctionedCount;
+        }
+        
+        // Parse CSV text
+        function parseCSV(csvText) {
+            const rows = [];
+            let currentRow = [];
+            let currentCell = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < csvText.length; i++) {
+                const char = csvText[i];
+                const nextChar = csvText[i + 1];
+                
+                if (char === '"' && inQuotes && nextChar === '"') {
+                    currentCell += '"';
+                    i++;
+                } else if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    currentRow.push(currentCell);
+                    currentCell = '';
+                } else if (char === '\n' && !inQuotes) {
+                    currentRow.push(currentCell);
+                    rows.push(currentRow);
+                    currentRow = [];
+                    currentCell = '';
+                } else if (char === '\r' && nextChar === '\n' && !inQuotes) {
+                    currentRow.push(currentCell);
+                    rows.push(currentRow);
+                    currentRow = [];
+                    currentCell = '';
+                    i++;
+                } else if (char === '\r' && !inQuotes) {
+                    currentRow.push(currentCell);
+                    rows.push(currentRow);
+                    currentRow = [];
+                    currentCell = '';
+                } else {
+                    currentCell += char;
+                }
+            }
+            
+            if (currentCell !== '' || currentRow.length > 0) {
+                currentRow.push(currentCell);
+                rows.push(currentRow);
+            }
+            
+            return rows;
+        }
+        
+        // Sort districts
+        function sortDistricts(districts) {
+            return [...districts].sort((a, b) => {
+                switch(sortBy) {
+                    case 'target':
+                        return b.targetAmt - a.targetAmt;
+                    case 'submitted':
+                        return b.submittedAmt - a.submittedAmt;
+                    case 'sanctioned':
+                        return b.sanctionedAmt - a.sanctionedAmt;
+                    case 'ticket':
+                        const ticketA = calculateTicketSize(a.sanctionedAmt, a.sanctionedCount);
+                        const ticketB = calculateTicketSize(b.sanctionedAmt, b.sanctionedCount);
+                        return ticketB - ticketA;
+                    default:
+                        return a.district.localeCompare(b.district);
+                }
+            });
+        }
+        
+        // Filter districts based on search query
+        function filterDistricts(districts) {
+            if (!searchQuery.trim()) return districts;
+            
+            const query = searchQuery.toLowerCase();
+            return districts.filter(district => 
+                district.district.toLowerCase().includes(query)
+            );
+        }
+        
+        // Update pagination
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredDistricts.length / ITEMS_PER_PAGE);
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, filteredDistricts.length);
+            const pageDistricts = filteredDistricts.slice(startIndex, endIndex);
+            
+            elements.currentPage.textContent = currentPage;
+            elements.totalPages.textContent = totalPages;
+            elements.showingCount.textContent = `${startIndex + 1}-${endIndex}`;
+            elements.totalCount.textContent = filteredDistricts.length;
+            
+            elements.prevBtn.disabled = currentPage === 1;
+            elements.nextBtn.disabled = currentPage === totalPages;
+            
+            return pageDistricts;
+        }
+        
+        // Render table rows
+        function renderTableRows(districts) {
+            elements.tableBody.innerHTML = '';
+            
+            districts.forEach(district => {
+                const submissionRate = calculatePercentage(district.submittedCount, district.targetCount);
+                const sanctionRate = calculatePercentage(district.sanctionedCount, district.submittedCount || 1);
+                const overallRate = calculatePercentage(district.sanctionedCount, district.targetCount);
+                const ticketSize = calculateTicketSize(district.sanctionedAmt, district.sanctionedCount);
+                
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors cursor-pointer';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full district-badge flex items-center justify-center mr-3">
+                                <span class="text-white font-bold">${district.district.charAt(0)}</span>
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">${district.district}</div>
+                                <div class="text-sm text-gray-500">${district.count} records</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(district.targetCount)}</div>
+                        <div class="text-sm text-blue-600 font-medium">${formatCurrency(district.targetAmt)}</div>
+                        <div class="text-xs text-gray-500 mt-1">Campaign Target</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(district.submittedCount)}</div>
+                        <div class="text-sm text-purple-600 font-medium">${formatCurrency(district.submittedAmt)}</div>
+                        <div class="text-xs ${submissionRate >= 80 ? 'text-green-600' : submissionRate >= 50 ? 'text-yellow-600' : 'text-red-600'} mt-1">
+                            ${submissionRate}% of target
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(district.sanctionedCount)}</div>
+                        <div class="text-sm text-green-600 font-medium">${formatCurrency(district.sanctionedAmt)}</div>
+                        <div class="text-xs ${sanctionRate >= 80 ? 'text-green-600' : sanctionRate >= 50 ? 'text-yellow-600' : 'text-red-600'} mt-1">
+                            ${sanctionRate}% conversion
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatTicketSize(ticketSize)}</div>
+                        <div class="text-sm text-indigo-600 font-medium ticket-size">
+                            Avg. per loan
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">${formatNumber(district.sanctionedCount)} loans</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="w-32">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-gray-600">Progress</span>
+                                <span class="font-semibold ${overallRate >= 80 ? 'text-green-600' : overallRate >= 50 ? 'text-yellow-600' : 'text-red-600'}">
+                                    ${overallRate}%
+                                </span>
+                            </div>
+                            <div class="progress-bar bg-gray-200">
+                                <div class="progress-fill ${overallRate >= 80 ? 'bg-green-500' : overallRate >= 50 ? 'bg-yellow-500' : 'bg-red-500'}" 
+                                     style="width: ${overallRate}%"></div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">Overall achievement</div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            ${overallRate >= 80 ? 
+                                `<span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-800 font-medium">
+                                    <i class="fas fa-trend-up mr-1"></i> Excellent
+                                </span>` : 
+                              overallRate >= 50 ?
+                                `<span class="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 font-medium">
+                                    <i class="fas fa-chart-line mr-1"></i> Moderate
+                                </span>` :
+                                `<span class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-800 font-medium">
+                                    <i class="fas fa-trend-down mr-1"></i> Needs Attention
+                                </span>`
+                            }
+                        </div>
+                    </td>
+                `;
+                
+                // Add click event to show block data
+                row.addEventListener('click', () => showBlockData(district.district));
+                
+                elements.tableBody.appendChild(row);
+            });
+        }
+        
+        // Show block data for a district
+        async function showBlockData(districtName) {
+            // Show modal
+            elements.blockModal.classList.add('active');
+            elements.selectedDistrictName.textContent = districtName;
+            elements.currentDistrictName.textContent = districtName;
+            
+            // Show loading state
+            elements.blockLoading.classList.remove('hidden');
+            elements.blockError.classList.add('hidden');
+            elements.blockTableContainer.classList.add('hidden');
+            
+            try {
+                // Process block data from CSV
+                const blockData = processBlockData(districtName);
+                
+                if (blockData.length === 0) {
+                    throw new Error(`No block data found for ${districtName}`);
+                }
+                
+                // Calculate district totals from block data
+                const districtTotals = blockData.reduce((acc, block) => ({
+                    targetCount: acc.targetCount + block.targetCount,
+                    targetAmt: acc.targetAmt + block.targetAmt,
+                    submittedCount: acc.submittedCount + block.submittedCount,
+                    submittedAmt: acc.submittedAmt + block.submittedAmt,
+                    sanctionedCount: acc.sanctionedCount + block.sanctionedCount,
+                    sanctionedAmt: acc.sanctionedAmt + block.sanctionedAmt,
+                    count: acc.count + 1
+                }), { targetCount: 0, targetAmt: 0, submittedCount: 0, submittedAmt: 0, sanctionedCount: 0, sanctionedAmt: 0, count: 0 });
+                
+                // Update modal title with stats
+                const submissionRate = calculatePercentage(districtTotals.submittedCount, districtTotals.targetCount);
+                const sanctionRate = calculatePercentage(districtTotals.sanctionedCount, districtTotals.submittedCount || 1);
+                const overallRate = calculatePercentage(districtTotals.sanctionedCount, districtTotals.targetCount);
+                
+                elements.modalDistrictStats.innerHTML = `
+                    ${blockData.length} Blocks | ${formatNumber(districtTotals.targetCount)} Target Loans | 
+                    ${formatCurrency(districtTotals.targetAmt)} Target | ${overallRate}% Overall Achievement
+                `;
+                
+                // Render block table
+                renderBlockTable(blockData);
+                
+                // Hide loading, show table
+                elements.blockLoading.classList.add('hidden');
+                elements.blockTableContainer.classList.remove('hidden');
+                
+            } catch (err) {
+                console.error('Error loading block data:', err);
+                elements.blockLoading.classList.add('hidden');
+                elements.blockErrorMessage.textContent = `Error: ${err.message}`;
+                elements.blockError.classList.remove('hidden');
+            }
+        }
+        
+        // Process block data from CSV for a specific district
+        function processBlockData(districtName) {
+            const blockTotals = {};
+            
+            // Assuming CSV structure: Column 0 = District, Column 1 = Block
+            // We need to check the actual CSV structure
+            let startRow = 0;
+            const firstValue2 = parseFloat(allCSVData[0][2]);
+            const firstValue3 = parseFloat(allCSVData[0][3]);
+            
+            if (isNaN(firstValue2) || isNaN(firstValue3)) {
+                startRow = 1;
+            }
+            
+            for (let i = startRow; i < allCSVData.length; i++) {
+                const row = allCSVData[i];
+                
+                if (row.length < 366 || !row[0]) continue;
+                
+                const district = row[0].trim();
+                const block = row[1] ? row[1].trim() : 'Unknown Block';
+                
+                // Only process rows for the selected district
+                if (district !== districtName) continue;
+                
+                // Parse values from specific columns - amounts are in lakh
+                const targetCount = parseFloat(row[2]) || 0;
+                const targetAmt = parseFloat(row[3]) || 0;
+                const submittedNovCount = parseFloat(row[6]) || 0;
+                const submittedNovAmt = parseFloat(row[7]) || 0;
+                const submittedDecCount = parseFloat(row[362]) || 0;
+                const submittedDecAmt = parseFloat(row[363]) || 0;
+                const sanctionedCount = parseFloat(row[364]) || 0;
+                const sanctionedAmt = parseFloat(row[365]) || 0;
+                
+                const totalSubmittedCount = submittedNovCount + submittedDecCount;
+                const totalSubmittedAmt = submittedNovAmt + submittedDecAmt;
+                
+                if (!blockTotals[block]) {
+                    blockTotals[block] = {
+                        block,
+                        targetCount: 0,
+                        targetAmt: 0,
+                        submittedCount: 0,
+                        submittedAmt: 0,
+                        sanctionedCount: 0,
+                        sanctionedAmt: 0,
+                        count: 0
+                    };
+                }
+                
+                blockTotals[block].targetCount += targetCount;
+                blockTotals[block].targetAmt += targetAmt;
+                blockTotals[block].submittedCount += totalSubmittedCount;
+                blockTotals[block].submittedAmt += totalSubmittedAmt;
+                blockTotals[block].sanctionedCount += sanctionedCount;
+                blockTotals[block].sanctionedAmt += sanctionedAmt;
+                blockTotals[block].count += 1;
+            }
+            
+            return Object.values(blockTotals);
+        }
+        
+        // Render block table
+        function renderBlockTable(blocks) {
+            elements.blockTableBody.innerHTML = '';
+            elements.blockCount.textContent = blocks.length;
+            
+            blocks.forEach(block => {
+                const submissionRate = calculatePercentage(block.submittedCount, block.targetCount);
+                const sanctionRate = calculatePercentage(block.sanctionedCount, block.submittedCount || 1);
+                const overallRate = calculatePercentage(block.sanctionedCount, block.targetCount);
+                const ticketSize = calculateTicketSize(block.sanctionedAmt, block.sanctionedCount);
+                
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full block-badge flex items-center justify-center mr-3">
+                                <span class="text-white font-bold text-xs">${block.block.charAt(0)}</span>
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">${block.block}</div>
+                                <div class="text-xs text-gray-500">${block.count} records</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(block.targetCount)}</div>
+                        <div class="text-sm text-blue-600 font-medium">${formatCurrency(block.targetAmt)}</div>
+                        <div class="text-xs text-gray-500 mt-1">Campaign Target</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(block.submittedCount)}</div>
+                        <div class="text-sm text-purple-600 font-medium">${formatCurrency(block.submittedAmt)}</div>
+                        <div class="text-xs ${submissionRate >= 80 ? 'text-green-600' : submissionRate >= 50 ? 'text-yellow-600' : 'text-red-600'} mt-1">
+                            ${submissionRate}% of target
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(block.sanctionedCount)}</div>
+                        <div class="text-sm text-green-600 font-medium">${formatCurrency(block.sanctionedAmt)}</div>
+                        <div class="text-xs ${sanctionRate >= 80 ? 'text-green-600' : sanctionRate >= 50 ? 'text-yellow-600' : 'text-red-600'} mt-1">
+                            ${sanctionRate}% conversion
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatTicketSize(ticketSize)}</div>
+                        <div class="text-sm text-indigo-600 font-medium ticket-size">
+                            Avg. per loan
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">${formatNumber(block.sanctionedCount)} loans</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="w-32">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-gray-600">Progress</span>
+                                <span class="font-semibold ${overallRate >= 80 ? 'text-green-600' : overallRate >= 50 ? 'text-yellow-600' : 'text-red-600'}">
+                                    ${overallRate}%
+                                </span>
+                            </div>
+                            <div class="progress-bar bg-gray-200">
+                                <div class="progress-fill ${overallRate >= 80 ? 'bg-green-500' : overallRate >= 50 ? 'bg-yellow-500' : 'bg-red-500'}" 
+                                     style="width: ${overallRate}%"></div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">Overall achievement</div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            ${overallRate >= 80 ? 
+                                `<span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-800 font-medium">
+                                    <i class="fas fa-trend-up mr-1"></i> Excellent
+                                </span>` : 
+                              overallRate >= 50 ?
+                                `<span class="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 font-medium">
+                                    <i class="fas fa-chart-line mr-1"></i> Moderate
+                                </span>` :
+                                `<span class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-800 font-medium">
+                                    <i class="fas fa-trend-down mr-1"></i> Needs Attention
+                                </span>`
+                            }
+                        </div>
+                    </td>
+                `;
+                
+                elements.blockTableBody.appendChild(row);
+            });
+        }
+        
+        // Update stats
+        function updateStats(districts) {
+            const totals = districts.reduce((acc, district) => ({
+                targetCount: acc.targetCount + district.targetCount,
+                targetAmt: acc.targetAmt + district.targetAmt,
+                submittedCount: acc.submittedCount + district.submittedCount,
+                submittedAmt: acc.submittedAmt + district.submittedAmt,
+                sanctionedCount: acc.sanctionedCount + district.sanctionedCount,
+                sanctionedAmt: acc.sanctionedAmt + district.sanctionedAmt,
+                // Individual loan totals
+                individualTargetCount: acc.individualTargetCount + district.individualTargetCount,
+                individualTargetAmt: acc.individualTargetAmt + district.individualTargetAmt,
+                individualSubmittedCount: acc.individualSubmittedCount + district.individualSubmittedCount,
+                individualSubmittedAmt: acc.individualSubmittedAmt + district.individualSubmittedAmt,
+                individualSanctionedCount: acc.individualSanctionedCount + district.individualSanctionedCount,
+                individualSanctionedAmt: acc.individualSanctionedAmt + district.individualSanctionedAmt
+            }), { 
+                targetCount: 0, targetAmt: 0, 
+                submittedCount: 0, submittedAmt: 0, 
+                sanctionedCount: 0, sanctionedAmt: 0,
+                individualTargetCount: 0, individualTargetAmt: 0,
+                individualSubmittedCount: 0, individualSubmittedAmt: 0,
+                individualSanctionedCount: 0, individualSanctionedAmt: 0
+            });
+            
+            // Update SHG loan elements
+            elements.totalDistricts.textContent = districts.length;
+            elements.districtCount.textContent = districts.length;
+            elements.totalTargetLoans.textContent = formatNumber(totals.targetCount);
+            elements.totalTargetAmount.textContent = formatCurrency(totals.targetAmt);
+            elements.totalSubmittedLoans.textContent = formatNumber(totals.submittedCount);
+            elements.totalSubmittedAmount.textContent = formatCurrency(totals.submittedAmt);
+            elements.totalSanctionedLoans.textContent = formatNumber(totals.sanctionedCount);
+            elements.totalSanctionedAmount.textContent = formatCurrency(totals.sanctionedAmt);
+            
+            // Calculate SHG percentages
+            const submissionRate = calculatePercentage(totals.submittedCount, totals.targetCount);
+            const sanctionRate = calculatePercentage(totals.sanctionedCount, totals.submittedCount || 1);
+            const overallRate = calculatePercentage(totals.sanctionedCount, totals.targetCount);
+            
+            elements.targetAchievement.textContent = `${overallRate}%`;
+            elements.submittedVsTarget.textContent = `${submissionRate}%`;
+            elements.conversionRate.textContent = `${sanctionRate}%`;
+            
+            // Update SHG progress bars
+            elements.targetProgress.style.width = `${overallRate}%`;
+            elements.submittedProgress.style.width = `${submissionRate}%`;
+            elements.sanctionedProgress.style.width = `${sanctionRate}%`;
+            
+            // Update SHG overall status
+            let status = 'Needs Attention';
+            let statusColor = 'text-red-600';
+            
+            if (overallRate >= 80) {
+                status = 'Excellent Performance';
+                statusColor = 'text-green-600';
+            } else if (overallRate >= 50) {
+                status = 'Moderate Progress';
+                statusColor = 'text-yellow-600';
+            }
+            
+            elements.overallStatus.innerHTML = `
+                <span class="${statusColor}">${status}</span>
+                <div class="text-sm text-gray-600 mt-1">${overallRate}% target achieved</div>
+            `;
+            
+            // Update Individual loan elements
+            elements.totalIndividualTargetLoans.textContent = formatNumber(totals.individualTargetCount);
+            elements.totalIndividualTargetAmount.textContent = formatCurrency(totals.individualTargetAmt);
+            elements.totalIndividualSubmittedLoans.textContent = formatNumber(totals.individualSubmittedCount);
+            elements.totalIndividualSubmittedAmount.textContent = formatCurrency(totals.individualSubmittedAmt);
+            elements.totalIndividualSanctionedLoans.textContent = formatNumber(totals.individualSanctionedCount);
+            elements.totalIndividualSanctionedAmount.textContent = formatCurrency(totals.individualSanctionedAmt);
+            
+            // Calculate Individual percentages
+            const individualSubmissionRate = calculatePercentage(totals.individualSubmittedCount, totals.individualTargetCount);
+            const individualSanctionRate = calculatePercentage(totals.individualSanctionedCount, totals.individualSubmittedCount || 1);
+            const individualOverallRate = calculatePercentage(totals.individualSanctionedCount, totals.individualTargetCount);
+            
+            elements.individualTargetAchievement.textContent = `${individualOverallRate}%`;
+            elements.individualSubmittedVsTarget.textContent = `${individualSubmissionRate}%`;
+            elements.individualConversionRate.textContent = `${individualSanctionRate}%`;
+            elements.individualPerformance.textContent = `${individualOverallRate}%`;
+            
+            // Update Individual progress bars
+            elements.individualTargetProgress.style.width = `${individualOverallRate}%`;
+            elements.individualSubmittedProgress.style.width = `${individualSubmissionRate}%`;
+            elements.individualSanctionedProgress.style.width = `${individualSanctionRate}%`;
+            
+            // Update Individual overall status
+            let individualStatus = 'Needs Attention';
+            let individualStatusColor = 'text-red-600';
+            
+            if (individualOverallRate >= 80) {
+                individualStatus = 'Excellent Performance';
+                individualStatusColor = 'text-green-600';
+            } else if (individualOverallRate >= 50) {
+                individualStatus = 'Moderate Progress';
+                individualStatusColor = 'text-yellow-600';
+            }
+            
+            elements.individualOverallStatus.innerHTML = `
+                <span class="${individualStatusColor}">${individualStatus}</span>
+                <div class="text-sm text-gray-600 mt-1">${individualOverallRate}% target achieved</div>
+            `;
+        }
+        
+        // Update table view
+        function updateTableView() {
+            filteredDistricts = filterDistricts(allDistricts);
+            filteredDistricts = sortDistricts(filteredDistricts);
+            
+            const pageDistricts = updatePagination();
+            renderTableRows(pageDistricts);
+            updateStats(allDistricts);
+        }
+        
+        // Fetch and process CSV data
+        async function fetchCSVData() {
+            try {
+                elements.loading.classList.remove('hidden');
+                elements.error.classList.add('hidden');
+                elements.tableContainer.classList.add('hidden');
+                elements.dataStatus.textContent = 'Loading...';
+                elements.dataStatus.className = 'text-xs px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 font-medium';
+                elements.individualDataStatus.textContent = 'Loading...';
+                elements.individualDataStatus.className = 'text-xs px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 font-medium';
+                
+                const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSKZv2oeWp8NIvfF8RX1gmUi710FpEPs-2BAhUaxq4Tr6HvY02XcoyMuO77cmFtre_u81u7dyg0tzJI/pub?output=csv';
+                
+                let csvText;
+                
+                try {
+                    const response = await fetch(csvUrl);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    csvText = await response.text();
+                    
+                    if (!csvText || csvText.trim().length === 0) {
+                        throw new Error('Empty CSV data received');
+                    }
+                    
+                    console.log('Successfully fetched CSV data');
+                    elements.dataSource.textContent = 'Live Data';
+                } catch (fetchError) {
+                    console.error('Could not fetch actual CSV data:', fetchError.message);
+                    throw new Error('Unable to fetch data from Google Sheets. Please check the CSV URL.');
+                }
+                
+                // Parse actual CSV data
+                const rows = parseCSV(csvText);
+                
+                if (rows.length === 0 || rows[0].length < 370) {
+                    throw new Error('CSV data does not have enough columns. Expected at least 370 columns for individual loan data.');
+                }
+                
+                // Store all CSV data for block processing
+                allCSVData = rows;
+                
+                const districtTotals = {};
+                
+                let startRow = 0;
+                const firstValue2 = parseFloat(rows[0][2]);
+                const firstValue3 = parseFloat(rows[0][3]);
+                
+                if (isNaN(firstValue2) || isNaN(firstValue3)) {
+                    startRow = 1;
+                }
+                
+                for (let i = startRow; i < rows.length; i++) {
+                    const row = rows[i];
+                    
+                    if (row.length < 370 || !row[0]) continue;
+                    
+                    const district = row[0].trim();
+                    
+                    // Parse SHG loan values from specific columns - amounts are in lakh
+                    const targetCount = parseFloat(row[2]) || 0;
+                    const targetAmt = parseFloat(row[3]) || 0;
+                    const submittedNovCount = parseFloat(row[6]) || 0;
+                    const submittedNovAmt = parseFloat(row[7]) || 0;
+                    const submittedDecCount = parseFloat(row[362]) || 0;
+                    const submittedDecAmt = parseFloat(row[363]) || 0;
+                    const sanctionedCount = parseFloat(row[364]) || 0;
+                    const sanctionedAmt = parseFloat(row[365]) || 0;
+                    
+                    // Parse Individual loan values from specific columns
+                    // Column 4: No. of Individual Loan Target
+                    // Column 5: Amt of Individual Loan Target
+                    const individualTargetCount = parseFloat(row[4]) || 0;
+                    const individualTargetAmt = parseFloat(row[5]) || 0;
+                    
+                    // Column 8: No. of Individual Loan Submitted upto 17 Nov 2025
+                    // Column 9: Amt of Individual Loan Submitted upto 17 Nov 2025
+                    // Column 366: Sub Total of Individual Loan Submitted from 1-31 Dec 2025
+                    // Column 367: Sub Total Amt of Individual Loan Submitted from 1-31 Dec 2025
+                    const individualSubmittedNovCount = parseFloat(row[8]) || 0;
+                    const individualSubmittedNovAmt = parseFloat(row[9]) || 0;
+                    const individualSubmittedDecCount = parseFloat(row[366]) || 0;
+                    const individualSubmittedDecAmt = parseFloat(row[367]) || 0;
+                    
+                    // Column 368: Total No of Individual Loan Sanctioned
+                    // Column 369: Total Individual Loan Amt Sanctioned
+                    const individualSanctionedCount = parseFloat(row[368]) || 0;
+                    const individualSanctionedAmt = parseFloat(row[369]) || 0;
+                    
+                    const totalSubmittedCount = submittedNovCount + submittedDecCount;
+                    const totalSubmittedAmt = submittedNovAmt + submittedDecAmt;
+                    
+                    const totalIndividualSubmittedCount = individualSubmittedNovCount + individualSubmittedDecCount;
+                    const totalIndividualSubmittedAmt = individualSubmittedNovAmt + individualSubmittedDecAmt;
+                    
+                    if (!districtTotals[district]) {
+                        districtTotals[district] = {
+                            district,
+                            // SHG loan data
+                            targetCount: 0,
+                            targetAmt: 0,
+                            submittedCount: 0,
+                            submittedAmt: 0,
+                            sanctionedCount: 0,
+                            sanctionedAmt: 0,
+                            // Individual loan data
+                            individualTargetCount: 0,
+                            individualTargetAmt: 0,
+                            individualSubmittedCount: 0,
+                            individualSubmittedAmt: 0,
+                            individualSanctionedCount: 0,
+                            individualSanctionedAmt: 0,
+                            count: 0
+                        };
+                    }
+                    
+                    // SHG loan totals
+                    districtTotals[district].targetCount += targetCount;
+                    districtTotals[district].targetAmt += targetAmt;
+                    districtTotals[district].submittedCount += totalSubmittedCount;
+                    districtTotals[district].submittedAmt += totalSubmittedAmt;
+                    districtTotals[district].sanctionedCount += sanctionedCount;
+                    districtTotals[district].sanctionedAmt += sanctionedAmt;
+                    
+                    // Individual loan totals
+                    districtTotals[district].individualTargetCount += individualTargetCount;
+                    districtTotals[district].individualTargetAmt += individualTargetAmt;
+                    districtTotals[district].individualSubmittedCount += totalIndividualSubmittedCount;
+                    districtTotals[district].individualSubmittedAmt += totalIndividualSubmittedAmt;
+                    districtTotals[district].individualSanctionedCount += individualSanctionedCount;
+                    districtTotals[district].individualSanctionedAmt += individualSanctionedAmt;
+                    
+                    districtTotals[district].count += 1;
+                }
+                
+                allDistricts = Object.values(districtTotals);
+                
+                // Update UI
+                currentPage = 1;
+                updateTableView();
+                
+                const now = new Date();
+                elements.updateTime.textContent = now.toLocaleTimeString();
+                elements.footerTime.textContent = now.toLocaleString();
+                
+                elements.loading.classList.add('hidden');
+                elements.tableContainer.classList.remove('hidden');
+                elements.dataStatus.textContent = 'Live';
+                elements.dataStatus.className = 'text-xs px-3 py-1 rounded-full bg-green-100 text-green-800 font-medium';
+                elements.individualDataStatus.textContent = 'Live';
+                elements.individualDataStatus.className = 'text-xs px-3 py-1 rounded-full bg-sky-100 text-sky-800 font-medium';
+                
+            } catch (err) {
+                console.error('Error fetching or processing CSV data:', err);
+                elements.loading.classList.add('hidden');
+                elements.errorMessage.textContent = `Error: ${err.message}. Please try again.`;
+                elements.error.classList.remove('hidden');
+                elements.dataStatus.textContent = 'Error';
+                elements.dataStatus.className = 'text-xs px-3 py-1 rounded-full bg-red-100 text-red-800 font-medium';
+                elements.individualDataStatus.textContent = 'Error';
+                elements.individualDataStatus.className = 'text-xs px-3 py-1 rounded-full bg-red-100 text-red-800 font-medium';
+            }
+        }
+        
+        // Event Listeners
+        elements.searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            currentPage = 1;
+            updateTableView();
+        });
+        
+        elements.sortSelect.addEventListener('change', (e) => {
+            sortBy = e.target.value;
+            updateTableView();
+        });
+        
+        elements.prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                updateTableView();
+            }
+        });
+        
+        elements.nextBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredDistricts.length / ITEMS_PER_PAGE);
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateTableView();
+            }
+        });
+        
+        elements.refreshBtn.addEventListener('click', fetchCSVData);
+        elements.retryBtn.addEventListener('click', fetchCSVData);
+        
+        // Modal event listeners
+        elements.closeModal.addEventListener('click', () => {
+            elements.blockModal.classList.remove('active');
+        });
+        
+        // Close modal when clicking outside
+        elements.blockModal.addEventListener('click', (e) => {
+            if (e.target === elements.blockModal) {
+                elements.blockModal.classList.remove('active');
+            }
+        });
+        
+        // Close modal with ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && elements.blockModal.classList.contains('active')) {
+                elements.blockModal.classList.remove('active');
+            }
+        });
+        
+        // Initial load
+        fetchCSVData();
+    </script>
+</body>
+</html>

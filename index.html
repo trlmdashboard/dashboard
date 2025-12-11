@@ -35,31 +35,53 @@
             backdrop-filter: blur(10px);
         }
         
-        /* Remove scrolling from main tables */
+        /* Add horizontal scroll to main tables */
         .table-container {
             max-height: none !important;
+            overflow-x: auto !important;
             overflow-y: visible !important;
+        }
+        
+        /* Ensure tables don't break layout */
+        .table-container table {
+            min-width: 1200px;
+            width: 100%;
         }
         
         /* Add scroll only to block modal tables */
         .modal-table-container {
             max-height: 600px;
             overflow-y: auto;
+            overflow-x: auto;
         }
         
-        /* Custom scrollbar for modal tables */
+        /* Custom scrollbar for all tables */
+        .table-container::-webkit-scrollbar,
         .modal-table-container::-webkit-scrollbar {
-            width: 6px;
+            width: 8px;
+            height: 8px;
         }
         
+        .table-container::-webkit-scrollbar-track,
         .modal-table-container::-webkit-scrollbar-track {
             background: #f1f1f1;
             border-radius: 10px;
         }
         
+        .table-container::-webkit-scrollbar-thumb,
         .modal-table-container::-webkit-scrollbar-thumb {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 10px;
+        }
+        
+        .table-container::-webkit-scrollbar-thumb:hover,
+        .modal-table-container::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        }
+        
+        /* Horizontal scrollbar specific */
+        .table-container::-webkit-scrollbar:horizontal {
+            height: 8px;
         }
         
         .progress-bar {

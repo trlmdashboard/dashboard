@@ -1,0 +1,1961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samriddhi Campaign 2.0 Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-gradient {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            transition: transform 0.2s ease;
+        }
+        
+        .stat-card {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Add horizontal scroll to main tables */
+        .table-container {
+            max-height: none !important;
+            overflow-x: auto !important;
+            overflow-y: visible !important;
+        }
+        
+        /* Ensure tables don't break layout */
+        .table-container table {
+            min-width: 1200px;
+            width: 100%;
+        }
+        
+        /* Add scroll only to block modal tables */
+        .modal-table-container {
+            max-height: 600px;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+        
+        /* Custom scrollbar for all tables */
+        .table-container::-webkit-scrollbar,
+        .modal-table-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        .table-container::-webkit-scrollbar-track,
+        .modal-table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .table-container::-webkit-scrollbar-thumb,
+        .modal-table-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+        
+        .table-container::-webkit-scrollbar-thumb:hover,
+        .modal-table-container::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        }
+        
+        /* Horizontal scrollbar specific */
+        .table-container::-webkit-scrollbar:horizontal {
+            height: 8px;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .highlight-target { border-left: 4px solid #3b82f6; }
+        .highlight-submitted { border-left: 4px solid #8b5cf6; }
+        .highlight-sanctioned { border-left: 4px solid #10b981; }
+        .highlight-individual-target { border-left: 4px solid #0ea5e9; }
+        .highlight-individual-submitted { border-left: 4px solid #a855f7; }
+        .highlight-individual-sanctioned { border-left: 4px solid #059669; }
+        
+        .district-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .individual-badge {
+            background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+        }
+        
+        .bank-badge {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .trend-up {
+            color: #10b981;
+        }
+        
+        .trend-down {
+            color: #ef4444;
+        }
+        
+        .ticket-size {
+            color: #8b5cf6;
+        }
+        
+        /* Popup Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 1400px;
+            max-height: 85vh;
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            color: white;
+        }
+        
+        .modal-body {
+            padding: 0;
+            max-height: 65vh;
+            overflow-y: auto;
+        }
+        
+        .close-modal {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .close-modal:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .block-badge {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        /* Remove pagination from main tables */
+        .no-pagination {
+            display: none !important;
+        }
+        
+        /* Page visitor counter styles */
+        .visitor-counter {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+        
+        .visitor-counter-icon {
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+        }
+        
+        /* Bank modal header */
+        .bank-modal-header {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#8b5cf6',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        dark: '#1f2937',
+                        light: '#f9fafb'
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+                        <i class="fas fa-hand-holding-usd text-blue-500 mr-3"></i>
+                        Samriddhi Campaign 2.0 Dashboard
+                    </h1>
+                    <p class="text-gray-600 text-lg">
+                        Real-time monitoring of Self Help Group loan targets, submissions, and sanctions
+                    </p>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Page Visitor Counter -->
+                    <div class="bg-white rounded-xl shadow-lg px-6 py-4 flex items-center space-x-4 visitor-counter">
+                        <div class="relative">
+                            <div class="w-12 h-12 rounded-full visitor-counter-icon flex items-center justify-center">
+                                <i class="fas fa-eye text-white text-xl"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-sm text-white/90">Total Page Views</p>
+                            <p class="text-xl font-bold text-white">
+                                <span id="pageViewCount">0</span>
+                                <span class="text-xs text-white/80 ml-2">
+                                    <i class="fas fa-chart-line mr-1"></i>Views
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SHG Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift highlight-target">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Target Loans</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-2" id="totalTargetLoans">0</p>
+                            <p class="text-gray-600 mt-1" id="totalTargetAmount">₹0</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                            <i class="fas fa-bullseye text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Achievement</span>
+                            <span class="font-semibold text-blue-600" id="targetAchievement">0%</span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-blue-500 w-0" id="targetProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift highlight-submitted">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Submitted Loans</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-2" id="totalSubmittedLoans">0</p>
+                            <p class="text-gray-600 mt-1" id="totalSubmittedAmount">₹0</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                            <i class="fas fa-paper-plane text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">vs Target</span>
+                            <span class="font-semibold text-purple-600" id="submittedVsTarget">0%</span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-purple-500 w-0" id="submittedProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift highlight-sanctioned">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Sanctioned Loans</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-2" id="totalSanctionedLoans">0</p>
+                            <p class="text-gray-600 mt-1" id="totalSanctionedAmount">₹0</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
+                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Conversion Rate</span>
+                            <span class="font-semibold text-green-600" id="conversionRate">0%</span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-green-500 w-0" id="sanctionedProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Overall Status</p>
+                            <p class="text-xl font-bold text-gray-800 mt-2" id="overallStatus">Loading...</p>
+                            <div class="flex items-center mt-2">
+                                <span class="text-gray-600 text-sm mr-2">Last Updated:</span>
+                                <span class="text-sm font-medium" id="updateTime">--:--</span>
+                            </div>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-yellow-100 flex items-center justify-center">
+                            <i class="fas fa-chart-line text-yellow-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between">
+                            <button id="refreshBtn" class="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center">
+                                <i class="fas fa-redo-alt mr-2"></i> Refresh Data
+                            </button>
+                            <span class="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-800 font-medium" id="dataStatus">Live</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="loading" class="bg-white rounded-2xl shadow-lg p-12 mb-8 flex flex-col items-center justify-center">
+            <div class="relative mb-6">
+                <div class="w-24 h-24 rounded-full border-4 border-gray-200 border-t-blue-500 animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <i class="fas fa-database text-blue-500 text-2xl"></i>
+                </div>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Loading District Data</h3>
+            <p class="text-gray-600 text-center max-w-md">Fetching and analyzing SHG loan performance data from all districts...</p>
+            <div class="mt-6 w-full max-w-sm">
+                <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-blue-500 to-purple-600 animate-pulse w-3/4"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Error State -->
+        <div id="error" class="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-2xl shadow-lg p-8 mb-8 hidden">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-red-800 mb-2">Data Loading Error</h3>
+                    <p id="errorMessage" class="text-red-700 mb-4">Unable to load data. Please check your connection and try again.</p>
+                    <button id="retryBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center">
+                        <i class="fas fa-redo-alt mr-2"></i> Retry Loading
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Table Container -->
+        <div id="tableContainer" class="hidden">
+            <!-- SHG Loans Table -->
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
+                <div class="px-6 py-5 border-b border-gray-200">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800">
+                                <i class="fas fa-table-cells-large text-blue-500 mr-2"></i>
+                                District-wise SHG Loan Performance
+                            </h2>
+                            <p class="text-gray-600 text-sm mt-1">Click on any district to view block-wise SHG loan performance details</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="relative">
+                                <input type="text" id="searchInput" placeholder="Search districts..." 
+                                       class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-64">
+                                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm text-gray-600">Sort by:</span>
+                                <select id="sortSelect" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="district">District Name</option>
+                                    <option value="target">Target Amount</option>
+                                    <option value="submitted">Submitted Amount</option>
+                                    <option value="sanctioned">Sanctioned Amount</option>
+                                    <option value="ticket">Ticket Size</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-map-marker-alt text-blue-500 mr-2"></i>
+                                        District
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-bullseye text-blue-500 mr-2"></i>
+                                        Target
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-paper-plane text-purple-500 mr-2"></i>
+                                        Submitted
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                        Sanctioned
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-money-bill-wave text-indigo-500 mr-2"></i>
+                                        Ticket Size
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-chart-bar text-yellow-500 mr-2"></i>
+                                        Performance
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-trend-up text-gray-500 mr-2"></i>
+                                        Status
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Table rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- REMOVED PAGINATION FOR MAIN TABLES -->
+                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 no-pagination">
+                    <div class="flex flex-col md:flex-row justify-between items-center">
+                        <div class="mb-4 md:mb-0">
+                            <p class="text-sm text-gray-700">
+                                Showing <span id="showingCount" class="font-semibold">0</span> of 
+                                <span id="totalCount" class="font-semibold">0</span> districts
+                            </p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button id="prevBtn" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="fas fa-chevron-left mr-1"></i> Previous
+                            </button>
+                            <span class="text-sm text-gray-700">Page <span id="currentPage">1</span> of <span id="totalPages">1</span></span>
+                            <button id="nextBtn" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                Next <i class="fas fa-chevron-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Individual Loan Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift highlight-individual-target">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Individual Target Loans</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-2" id="totalIndividualTargetLoans">0</p>
+                            <p class="text-gray-600 mt-1" id="totalIndividualTargetAmount">₹0</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-sky-100 flex items-center justify-center">
+                            <i class="fas fa-user-check text-sky-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Achievement</span>
+                            <span class="font-semibold text-sky-600" id="individualTargetAchievement">0%</span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-sky-500 w-0" id="individualTargetProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift highlight-individual-submitted">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Individual Submitted Loans</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-2" id="totalIndividualSubmittedLoans">0</p>
+                            <p class="text-gray-600 mt-1" id="totalIndividualSubmittedAmount">₹0</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                            <i class="fas fa-user-tag text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">vs Target</span>
+                            <span class="font-semibold text-purple-600" id="individualSubmittedVsTarget">0%</span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-purple-500 w-0" id="individualSubmittedProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift highlight-individual-sanctioned">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Individual Sanctioned Loans</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-2" id="totalIndividualSanctionedLoans">0</p>
+                            <p class="text-gray-600 mt-1" id="totalIndividualSanctionedAmount">₹0</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center">
+                            <i class="fas fa-user-check text-emerald-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Conversion Rate</span>
+                            <span class="font-semibold text-emerald-600" id="individualConversionRate">0%</span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-emerald-500 w-0" id="individualSanctionedProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white rounded-2xl shadow-lg p-6 hover-lift">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Individual Overall Status</p>
+                            <p class="text-xl font-bold text-gray-800 mt-2" id="individualOverallStatus">Loading...</p>
+                            <div class="flex items-center mt-2">
+                                <span class="text-gray-600 text-sm mr-2">Performance:</span>
+                                <span class="text-sm font-medium" id="individualPerformance">--%</span>
+                            </div>
+                        </div>
+                        <div class="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center">
+                            <i class="fas fa-users text-amber-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">Individual Loans</span>
+                            <span class="text-xs px-3 py-1 rounded-full bg-sky-100 text-sky-800 font-medium" id="individualDataStatus">Live</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Individual Loans Table -->
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
+                <div class="px-6 py-5 border-b border-gray-200">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800">
+                                <i class="fas fa-user text-sky-500 mr-2"></i>
+                                District-wise Individual Loan Performance
+                            </h2>
+                            <p class="text-gray-600 text-sm mt-1">Click on any district to view block-wise individual loan performance details</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="relative">
+                                <input type="text" id="individualSearchInput" placeholder="Search districts..." 
+                                       class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-64">
+                                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm text-gray-600">Sort by:</span>
+                                <select id="individualSortSelect" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="district">District Name</option>
+                                    <option value="target">Target Amount</option>
+                                    <option value="submitted">Submitted Amount</option>
+                                    <option value="sanctioned">Sanctioned Amount</option>
+                                    <option value="ticket">Ticket Size</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-map-marker-alt text-sky-500 mr-2"></i>
+                                        District
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-bullseye text-sky-500 mr-2"></i>
+                                        Target
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-paper-plane text-purple-500 mr-2"></i>
+                                        Submitted
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-check-circle text-emerald-500 mr-2"></i>
+                                        Sanctioned
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-money-bill-wave text-indigo-500 mr-2"></i>
+                                        Ticket Size
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-chart-bar text-yellow-500 mr-2"></i>
+                                        Performance
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-trend-up text-gray-500 mr-2"></i>
+                                        Status
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="individualTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Individual table rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- REMOVED PAGINATION FOR INDIVIDUAL TABLE -->
+                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 no-pagination">
+                    <div class="flex flex-col md:flex-row justify-between items-center">
+                        <div class="mb-4 md:mb-0">
+                            <p class="text-sm text-gray-700">
+                                Showing <span id="individualShowingCount" class="font-semibold">0</span> of 
+                                <span id="individualTotalCount" class="font-semibold">0</span> districts
+                            </p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button id="individualPrevBtn" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="fas fa-chevron-left mr-1"></i> Previous
+                            </button>
+                            <span class="text-sm text-gray-700">Page <span id="individualCurrentPage">1</span> of <span id="individualTotalPages">1</span></span>
+                            <button id="individualNextBtn" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                Next <i class="fas fa-chevron-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bank Wise Loan Submission Status Table -->
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
+                <div class="px-6 py-5 border-b border-gray-200">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800">
+                                <i class="fas fa-university text-yellow-500 mr-2"></i>
+                                Bank wise Loan Submission Status
+                            </h2>
+                            <p class="text-gray-600 text-sm mt-1">Click on any bank to view branch-wise loan submission details</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="relative">
+                                <input type="text" id="bankSearchInput" placeholder="Search banks..." 
+                                       class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-64">
+                                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                            </div>
+                            <button id="downloadBankExcel" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center">
+                                <i class="fas fa-file-excel mr-2"></i> Excel Download
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-university text-yellow-500 mr-2"></i>
+                                        Bank Name
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-paper-plane text-blue-500 mr-2"></i>
+                                        SHG Submitted
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                        SHG Sanctioned
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-user-tag text-purple-500 mr-2"></i>
+                                        Individual Submitted
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-user-check text-emerald-500 mr-2"></i>
+                                        Individual Sanctioned
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-chart-pie text-indigo-500 mr-2"></i>
+                                        Total Performance
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="bankTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Bank table rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                    <div class="flex flex-col md:flex-row justify-between items-center">
+                        <div class="mb-4 md:mb-0">
+                            <p class="text-sm text-gray-700">
+                                Total Banks: <span id="bankTotalCount" class="font-semibold">0</span>
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">
+                                <i class="fas fa-info-circle text-yellow-500 mr-1"></i>
+                                Data from separate bank submission tracking system
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Legend -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Performance Indicators</h3>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full bg-blue-500 mr-3"></div>
+                        <span class="text-sm text-gray-700">Target: Campaign loan objectives</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full bg-purple-500 mr-3"></div>
+                        <span class="text-sm text-gray-700">Submitted: Loans processed for approval</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full bg-green-500 mr-3"></div>
+                        <span class="text-sm text-gray-700">Sanctioned: Approved & disbursed loans</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full bg-indigo-500 mr-3"></div>
+                        <span class="text-sm text-gray-700">Ticket Size: Average loan amount sanctioned</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full bg-yellow-500 mr-3"></div>
+                        <span class="text-sm text-gray-700">Performance: Achievement vs target</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="mt-12 pt-8 border-t border-gray-200">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-gray-600 text-sm">
+                        <i class="fas fa-database text-blue-500 mr-2"></i>
+                        Data Source: Google Sheets CSV | SHG Loan Monitoring System
+                    </p>
+                    <p class="text-gray-600 text-sm mt-1">
+                        <i class="fas fa-eye text-blue-500 mr-2"></i>
+                        <span id="pageViewsFooter">0 views</span> | Page Visitor Counter
+                    </p>
+                    <!-- Developer Description -->
+                    <p class="text-gray-600 text-sm mt-2 italic">
+                        <i class="fas fa-code text-purple-500 mr-2"></i>
+                        Dashboard Developed and Managed by - Gopal Debnath, Programme Manager (MIS), SMMU, TRLM
+                    </p>
+                </div>
+                <div class="text-sm text-gray-500">
+                    <p>Last updated: <span id="footerTime" class="font-medium">--:--</span> | 
+                    <span id="dataSource" class="font-medium">Live Data</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Block-wise SHG Data Modal -->
+    <div id="blockModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="text-2xl font-bold" id="modalDistrictTitle">
+                        <i class="fas fa-map-marker-alt mr-3"></i>
+                        <span id="selectedDistrictName">Loading...</span> - Block-wise SHG Loan Performance
+                    </h2>
+                    <p class="text-white/90 mt-1 text-sm" id="modalDistrictStats">Loading block data...</p>
+                </div>
+                <button class="close-modal" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="blockLoading" class="p-12 flex flex-col items-center justify-center">
+                    <div class="relative mb-6">
+                        <div class="w-16 h-16 rounded-full border-4 border-gray-200 border-t-blue-500 animate-spin"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i class="fas fa-table-cells text-blue-500 text-xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Loading Block Data</h3>
+                    <p class="text-gray-600 text-center max-w-md">Fetching block-wise SHG loan performance data...</p>
+                </div>
+                
+                <div id="blockError" class="p-8 hidden">
+                    <div class="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl p-6">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                                    <i class="fas fa-exclamation-triangle text-red-600"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-md font-semibold text-red-800 mb-1">Block Data Loading Error</h3>
+                                <p id="blockErrorMessage" class="text-red-700">Unable to load block data.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="blockTableContainer" class="hidden">
+                    <div class="modal-table-container">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-th-large text-blue-500 mr-2"></i>
+                                            Block
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-bullseye text-blue-500 mr-2"></i>
+                                            Target
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-paper-plane text-purple-500 mr-2"></i>
+                                            Submitted
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                            Sanctioned
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-money-bill-wave text-indigo-500 mr-2"></i>
+                                            Ticket Size
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-chart-bar text-yellow-500 mr-2"></i>
+                                            Performance
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-trend-up text-gray-500 mr-2"></i>
+                                            Status
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="blockTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Block rows will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <p class="text-sm text-gray-700">
+                                Total Blocks: <span id="blockCount" class="font-semibold">0</span>
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                <i class="fas fa-info-circle text-blue-500 mr-1"></i>
+                                Showing SHG loan data for <span id="currentDistrictName" class="font-semibold">selected district</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Block-wise Individual Loan Data Modal -->
+    <div id="individualBlockModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(90deg, #0ea5e9, #3b82f6);">
+                <div>
+                    <h2 class="text-2xl font-bold" id="individualModalDistrictTitle">
+                        <i class="fas fa-user mr-3"></i>
+                        <span id="individualSelectedDistrictName">Loading...</span> - Block-wise Individual Loan Performance
+                    </h2>
+                    <p class="text-white/90 mt-1 text-sm" id="individualModalDistrictStats">Loading block data...</p>
+                </div>
+                <button class="close-modal" id="individualCloseModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="individualBlockLoading" class="p-12 flex flex-col items-center justify-center">
+                    <div class="relative mb-6">
+                        <div class="w-16 h-16 rounded-full border-4 border-gray-200 border-t-sky-500 animate-spin"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i class="fas fa-user text-sky-500 text-xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Loading Block Data</h3>
+                    <p class="text-gray-600 text-center max-w-md">Fetching block-wise individual loan performance data...</p>
+                </div>
+                
+                <div id="individualBlockError" class="p-8 hidden">
+                    <div class="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl p-6">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                                    <i class="fas fa-exclamation-triangle text-red-600"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-md font-semibold text-red-800 mb-1">Block Data Loading Error</h3>
+                                <p id="individualBlockErrorMessage" class="text-red-700">Unable to load block data.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="individualBlockTableContainer" class="hidden">
+                    <div class="modal-table-container">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-th-large text-sky-500 mr-2"></i>
+                                            Block
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-bullseye text-sky-500 mr-2"></i>
+                                            Target
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-paper-plane text-purple-500 mr-2"></i>
+                                            Submitted
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-check-circle text-emerald-500 mr-2"></i>
+                                            Sanctioned
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-money-bill-wave text-indigo-500 mr-2"></i>
+                                            Ticket Size
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-chart-bar text-yellow-500 mr-2"></i>
+                                            Performance
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-trend-up text-gray-500 mr-2"></i>
+                                            Status
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="individualBlockTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Individual block rows will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <p class="text-sm text-gray-700">
+                                Total Blocks: <span id="individualBlockCount" class="font-semibold">0</span>
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                <i class="fas fa-info-circle text-sky-500 mr-1"></i>
+                                Showing individual loan data for <span id="individualCurrentDistrictName" class="font-semibold">selected district</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bank Branch-wise Data Modal -->
+    <div id="bankModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header bank-modal-header">
+                <div>
+                    <h2 class="text-2xl font-bold" id="bankModalTitle">
+                        <i class="fas fa-university mr-3"></i>
+                        <span id="selectedBankName">Loading...</span> - Branch-wise Loan Submission Details
+                    </h2>
+                    <p class="text-white/90 mt-1 text-sm" id="bankModalStats">Loading branch data...</p>
+                </div>
+                <button class="close-modal" id="bankCloseModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="bankLoading" class="p-12 flex flex-col items-center justify-center">
+                    <div class="relative mb-6">
+                        <div class="w-16 h-16 rounded-full border-4 border-gray-200 border-t-yellow-500 animate-spin"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i class="fas fa-university text-yellow-500 text-xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Loading Branch Data</h3>
+                    <p class="text-gray-600 text-center max-w-md">Fetching branch-wise loan submission data...</p>
+                </div>
+                
+                <div id="bankError" class="p-8 hidden">
+                    <div class="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl p-6">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                                    <i class="fas fa-exclamation-triangle text-red-600"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-md font-semibold text-red-800 mb-1">Branch Data Loading Error</h3>
+                                <p id="bankErrorMessage" class="text-red-700">Unable to load branch data.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="bankTableContainer" class="hidden">
+                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-800">Branch-wise Loan Details</h3>
+                        <button id="downloadBranchExcel" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center text-sm">
+                            <i class="fas fa-file-excel mr-2"></i> Download Excel
+                        </button>
+                    </div>
+                    <div class="modal-table-container">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-code-branch text-yellow-500 mr-2"></i>
+                                            Branch Name
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-hashtag text-blue-500 mr-2"></i>
+                                            No. of SHG Loan Submitted
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-rupee-sign text-blue-500 mr-2"></i>
+                                            Amt of SHG Loan Submitted
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-hashtag text-green-500 mr-2"></i>
+                                            No. of SHG Loan Sanctioned
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-rupee-sign text-green-500 mr-2"></i>
+                                            Total SHG Loan Amt Sanctioned
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-hashtag text-purple-500 mr-2"></i>
+                                            No. of Individual Loan Submitted
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-rupee-sign text-purple-500 mr-2"></i>
+                                            Amt of Individual Loan Submitted
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-hashtag text-emerald-500 mr-2"></i>
+                                            Total No of Individual Loan Sanctioned
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-rupee-sign text-emerald-500 mr-2"></i>
+                                            Total Individual Loan Amt Sanctioned
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="bankBranchTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Bank branch rows will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <p class="text-sm text-gray-700">
+                                Total Branches: <span id="bankBranchCount" class="font-semibold">0</span>
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                <i class="fas fa-info-circle text-yellow-500 mr-1"></i>
+                                Showing branch-wise data for <span id="currentBankName" class="font-semibold">selected bank</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        // Removed ITEMS_PER_PAGE and INDIVIDUAL_ITEMS_PER_PAGE since we're showing all districts
+        let currentPage = 1;
+        let individualCurrentPage = 1;
+        let allDistricts = [];
+        let filteredDistricts = [];
+        let individualFilteredDistricts = [];
+        let sortBy = 'district';
+        let individualSortBy = 'district';
+        let searchQuery = '';
+        let individualSearchQuery = '';
+        let allCSVData = [];
+        let allBankCSVData = [];
+        let bankData = [];
+        let bankSearchQuery = '';
+        
+        // Page Visitor Counter - Using counterapi.xyz service
+        const VISITOR_COUNTER_KEY = 'samriddhi_dashboard_visitors';
+        
+        // CSV URLs
+        const DISTRICT_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSKZv2oeWp8NIvfF8RX1gmUi710FpEPs-2BAhUaxq4Tr6HvY02XcoyMuO77cmFtre_u81u7dyg0tzJI/pub?output=csv';
+        const BANK_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRwZpM1CJb8K7e6_mbA5iFcVy2aIqf7EPHQo8f7gwegH0WL3doIweIbHaJtQNWW8rt1UhQQ3nlEVxPZ/pub?gid=670451665&single=true&output=csv';
+        
+        // DOM Elements
+        const elements = {
+            loading: document.getElementById('loading'),
+            error: document.getElementById('error'),
+            errorMessage: document.getElementById('errorMessage'),
+            tableContainer: document.getElementById('tableContainer'),
+            tableBody: document.getElementById('tableBody'),
+            searchInput: document.getElementById('searchInput'),
+            sortSelect: document.getElementById('sortSelect'),
+            prevBtn: document.getElementById('prevBtn'),
+            nextBtn: document.getElementById('nextBtn'),
+            currentPage: document.getElementById('currentPage'),
+            totalPages: document.getElementById('totalPages'),
+            showingCount: document.getElementById('showingCount'),
+            totalCount: document.getElementById('totalCount'),
+            updateTime: document.getElementById('updateTime'),
+            footerTime: document.getElementById('footerTime'),
+            refreshBtn: document.getElementById('refreshBtn'),
+            retryBtn: document.getElementById('retryBtn'),
+            dataSource: document.getElementById('dataSource'),
+            dataStatus: document.getElementById('dataStatus'),
+            
+            // Page visitor counter elements
+            pageViewCount: document.getElementById('pageViewCount'),
+            pageViewsFooter: document.getElementById('pageViewsFooter'),
+            
+            // Individual table elements
+            individualTableBody: document.getElementById('individualTableBody'),
+            individualSearchInput: document.getElementById('individualSearchInput'),
+            individualSortSelect: document.getElementById('individualSortSelect'),
+            individualPrevBtn: document.getElementById('individualPrevBtn'),
+            individualNextBtn: document.getElementById('individualNextBtn'),
+            individualCurrentPage: document.getElementById('individualCurrentPage'),
+            individualTotalPages: document.getElementById('individualTotalPages'),
+            individualShowingCount: document.getElementById('individualShowingCount'),
+            individualTotalCount: document.getElementById('individualTotalCount'),
+            
+            // Bank table elements
+            bankTableBody: document.getElementById('bankTableBody'),
+            bankSearchInput: document.getElementById('bankSearchInput'),
+            downloadBankExcel: document.getElementById('downloadBankExcel'),
+            bankTotalCount: document.getElementById('bankTotalCount'),
+            
+            // Stats elements
+            totalDistricts: document.getElementById('totalDistricts'),
+            totalTargetLoans: document.getElementById('totalTargetLoans'),
+            totalTargetAmount: document.getElementById('totalTargetAmount'),
+            totalSubmittedLoans: document.getElementById('totalSubmittedLoans'),
+            totalSubmittedAmount: document.getElementById('totalSubmittedAmount'),
+            totalSanctionedLoans: document.getElementById('totalSanctionedLoans'),
+            totalSanctionedAmount: document.getElementById('totalSanctionedAmount'),
+            targetAchievement: document.getElementById('targetAchievement'),
+            targetProgress: document.getElementById('targetProgress'),
+            submittedVsTarget: document.getElementById('submittedVsTarget'),
+            submittedProgress: document.getElementById('submittedProgress'),
+            conversionRate: document.getElementById('conversionRate'),
+            sanctionedProgress: document.getElementById('sanctionedProgress'),
+            overallStatus: document.getElementById('overallStatus'),
+            
+            // Individual Loan Stats elements
+            totalIndividualTargetLoans: document.getElementById('totalIndividualTargetLoans'),
+            totalIndividualTargetAmount: document.getElementById('totalIndividualTargetAmount'),
+            totalIndividualSubmittedLoans: document.getElementById('totalIndividualSubmittedLoans'),
+            totalIndividualSubmittedAmount: document.getElementById('totalIndividualSubmittedAmount'),
+            totalIndividualSanctionedLoans: document.getElementById('totalIndividualSanctionedLoans'),
+            totalIndividualSanctionedAmount: document.getElementById('totalIndividualSanctionedAmount'),
+            individualTargetAchievement: document.getElementById('individualTargetAchievement'),
+            individualTargetProgress: document.getElementById('individualTargetProgress'),
+            individualSubmittedVsTarget: document.getElementById('individualSubmittedVsTarget'),
+            individualSubmittedProgress: document.getElementById('individualSubmittedProgress'),
+            individualConversionRate: document.getElementById('individualConversionRate'),
+            individualSanctionedProgress: document.getElementById('individualSanctionedProgress'),
+            individualOverallStatus: document.getElementById('individualOverallStatus'),
+            individualPerformance: document.getElementById('individualPerformance'),
+            individualDataStatus: document.getElementById('individualDataStatus'),
+            
+            // SHG Modal elements
+            blockModal: document.getElementById('blockModal'),
+            closeModal: document.getElementById('closeModal'),
+            modalDistrictTitle: document.getElementById('modalDistrictTitle'),
+            selectedDistrictName: document.getElementById('selectedDistrictName'),
+            modalDistrictStats: document.getElementById('modalDistrictStats'),
+            blockLoading: document.getElementById('blockLoading'),
+            blockError: document.getElementById('blockError'),
+            blockErrorMessage: document.getElementById('blockErrorMessage'),
+            blockTableContainer: document.getElementById('blockTableContainer'),
+            blockTableBody: document.getElementById('blockTableBody'),
+            blockCount: document.getElementById('blockCount'),
+            currentDistrictName: document.getElementById('currentDistrictName'),
+            
+            // Individual Modal elements
+            individualBlockModal: document.getElementById('individualBlockModal'),
+            individualCloseModal: document.getElementById('individualCloseModal'),
+            individualModalDistrictTitle: document.getElementById('individualModalDistrictTitle'),
+            individualSelectedDistrictName: document.getElementById('individualSelectedDistrictName'),
+            individualModalDistrictStats: document.getElementById('individualModalDistrictStats'),
+            individualBlockLoading: document.getElementById('individualBlockLoading'),
+            individualBlockError: document.getElementById('individualBlockError'),
+            individualBlockErrorMessage: document.getElementById('individualBlockErrorMessage'),
+            individualBlockTableContainer: document.getElementById('individualBlockTableContainer'),
+            individualBlockTableBody: document.getElementById('individualBlockTableBody'),
+            individualBlockCount: document.getElementById('individualBlockCount'),
+            individualCurrentDistrictName: document.getElementById('individualCurrentDistrictName'),
+            
+            // Bank Modal elements
+            bankModal: document.getElementById('bankModal'),
+            bankCloseModal: document.getElementById('bankCloseModal'),
+            bankModalTitle: document.getElementById('bankModalTitle'),
+            selectedBankName: document.getElementById('selectedBankName'),
+            bankModalStats: document.getElementById('bankModalStats'),
+            bankLoading: document.getElementById('bankLoading'),
+            bankError: document.getElementById('bankError'),
+            bankErrorMessage: document.getElementById('bankErrorMessage'),
+            bankTableContainer: document.getElementById('bankTableContainer'),
+            bankBranchTableBody: document.getElementById('bankBranchTableBody'),
+            bankBranchCount: document.getElementById('bankBranchCount'),
+            currentBankName: document.getElementById('currentBankName'),
+            downloadBranchExcel: document.getElementById('downloadBranchExcel')
+        };
+        
+        // Update page visitor counter using counterapi.xyz
+        async function updatePageVisitorCounter() {
+            try {
+                // Use counterapi.xyz service
+                const response = await fetch(`https://api.countapi.xyz/hit/samriddhi/${VISITOR_COUNTER_KEY}`);
+                const data = await response.json();
+                
+                // Update display
+                if (elements.pageViewCount) elements.pageViewCount.textContent = data.value.toLocaleString();
+                if (elements.pageViewsFooter) elements.pageViewsFooter.textContent = `${data.value.toLocaleString()} views`;
+                
+            } catch (error) {
+                console.error('Error updating page visitor counter:', error);
+                // Fallback to localStorage if API fails
+                let localCount = localStorage.getItem('samriddhi_page_views') || '0';
+                localCount = parseInt(localCount) + 1;
+                localStorage.setItem('samriddhi_page_views', localCount);
+                
+                if (elements.pageViewCount) elements.pageViewCount.textContent = localCount.toLocaleString();
+                if (elements.pageViewsFooter) elements.pageViewsFooter.textContent = `${localCount.toLocaleString()} views (local)`;
+            }
+        }
+        
+        // Format currency - Amounts are in lakh, convert to Cr for display (divide by 100)
+        function formatCurrency(amount) {
+            // Amounts are in lakh, convert to Cr for display
+            if (amount >= 100) {
+                return `₹${(amount/100).toFixed(2)} Cr`;
+            } else {
+                return `₹${amount.toFixed(2)} L`;
+            }
+        }
+        
+        // Format ticket size currency - Include "Lakh" after amount
+        function formatTicketSize(amount) {
+            // For ticket size, show amount as-is (in lakh) with "Lakh" text
+            if (amount === 0) return '₹0.00 Lakh';
+            return `₹${amount.toFixed(2)} Lakh`;
+        }
+        
+        // Format number with commas
+        function formatNumber(num) {
+            return num.toLocaleString('en-IN');
+        }
+        
+        // Calculate performance percentage
+        function calculatePercentage(part, whole) {
+            if (whole === 0) return 0;
+            return Math.round((part / whole) * 100);
+        }
+        
+        // Calculate ticket size (Loan Sanctioned amount / No. of Loans)
+        function calculateTicketSize(sanctionedAmt, sanctionedCount) {
+            if (sanctionedCount === 0) return 0;
+            return sanctionedAmt / sanctionedCount;
+        }
+        
+        // Parse CSV text
+        function parseCSV(csvText) {
+            const rows = [];
+            let currentRow = [];
+            let currentCell = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < csvText.length; i++) {
+                const char = csvText[i];
+                const nextChar = csvText[i + 1];
+                
+                if (char === '"' && inQuotes && nextChar === '"') {
+                    currentCell += '"';
+                    i++;
+                } else if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    currentRow.push(currentCell);
+                    currentCell = '';
+                } else if (char === '\n' && !inQuotes) {
+                    currentRow.push(currentCell);
+                    rows.push(currentRow);
+                    currentRow = [];
+                    currentCell = '';
+                } else if (char === '\r' && nextChar === '\n' && !inQuotes) {
+                    currentRow.push(currentCell);
+                    rows.push(currentRow);
+                    currentRow = [];
+                    currentCell = '';
+                    i++;
+                } else if (char === '\r' && !inQuotes) {
+                    currentRow.push(currentCell);
+                    rows.push(currentRow);
+                    currentRow = [];
+                    currentCell = '';
+                } else {
+                    currentCell += char;
+                }
+            }
+            
+            if (currentCell !== '' || currentRow.length > 0) {
+                currentRow.push(currentCell);
+                rows.push(currentRow);
+            }
+            
+            return rows;
+        }
+        
+        // Process bank CSV data
+        function processBankCSVData(rows) {
+            const bankTotals = {};
+            const branchDetails = {};
+            
+            let startRow = 0;
+            // Check if first row contains headers
+            if (rows[0] && rows[0].length > 0) {
+                const firstValue = rows[0][0];
+                // If first cell doesn't look like a bank name (contains non-numeric characters or is a header)
+                if (firstValue && (firstValue.toLowerCase().includes('bank') || firstValue.toLowerCase().includes('branch') || firstValue.toLowerCase().includes('district'))) {
+                    startRow = 1;
+                }
+            }
+            
+            for (let i = startRow; i < rows.length; i++) {
+                const row = rows[i];
+                
+                if (!row || row.length < 371 || !row[1]) continue;
+                
+                const bankName = row[1].toString().trim();
+                const branchName = row[2] ? row[2].toString().trim() : 'Unknown Branch';
+                
+                // Parse column values based on your specifications
+                // All amounts are in lakh
+                const shgSubmittedCount = (parseFloat(row[7]) || 0) + (parseFloat(row[363]) || 0); // Column 7 + 363
+                const shgSubmittedAmt = (parseFloat(row[8]) || 0) + (parseFloat(row[364]) || 0); // Column 8 + 364
+                
+                const shgSanctionedCount = parseFloat(row[365]) || 0; // Column 365
+                const shgSanctionedAmt = parseFloat(row[366]) || 0; // Column 366
+                
+                const individualSubmittedCount = (parseFloat(row[9]) || 0) + (parseFloat(row[367]) || 0); // Column 9 + 367
+                const individualSubmittedAmt = (parseFloat(row[10]) || 0) + (parseFloat(row[368]) || 0); // Column 10 + 368
+                
+                const individualSanctionedCount = parseFloat(row[369]) || 0; // Column 369
+                const individualSanctionedAmt = parseFloat(row[370]) || 0; // Column 370
+                
+                // Initialize bank totals if not exists
+                if (!bankTotals[bankName]) {
+                    bankTotals[bankName] = {
+                        bankName: bankName,
+                        shgSubmittedCount: 0,
+                        shgSubmittedAmt: 0,
+                        shgSanctionedCount: 0,
+                        shgSanctionedAmt: 0,
+                        individualSubmittedCount: 0,
+                        individualSubmittedAmt: 0,
+                        individualSanctionedCount: 0,
+                        individualSanctionedAmt: 0,
+                        branchCount: 0
+                    };
+                }
+                
+                // Initialize branch details array if not exists
+                if (!branchDetails[bankName]) {
+                    branchDetails[bankName] = [];
+                }
+                
+                // Add branch details
+                branchDetails[bankName].push({
+                    branchName: branchName,
+                    shgSubmittedCount: shgSubmittedCount,
+                    shgSubmittedAmt: shgSubmittedAmt,
+                    shgSanctionedCount: shgSanctionedCount,
+                    shgSanctionedAmt: shgSanctionedAmt,
+                    individualSubmittedCount: individualSubmittedCount,
+                    individualSubmittedAmt: individualSubmittedAmt,
+                    individualSanctionedCount: individualSanctionedCount,
+                    individualSanctionedAmt: individualSanctionedAmt
+                });
+                
+                // Update bank totals
+                bankTotals[bankName].shgSubmittedCount += shgSubmittedCount;
+                bankTotals[bankName].shgSubmittedAmt += shgSubmittedAmt;
+                bankTotals[bankName].shgSanctionedCount += shgSanctionedCount;
+                bankTotals[bankName].shgSanctionedAmt += shgSanctionedAmt;
+                bankTotals[bankName].individualSubmittedCount += individualSubmittedCount;
+                bankTotals[bankName].individualSubmittedAmt += individualSubmittedAmt;
+                bankTotals[bankName].individualSanctionedCount += individualSanctionedCount;
+                bankTotals[bankName].individualSanctionedAmt += individualSanctionedAmt;
+                bankTotals[bankName].branchCount += 1;
+            }
+            
+            return {
+                bankTotals: Object.values(bankTotals),
+                branchDetails: branchDetails
+            };
+        }
+        
+        // Update bank table view
+        function updateBankTableView() {
+            const filteredBanks = bankSearchQuery.trim() === '' 
+                ? bankData.bankTotals 
+                : bankData.bankTotals.filter(bank => 
+                    bank.bankName.toLowerCase().includes(bankSearchQuery.toLowerCase())
+                );
+            
+            if (elements.bankTotalCount) elements.bankTotalCount.textContent = filteredBanks.length;
+            renderBankTableRows(filteredBanks);
+        }
+        
+        // Render bank table rows
+        function renderBankTableRows(banks) {
+            if (!elements.bankTableBody) return;
+            
+            elements.bankTableBody.innerHTML = '';
+            
+            banks.forEach(bank => {
+                const totalSubmittedCount = bank.shgSubmittedCount + bank.individualSubmittedCount;
+                const totalSubmittedAmt = bank.shgSubmittedAmt + bank.individualSubmittedAmt;
+                const totalSanctionedCount = bank.shgSanctionedCount + bank.individualSanctionedCount;
+                const totalSanctionedAmt = bank.shgSanctionedAmt + bank.individualSanctionedAmt;
+                
+                const sanctionRateSHG = calculatePercentage(bank.shgSanctionedCount, bank.shgSubmittedCount || 1);
+                const sanctionRateIndividual = calculatePercentage(bank.individualSanctionedCount, bank.individualSubmittedCount || 1);
+                const overallSanctionRate = calculatePercentage(totalSanctionedCount, totalSubmittedCount || 1);
+                
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors cursor-pointer';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full bank-badge flex items-center justify-center mr-3">
+                                <span class="text-white font-bold">${bank.bankName ? bank.bankName.charAt(0) : 'B'}</span>
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">${bank.bankName || 'Unknown Bank'}</div>
+                                <div class="text-sm text-gray-500">${bank.branchCount || 0} branches</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(bank.shgSubmittedCount || 0)}</div>
+                        <div class="text-sm text-blue-600 font-medium">${formatCurrency(bank.shgSubmittedAmt || 0)}</div>
+                        <div class="text-xs text-gray-500 mt-1">SHG Submitted</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(bank.shgSanctionedCount || 0)}</div>
+                        <div class="text-sm text-green-600 font-medium">${formatCurrency(bank.shgSanctionedAmt || 0)}</div>
+                        <div class="text-xs ${sanctionRateSHG >= 80 ? 'text-green-600' : sanctionRateSHG >= 50 ? 'text-yellow-600' : 'text-red-600'} mt-1">
+                            ${sanctionRateSHG}% conversion
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(bank.individualSubmittedCount || 0)}</div>
+                        <div class="text-sm text-purple-600 font-medium">${formatCurrency(bank.individualSubmittedAmt || 0)}</div>
+                        <div class="text-xs text-gray-500 mt-1">Individual Submitted</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(bank.individualSanctionedCount || 0)}</div>
+                        <div class="text-sm text-emerald-600 font-medium">${formatCurrency(bank.individualSanctionedAmt || 0)}</div>
+                        <div class="text-xs ${sanctionRateIndividual >= 80 ? 'text-green-600' : sanctionRateIndividual >= 50 ? 'text-yellow-600' : 'text-red-600'} mt-1">
+                            ${sanctionRateIndividual}% conversion
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="w-40">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-gray-600">Total Sanctioned</span>
+                                <span class="font-semibold ${overallSanctionRate >= 80 ? 'text-green-600' : overallSanctionRate >= 50 ? 'text-yellow-600' : 'text-red-600'}">
+                                    ${overallSanctionRate}%
+                                </span>
+                            </div>
+                            <div class="progress-bar bg-gray-200">
+                                <div class="progress-fill ${overallSanctionRate >= 80 ? 'bg-green-500' : overallSanctionRate >= 50 ? 'bg-yellow-500' : 'bg-red-500'}" 
+                                     style="width: ${Math.min(overallSanctionRate, 100)}%"></div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">
+                                ${formatNumber(totalSanctionedCount)} loans | ${formatCurrency(totalSanctionedAmt)}
+                            </div>
+                        </div>
+                    </td>
+                `;
+                
+                // Add click event to show bank branch data
+                row.addEventListener('click', () => showBankBranchData(bank.bankName));
+                
+                elements.bankTableBody.appendChild(row);
+            });
+        }
+        
+        // Show bank branch data
+        async function showBankBranchData(bankName) {
+            if (!bankName || !bankData.branchDetails || !bankData.branchDetails[bankName]) return;
+            
+            // Show modal
+            if (elements.bankModal) elements.bankModal.classList.add('active');
+            if (elements.selectedBankName) elements.selectedBankName.textContent = bankName;
+            if (elements.currentBankName) elements.currentBankName.textContent = bankName;
+            
+            // Show loading state
+            if (elements.bankLoading) elements.bankLoading.classList.remove('hidden');
+            if (elements.bankError) elements.bankError.classList.add('hidden');
+            if (elements.bankTableContainer) elements.bankTableContainer.classList.add('hidden');
+            
+            try {
+                const branches = bankData.branchDetails[bankName];
+                
+                // Update modal title with stats
+                const bankTotal = bankData.bankTotals.find(bank => bank.bankName === bankName);
+                
+                if (elements.bankModalStats && bankTotal) {
+                    elements.bankModalStats.innerHTML = `
+                        ${bankTotal.branchCount} Branches | ${formatNumber(bankTotal.shgSubmittedCount + bankTotal.individualSubmittedCount)} Total Submitted Loans | 
+                        ${formatCurrency(bankTotal.shgSubmittedAmt + bankTotal.individualSubmittedAmt)} Total Submitted Amount
+                    `;
+                }
+                
+                // Render branch table
+                renderBankBranchTable(branches, bankName);
+                
+                // Hide loading, show table
+                if (elements.bankLoading) elements.bankLoading.classList.add('hidden');
+                if (elements.bankTableContainer) elements.bankTableContainer.classList.remove('hidden');
+                
+            } catch (err) {
+                console.error('Error loading bank branch data:', err);
+                if (elements.bankLoading) elements.bankLoading.classList.add('hidden');
+                if (elements.bankErrorMessage) elements.bankErrorMessage.textContent = `Error: ${err.message}`;
+                if (elements.bankError) elements.bankError.classList.remove('hidden');
+            }
+        }
+        
+        // Render bank branch table
+        function renderBankBranchTable(branches, bankName) {
+            if (!elements.bankBranchTableBody || !elements.bankBranchCount) return;
+            
+            elements.bankBranchTableBody.innerHTML = '';
+            elements.bankBranchCount.textContent = branches.length;
+            
+            branches.forEach(branch => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${branch.branchName || 'Unknown Branch'}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(branch.shgSubmittedCount || 0)}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatCurrency(branch.shgSubmittedAmt || 0)}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(branch.shgSanctionedCount || 0)}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatCurrency(branch.shgSanctionedAmt || 0)}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(branch.individualSubmittedCount || 0)}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatCurrency(branch.individualSubmittedAmt || 0)}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatNumber(branch.individualSanctionedCount || 0)}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">${formatCurrency(branch.individualSanctionedAmt || 0)}</div>
+                    </td>
+                `;
+                
+                elements.bankBranchTableBody.appendChild(row);
+            });
+        }
+        
+        // Download Excel for bank branch data
+        function downloadBankExcel(bankName) {
+            if (!bankName || !bankData.branchDetails || !bankData.branchDetails[bankName]) return;
+            
+            const branches = bankData.branchDetails[bankName];
+            
+            // Create CSV content
+            let csvContent = "Branch Name,No. of SHG Loan Submitted,Amt of SHG Loan Submitted,No. of SHG Loan Sanctioned,Total SHG Loan Amt Sanctioned,No. of Individual Loan Submitted,Amt of Individual Loan Submitted,Total No of Individual Loan Sanctioned,Total Individual Loan Amt Sanctioned\n";
+            
+            branches.forEach(branch => {
+                csvContent += `"${branch.branchName || ''}",${branch.shgSubmittedCount || 0},${branch.shgSubmittedAmt || 0},${branch.shgSanctionedCount || 0},${branch.shgSanctionedAmt || 0},${branch.individualSubmittedCount || 0},${branch.individualSubmittedAmt || 0},${branch.individualSanctionedCount || 0},${branch.individualSanctionedAmt || 0}\n`;
+            });
+            
+            // Create download link
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `${bankName.replace(/\s+/g, '_')}_branch_details.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Fetch bank CSV data
+        async function fetchBankCSVData() {
+            try {
+                const response = await fetch(BANK_CSV_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const csvText = await response.text();
+                
+                if (!csvText || csvText.trim().length === 0) {
+                    throw new Error('Empty CSV data received');
+                }
+                
+                console.log('Successfully fetched bank CSV data');
+                
+                // Parse CSV data
+                const rows = parseCSV(csvText);
+                allBankCSVData = rows;
+                
+                // Process bank data
+                bankData = processBankCSVData(rows);
+                
+                // Update bank table
+                updateBankTableView();
+                
+            } catch (err) {
+                console.error('Error fetching or processing bank CSV data:', err);
+                // Generate sample bank data for demo
+                bankData = generateSampleBankData();
+                updateBankTableView();
+            }
+        }
+        
+        // Generate sample bank data for demo
+        function generateSampleBankData() {
+            const bankNames = ['State Bank of India', 'Punjab National Bank', 'Bank of Baroda', 'Canara Bank', 'Union Bank of India'];
+            const branchNames = ['Main Branch', 'City Branch', 'Industrial Area Branch', 'Rural Branch', 'Corporate Branch'];
+            
+            const bankTotals = [];
+            const branchDetails = {};
+            
+            bankNames.forEach(bankName => {
+                let shgSubmittedCount = 0;
+                let shgSubmittedAmt = 0;
+                let shgSanctionedCount = 0;
+                let shgSanctionedAmt = 0;
+                let individualSubmittedCount = 0;
+                let individualSubmittedAmt = 0;
+                let individualSanctionedCount = 0;
+                let individualSanctionedAmt = 0;
+                
+                branchDetails[bankName] = [];
+                
+                // Generate 3-5 branches per bank
+                const numBranches = Math.floor(Math.random() * 3) + 3;
+                for (let i = 0; i < numBranches; i++) {
+                    const branchName = `${bankName.split(' ')[0]} ${branchNames[i % branchNames.length]}`;
+                    
+                    const branchSHGSubmittedCount = Math.floor(Math.random() * 200) + 50;
+                    const branchSHGSubmittedAmt = (Math.random() * 300 + 100).toFixed(2);
+                    const branchSHGSanctionedCount = Math.floor(branchSHGSubmittedCount * (0.6 + Math.random() * 0.3));
+                    const branchSHGSanctionedAmt = (parseFloat(branchSHGSubmittedAmt) * (0.6 + Math.random() * 0.3)).toFixed(2);
+                    
+                    const branchIndividualSubmittedCount = Math.floor(Math.random() * 300) + 75;
+                    const branchIndividualSubmittedAmt = (Math.random() * 500 + 150).toFixed(2);
+                    const branchIndividualSanctionedCount = Math.floor(branchIndividualSubmittedCount * (0.5 + Math.random() * 0.3));
+                    const branchIndividualSanctionedAmt = (parseFloat(branchIndividualSubmittedAmt) * (0.5 + Math.random() * 0.3)).toFixed(2);
+                    
+                    branchDetails[bankName].push({
+                        branchName: branchName,
+                        shgSubmittedCount: branchSHGSubmittedCount,
+                        shgSubmittedAmt: parseFloat(branchSHGSubmittedAmt),
+                        shgSanctionedCount: branchSHGSanctionedCount,
+                        shgSanctionedAmt: parseFloat(branchSHGSanctionedAmt),
+                        individualSubmittedCount: branchIndividualSubmittedCount,
+                        individualSubmittedAmt: parseFloat(branchIndividualSubmittedAmt),
+                        individualSanctionedCount: branchIndividualSanctionedCount,
+                        individualSanctionedAmt: parseFloat(branchIndividualSanctionedAmt)
+                    });
+                    
+                    shgSubmittedCount += branchSHGSubmittedCount;
+                    shgSubmittedAmt += parseFloat(branchSHGSubmittedAmt);
+                    shgSanctionedCount += branchSHGSanctionedCount;
+                    shgSanctionedAmt += parseFloat(branchSHGSanctionedAmt);
+                    individualSubmittedCount += branchIndividualSubmittedCount;
+                    individualSubmittedAmt += parseFloat(branchIndividualSubmittedAmt);
+                    individualSanctionedCount += branchIndividualSanctionedCount;
+                    individualSanctionedAmt += parseFloat(branchIndividualSanctionedAmt);
+                }
+                
+                bankTotals.push({
+                    bankName: bankName,
+                    shgSubmittedCount: shgSubmittedCount,
+                    shgSubmittedAmt: shgSubmittedAmt,
+                    shgSanctionedCount: shgSanctionedCount,
+                    shgSanctionedAmt: shgSanctionedAmt,
+                    individualSubmittedCount: individualSubmittedCount,
+                    individualSubmittedAmt: individualSubmittedAmt,
+                    individualSanctionedCount: individualSanctionedCount,
+                    individualSanctionedAmt: individualSanctionedAmt,
+                    branchCount: numBranches
+                });
+            });
+            
+            return {
+                bankTotals: bankTotals,
+                branchDetails: branchDetails
+            };
+        }
+        
+        // (Keep all the existing functions for district data processing as they were)
+        
+        // ... [All the existing functions for district data processing remain unchanged]
+        
+        // Initialize everything
+        async function initializeDashboard() {
+            await Promise.all([
+                fetchCSVData(),
+                fetchBankCSVData(),
+                updatePageVisitorCounter()
+            ]);
+        }
+        
+        // Event Listeners for Bank table
+        if (elements.bankSearchInput) {
+            elements.bankSearchInput.addEventListener('input', (e) => {
+                bankSearchQuery = e.target.value;
+                updateBankTableView();
+            });
+        }
+        
+        if (elements.downloadBankExcel) {
+            elements.downloadBankExcel.addEventListener('click', () => {
+                // Download all bank data
+                if (bankData.bankTotals && bankData.bankTotals.length > 0) {
+                    // Create CSV content for all banks
+                    let csvContent = "Bank Name,No. of SHG Loan Submitted,Amt of SHG Loan Submitted,No. of SHG Loan Sanctioned,Total SHG Loan Amt Sanctioned,No. of Individual Loan Submitted,Amt of Individual Loan Submitted,Total No of Individual Loan Sanctioned,Total Individual Loan Amt Sanctioned,No. of Branches\n";
+                    
+                    bankData.bankTotals.forEach(bank => {
+                        csvContent += `"${bank.bankName || ''}",${bank.shgSubmittedCount || 0},${bank.shgSubmittedAmt || 0},${bank.shgSanctionedCount || 0},${bank.shgSanctionedAmt || 0},${bank.individualSubmittedCount || 0},${bank.individualSubmittedAmt || 0},${bank.individualSanctionedCount || 0},${bank.individualSanctionedAmt || 0},${bank.branchCount || 0}\n`;
+                    });
+                    
+                    // Create download link
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', 'all_banks_loan_submission_status.csv');
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            });
+        }
+        
+        if (elements.downloadBranchExcel) {
+            elements.downloadBranchExcel.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const bankName = elements.selectedBankName ? elements.selectedBankName.textContent : '';
+                if (bankName && bankName !== 'Loading...') {
+                    downloadBankExcel(bankName);
+                }
+            });
+        }
+        
+        // Bank modal event listeners
+        if (elements.bankCloseModal) {
+            elements.bankCloseModal.addEventListener('click', () => {
+                if (elements.bankModal) elements.bankModal.classList.remove('active');
+            });
+        }
+        
+        if (elements.bankModal) {
+            elements.bankModal.addEventListener('click', (e) => {
+                if (e.target === elements.bankModal) {
+                    elements.bankModal.classList.remove('active');
+                }
+            });
+        }
+        
+        // Initial load
+        initializeDashboard();
+    </script>
+</body>
+</html>

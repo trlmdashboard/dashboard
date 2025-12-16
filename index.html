@@ -220,6 +220,38 @@
         .no-pagination {
             display: none !important;
         }
+        
+        /* Total row styles */
+        .total-row {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            font-weight: bold;
+            border-top: 2px solid #cbd5e1;
+        }
+        
+        .total-row td {
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .total-row .total-label {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        
+        .shg-total {
+            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+        }
+        
+        .individual-total {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+        
+        .bank-total {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
     </style>
     
     <script>
@@ -489,6 +521,65 @@
                         <tbody id="tableBody" class="bg-white divide-y divide-gray-200">
                             <!-- Table rows will be inserted here -->
                         </tbody>
+                        <!-- Total Row for SHG Table -->
+                        <tfoot id="shgTotalRow" class="hidden">
+                            <tr class="total-row shg-total">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-r from-blue-600 to-blue-800 flex items-center justify-center mr-3">
+                                            <i class="fas fa-total text-white text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900">
+                                                <span class="total-label">TOTAL</span>
+                                            </div>
+                                            <div class="text-sm text-gray-500" id="shgTotalDistricts">0 districts</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-gray-900" id="shgTotalTargetCount">0</div>
+                                    <div class="text-sm text-blue-600 font-medium" id="shgTotalTargetAmount">₹0</div>
+                                    <div class="text-xs text-gray-500 mt-1">Campaign Target</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-gray-900" id="shgTotalSubmittedCount">0</div>
+                                    <div class="text-sm text-purple-600 font-medium" id="shgTotalSubmittedAmount">₹0</div>
+                                    <div class="text-xs text-gray-500 mt-1" id="shgTotalSubmittedRate">0% of target</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-gray-900" id="shgTotalSanctionedCount">0</div>
+                                    <div class="text-sm text-green-600 font-medium" id="shgTotalSanctionedAmount">₹0</div>
+                                    <div class="text-xs text-gray-500 mt-1" id="shgTotalSanctionedRate">0% conversion</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-gray-900" id="shgTotalTicketSize">₹0.00 Lakh</div>
+                                    <div class="text-sm text-indigo-600 font-medium ticket-size">
+                                        Avg. per loan
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1" id="shgTotalLoans">0 loans</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="w-32">
+                                        <div class="flex justify-between text-xs mb-1">
+                                            <span class="text-gray-600">Overall Progress</span>
+                                            <span class="font-semibold text-blue-600" id="shgTotalProgressRate">0%</span>
+                                        </div>
+                                        <div class="progress-bar bg-gray-200">
+                                            <div class="progress-fill bg-blue-500 w-0" id="shgTotalProgressBar"></div>
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-1">Overall achievement</div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <span class="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-800 font-medium">
+                                            <i class="fas fa-calculator mr-1"></i> Summary
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
                 
@@ -687,6 +778,65 @@
                         <tbody id="individualTableBody" class="bg-white divide-y divide-gray-200">
                             <!-- Individual table rows will be inserted here -->
                         </tbody>
+                        <!-- Total Row for Individual Table -->
+                        <tfoot id="individualTotalRow" class="hidden">
+                            <tr class="total-row individual-total">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-r from-sky-600 to-sky-800 flex items-center justify-center mr-3">
+                                            <i class="fas fa-total text-white text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900">
+                                                <span class="total-label">TOTAL</span>
+                                            </div>
+                                            <div class="text-sm text-gray-500" id="individualTotalDistricts">0 districts</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-gray-900" id="individualTotalTargetCount">0</div>
+                                    <div class="text-sm text-sky-600 font-medium" id="individualTotalTargetAmount">₹0</div>
+                                    <div class="text-xs text-gray-500 mt-1">Campaign Target</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-gray-900" id="individualTotalSubmittedCount">0</div>
+                                    <div class="text-sm text-purple-600 font-medium" id="individualTotalSubmittedAmount">₹0</div>
+                                    <div class="text-xs text-gray-500 mt-1" id="individualTotalSubmittedRate">0% of target</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-gray-900" id="individualTotalSanctionedCount">0</div>
+                                    <div class="text-sm text-emerald-600 font-medium" id="individualTotalSanctionedAmount">₹0</div>
+                                    <div class="text-xs text-gray-500 mt-1" id="individualTotalSanctionedRate">0% conversion</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-gray-900" id="individualTotalTicketSize">₹0.00 Lakh</div>
+                                    <div class="text-sm text-indigo-600 font-medium ticket-size">
+                                        Avg. per loan
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1" id="individualTotalLoans">0 loans</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="w-32">
+                                        <div class="flex justify-between text-xs mb-1">
+                                            <span class="text-gray-600">Overall Progress</span>
+                                            <span class="font-semibold text-sky-600" id="individualTotalProgressRate">0%</span>
+                                        </div>
+                                        <div class="progress-bar bg-gray-200">
+                                            <div class="progress-fill bg-sky-500 w-0" id="individualTotalProgressBar"></div>
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-1">Overall achievement</div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <span class="px-3 py-1 text-xs rounded-full bg-sky-100 text-sky-800 font-medium">
+                                            <i class="fas fa-calculator mr-1"></i> Summary
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
                 
@@ -808,6 +958,74 @@
                         <tbody id="bankTableBody" class="bg-white divide-y divide-gray-200">
                             <!-- Bank table rows will be inserted here -->
                         </tbody>
+                        <!-- Total Row for Bank Table -->
+                        <tfoot id="bankTotalRow" class="hidden">
+                            <tr class="total-row bank-total">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-r from-amber-600 to-amber-800 flex items-center justify-center mr-3">
+                                            <i class="fas fa-total text-white text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900">
+                                                <span class="total-label">TOTAL</span>
+                                            </div>
+                                            <div class="text-sm text-gray-500" id="bankTotalBanks">0 banks</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <!-- SHG Loans Submitted -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-gray-900" id="bankTotalShgSubmittedCount">0</div>
+                                    <div class="text-sm text-purple-600 font-medium" id="bankTotalShgSubmittedAmount">₹0</div>
+                                    <div class="text-xs text-gray-500 mt-1">Submitted Loans</div>
+                                </td>
+                                <!-- SHG Loans Sanctioned -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-gray-900" id="bankTotalShgSanctionedCount">0</div>
+                                    <div class="text-sm text-green-600 font-medium" id="bankTotalShgSanctionedAmount">₹0</div>
+                                    <div class="text-xs text-gray-500 mt-1">Sanctioned Loans</div>
+                                </td>
+                                <!-- Individual Loans Submitted -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-gray-900" id="bankTotalIndSubmittedCount">0</div>
+                                    <div class="text-sm text-purple-600 font-medium" id="bankTotalIndSubmittedAmount">₹0</div>
+                                    <div class="text-xs text-gray-500 mt-1">Submitted Loans</div>
+                                </td>
+                                <!-- Individual Loans Sanctioned -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-gray-900" id="bankTotalIndSanctionedCount">0</div>
+                                    <div class="text-sm text-emerald-600 font-medium" id="bankTotalIndSanctionedAmount">₹0</div>
+                                    <div class="text-xs text-gray-500 mt-1">Sanctioned Loans</div>
+                                </td>
+                                <!-- SHG Conversion Rate -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="w-32">
+                                        <div class="flex justify-between text-xs mb-1">
+                                            <span class="text-gray-600">Overall SHG Rate</span>
+                                            <span class="font-semibold text-green-600" id="bankTotalShgConversionRate">0%</span>
+                                        </div>
+                                        <div class="progress-bar bg-gray-200">
+                                            <div class="progress-fill bg-green-500 w-0" id="bankTotalShgConversionBar"></div>
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-1">Conversion Rate</div>
+                                    </div>
+                                </td>
+                                <!-- Individual Conversion Rate -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="w-32">
+                                        <div class="flex justify-between text-xs mb-1">
+                                            <span class="text-gray-600">Overall Ind. Rate</span>
+                                            <span class="font-semibold text-emerald-600" id="bankTotalIndConversionRate">0%</span>
+                                        </div>
+                                        <div class="progress-bar bg-gray-200">
+                                            <div class="progress-fill bg-emerald-500 w-0" id="bankTotalIndConversionBar"></div>
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-1">Conversion Rate</div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
                 
@@ -1061,7 +1279,7 @@
                                         <div class="flex items-center">
                                             <i class="fas fa-paper-plane text-purple-500 mr-2"></i>
                                             Submitted
-                                        </div>
+                                    </div>
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                         <div class="flex items-center">
@@ -1079,7 +1297,7 @@
                                         <div class="flex items-center">
                                             <i class="fas fa-chart-bar text-yellow-500 mr-2"></i>
                                             Performance
-                                    </div>
+                                        </div>
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                         <div class="flex items-center">
@@ -1384,7 +1602,53 @@
             bankBranchTableContainer: document.getElementById('bankBranchTableContainer'),
             bankBranchTableBody: document.getElementById('bankBranchTableBody'),
             branchCount: document.getElementById('branchCount'),
-            currentBankName: document.getElementById('currentBankName')
+            currentBankName: document.getElementById('currentBankName'),
+            
+            // Total Row Elements
+            shgTotalRow: document.getElementById('shgTotalRow'),
+            shgTotalDistricts: document.getElementById('shgTotalDistricts'),
+            shgTotalTargetCount: document.getElementById('shgTotalTargetCount'),
+            shgTotalTargetAmount: document.getElementById('shgTotalTargetAmount'),
+            shgTotalSubmittedCount: document.getElementById('shgTotalSubmittedCount'),
+            shgTotalSubmittedAmount: document.getElementById('shgTotalSubmittedAmount'),
+            shgTotalSubmittedRate: document.getElementById('shgTotalSubmittedRate'),
+            shgTotalSanctionedCount: document.getElementById('shgTotalSanctionedCount'),
+            shgTotalSanctionedAmount: document.getElementById('shgTotalSanctionedAmount'),
+            shgTotalSanctionedRate: document.getElementById('shgTotalSanctionedRate'),
+            shgTotalTicketSize: document.getElementById('shgTotalTicketSize'),
+            shgTotalLoans: document.getElementById('shgTotalLoans'),
+            shgTotalProgressRate: document.getElementById('shgTotalProgressRate'),
+            shgTotalProgressBar: document.getElementById('shgTotalProgressBar'),
+            
+            individualTotalRow: document.getElementById('individualTotalRow'),
+            individualTotalDistricts: document.getElementById('individualTotalDistricts'),
+            individualTotalTargetCount: document.getElementById('individualTotalTargetCount'),
+            individualTotalTargetAmount: document.getElementById('individualTotalTargetAmount'),
+            individualTotalSubmittedCount: document.getElementById('individualTotalSubmittedCount'),
+            individualTotalSubmittedAmount: document.getElementById('individualTotalSubmittedAmount'),
+            individualTotalSubmittedRate: document.getElementById('individualTotalSubmittedRate'),
+            individualTotalSanctionedCount: document.getElementById('individualTotalSanctionedCount'),
+            individualTotalSanctionedAmount: document.getElementById('individualTotalSanctionedAmount'),
+            individualTotalSanctionedRate: document.getElementById('individualTotalSanctionedRate'),
+            individualTotalTicketSize: document.getElementById('individualTotalTicketSize'),
+            individualTotalLoans: document.getElementById('individualTotalLoans'),
+            individualTotalProgressRate: document.getElementById('individualTotalProgressRate'),
+            individualTotalProgressBar: document.getElementById('individualTotalProgressBar'),
+            
+            bankTotalRow: document.getElementById('bankTotalRow'),
+            bankTotalBanks: document.getElementById('bankTotalBanks'),
+            bankTotalShgSubmittedCount: document.getElementById('bankTotalShgSubmittedCount'),
+            bankTotalShgSubmittedAmount: document.getElementById('bankTotalShgSubmittedAmount'),
+            bankTotalShgSanctionedCount: document.getElementById('bankTotalShgSanctionedCount'),
+            bankTotalShgSanctionedAmount: document.getElementById('bankTotalShgSanctionedAmount'),
+            bankTotalIndSubmittedCount: document.getElementById('bankTotalIndSubmittedCount'),
+            bankTotalIndSubmittedAmount: document.getElementById('bankTotalIndSubmittedAmount'),
+            bankTotalIndSanctionedCount: document.getElementById('bankTotalIndSanctionedCount'),
+            bankTotalIndSanctionedAmount: document.getElementById('bankTotalIndSanctionedAmount'),
+            bankTotalShgConversionRate: document.getElementById('bankTotalShgConversionRate'),
+            bankTotalShgConversionBar: document.getElementById('bankTotalShgConversionBar'),
+            bankTotalIndConversionRate: document.getElementById('bankTotalIndConversionRate'),
+            bankTotalIndConversionBar: document.getElementById('bankTotalIndConversionBar')
         };
         
         // Format currency - Amounts are in lakh, convert to Cr for display (divide by 100)
@@ -1568,6 +1832,7 @@
             // Show all districts without pagination
             if (elements.totalCount) elements.totalCount.textContent = filteredDistricts.length;
             renderTableRows(filteredDistricts);
+            updateSHGTotalRow(filteredDistricts);
         }
         
         // Update Individual table view - Show ALL districts at once
@@ -1578,6 +1843,7 @@
             // Show all districts without pagination
             if (elements.individualTotalCount) elements.individualTotalCount.textContent = individualFilteredDistricts.length;
             renderIndividualTableRows(individualFilteredDistricts);
+            updateIndividualTotalRow(individualFilteredDistricts);
         }
         
         // Update Bank table view - Show ALL banks at once
@@ -1588,6 +1854,180 @@
             // Show all banks without pagination
             if (elements.bankTotalCount) elements.bankTotalCount.textContent = filteredBankData.length;
             renderBankTableRows(filteredBankData);
+            updateBankTotalRow(filteredBankData);
+        }
+        
+        // Update SHG Total Row
+        function updateSHGTotalRow(districts) {
+            if (districts.length === 0) {
+                if (elements.shgTotalRow) elements.shgTotalRow.classList.add('hidden');
+                return;
+            }
+            
+            // Calculate totals
+            const totals = districts.reduce((acc, district) => ({
+                targetCount: acc.targetCount + (district.targetCount || 0),
+                targetAmt: acc.targetAmt + (district.targetAmt || 0),
+                submittedCount: acc.submittedCount + (district.submittedCount || 0),
+                submittedAmt: acc.submittedAmt + (district.submittedAmt || 0),
+                sanctionedCount: acc.sanctionedCount + (district.sanctionedCount || 0),
+                sanctionedAmt: acc.sanctionedAmt + (district.sanctionedAmt || 0),
+                count: acc.count + 1
+            }), { targetCount: 0, targetAmt: 0, submittedCount: 0, submittedAmt: 0, sanctionedCount: 0, sanctionedAmt: 0, count: 0 });
+            
+            // Calculate percentages
+            const submissionRate = calculatePercentage(totals.submittedCount, totals.targetCount);
+            const sanctionRate = calculatePercentage(totals.sanctionedCount, totals.submittedCount || 1);
+            const overallRate = calculatePercentage(totals.sanctionedCount, totals.targetCount);
+            const ticketSize = calculateTicketSize(totals.sanctionedAmt, totals.sanctionedCount);
+            
+            // Update total row elements
+            if (elements.shgTotalDistricts) elements.shgTotalDistricts.textContent = `${totals.count} districts`;
+            if (elements.shgTotalTargetCount) elements.shgTotalTargetCount.textContent = formatNumber(totals.targetCount);
+            if (elements.shgTotalTargetAmount) elements.shgTotalTargetAmount.textContent = formatCurrency(totals.targetAmt);
+            if (elements.shgTotalSubmittedCount) elements.shgTotalSubmittedCount.textContent = formatNumber(totals.submittedCount);
+            if (elements.shgTotalSubmittedAmount) elements.shgTotalSubmittedAmount.textContent = formatCurrency(totals.submittedAmt);
+            if (elements.shgTotalSubmittedRate) {
+                elements.shgTotalSubmittedRate.textContent = `${submissionRate}% of target`;
+                elements.shgTotalSubmittedRate.className = `text-xs ${submissionRate >= 80 ? 'text-green-600' : submissionRate >= 50 ? 'text-yellow-600' : 'text-red-600'} mt-1`;
+            }
+            if (elements.shgTotalSanctionedCount) elements.shgTotalSanctionedCount.textContent = formatNumber(totals.sanctionedCount);
+            if (elements.shgTotalSanctionedAmount) elements.shgTotalSanctionedAmount.textContent = formatCurrency(totals.sanctionedAmt);
+            if (elements.shgTotalSanctionedRate) {
+                elements.shgTotalSanctionedRate.textContent = `${sanctionRate}% conversion`;
+                elements.shgTotalSanctionedRate.className = `text-xs ${sanctionRate >= 80 ? 'text-green-600' : sanctionRate >= 50 ? 'text-yellow-600' : 'text-red-600'} mt-1`;
+            }
+            if (elements.shgTotalTicketSize) elements.shgTotalTicketSize.textContent = formatTicketSize(ticketSize);
+            if (elements.shgTotalLoans) elements.shgTotalLoans.textContent = `${formatNumber(totals.sanctionedCount)} loans`;
+            if (elements.shgTotalProgressRate) {
+                elements.shgTotalProgressRate.textContent = `${overallRate}%`;
+                elements.shgTotalProgressRate.className = `font-semibold ${overallRate >= 80 ? 'text-green-600' : overallRate >= 50 ? 'text-yellow-600' : 'text-red-600'}`;
+            }
+            if (elements.shgTotalProgressBar) {
+                elements.shgTotalProgressBar.style.width = `${Math.min(overallRate, 100)}%`;
+                elements.shgTotalProgressBar.className = `progress-fill ${overallRate >= 80 ? 'bg-green-500' : overallRate >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`;
+            }
+            
+            // Show total row
+            if (elements.shgTotalRow) elements.shgTotalRow.classList.remove('hidden');
+        }
+        
+        // Update Individual Total Row
+        function updateIndividualTotalRow(districts) {
+            if (districts.length === 0) {
+                if (elements.individualTotalRow) elements.individualTotalRow.classList.add('hidden');
+                return;
+            }
+            
+            // Calculate totals
+            const totals = districts.reduce((acc, district) => ({
+                targetCount: acc.targetCount + (district.individualTargetCount || 0),
+                targetAmt: acc.targetAmt + (district.individualTargetAmt || 0),
+                submittedCount: acc.submittedCount + (district.individualSubmittedCount || 0),
+                submittedAmt: acc.submittedAmt + (district.individualSubmittedAmt || 0),
+                sanctionedCount: acc.sanctionedCount + (district.individualSanctionedCount || 0),
+                sanctionedAmt: acc.sanctionedAmt + (district.individualSanctionedAmt || 0),
+                count: acc.count + 1
+            }), { targetCount: 0, targetAmt: 0, submittedCount: 0, submittedAmt: 0, sanctionedCount: 0, sanctionedAmt: 0, count: 0 });
+            
+            // Calculate percentages
+            const submissionRate = calculatePercentage(totals.submittedCount, totals.targetCount);
+            const sanctionRate = calculatePercentage(totals.sanctionedCount, totals.submittedCount || 1);
+            const overallRate = calculatePercentage(totals.sanctionedCount, totals.targetCount);
+            const ticketSize = calculateTicketSize(totals.sanctionedAmt, totals.sanctionedCount);
+            
+            // Update total row elements
+            if (elements.individualTotalDistricts) elements.individualTotalDistricts.textContent = `${totals.count} districts`;
+            if (elements.individualTotalTargetCount) elements.individualTotalTargetCount.textContent = formatNumber(totals.targetCount);
+            if (elements.individualTotalTargetAmount) elements.individualTotalTargetAmount.textContent = formatCurrency(totals.targetAmt);
+            if (elements.individualTotalSubmittedCount) elements.individualTotalSubmittedCount.textContent = formatNumber(totals.submittedCount);
+            if (elements.individualTotalSubmittedAmount) elements.individualTotalSubmittedAmount.textContent = formatCurrency(totals.submittedAmt);
+            if (elements.individualTotalSubmittedRate) {
+                elements.individualTotalSubmittedRate.textContent = `${submissionRate}% of target`;
+                elements.individualTotalSubmittedRate.className = `text-xs ${submissionRate >= 80 ? 'text-green-600' : submissionRate >= 50 ? 'text-yellow-600' : 'text-red-600'} mt-1`;
+            }
+            if (elements.individualTotalSanctionedCount) elements.individualTotalSanctionedCount.textContent = formatNumber(totals.sanctionedCount);
+            if (elements.individualTotalSanctionedAmount) elements.individualTotalSanctionedAmount.textContent = formatCurrency(totals.sanctionedAmt);
+            if (elements.individualTotalSanctionedRate) {
+                elements.individualTotalSanctionedRate.textContent = `${sanctionRate}% conversion`;
+                elements.individualTotalSanctionedRate.className = `text-xs ${sanctionRate >= 80 ? 'text-green-600' : sanctionRate >= 50 ? 'text-yellow-600' : 'text-red-600'} mt-1`;
+            }
+            if (elements.individualTotalTicketSize) elements.individualTotalTicketSize.textContent = formatTicketSize(ticketSize);
+            if (elements.individualTotalLoans) elements.individualTotalLoans.textContent = `${formatNumber(totals.sanctionedCount)} loans`;
+            if (elements.individualTotalProgressRate) {
+                elements.individualTotalProgressRate.textContent = `${overallRate}%`;
+                elements.individualTotalProgressRate.className = `font-semibold ${overallRate >= 80 ? 'text-green-600' : overallRate >= 50 ? 'text-yellow-600' : 'text-red-600'}`;
+            }
+            if (elements.individualTotalProgressBar) {
+                elements.individualTotalProgressBar.style.width = `${Math.min(overallRate, 100)}%`;
+                elements.individualTotalProgressBar.className = `progress-fill ${overallRate >= 80 ? 'bg-green-500' : overallRate >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`;
+            }
+            
+            // Show total row
+            if (elements.individualTotalRow) elements.individualTotalRow.classList.remove('hidden');
+        }
+        
+        // Update Bank Total Row
+        function updateBankTotalRow(banks) {
+            if (banks.length === 0) {
+                if (elements.bankTotalRow) elements.bankTotalRow.classList.add('hidden');
+                return;
+            }
+            
+            // Calculate totals
+            const totals = banks.reduce((acc, bank) => ({
+                shgSubmittedCount: acc.shgSubmittedCount + (bank.shgSubmittedCount || 0),
+                shgSubmittedAmt: acc.shgSubmittedAmt + (bank.shgSubmittedAmt || 0),
+                shgSanctionedCount: acc.shgSanctionedCount + (bank.shgSanctionedCount || 0),
+                shgSanctionedAmt: acc.shgSanctionedAmt + (bank.shgSanctionedAmt || 0),
+                indSubmittedCount: acc.indSubmittedCount + (bank.indSubmittedCount || 0),
+                indSubmittedAmt: acc.indSubmittedAmt + (bank.indSubmittedAmt || 0),
+                indSanctionedCount: acc.indSanctionedCount + (bank.indSanctionedCount || 0),
+                indSanctionedAmt: acc.indSanctionedAmt + (bank.indSanctionedAmt || 0),
+                count: acc.count + 1
+            }), { 
+                shgSubmittedCount: 0, shgSubmittedAmt: 0,
+                shgSanctionedCount: 0, shgSanctionedAmt: 0,
+                indSubmittedCount: 0, indSubmittedAmt: 0,
+                indSanctionedCount: 0, indSanctionedAmt: 0,
+                count: 0
+            });
+            
+            // Calculate percentages
+            const shgConversionRate = calculatePercentage(totals.shgSanctionedCount, totals.shgSubmittedCount || 1);
+            const indConversionRate = calculatePercentage(totals.indSanctionedCount, totals.indSubmittedCount || 1);
+            
+            // Update total row elements
+            if (elements.bankTotalBanks) elements.bankTotalBanks.textContent = `${totals.count} banks`;
+            if (elements.bankTotalShgSubmittedCount) elements.bankTotalShgSubmittedCount.textContent = formatNumber(totals.shgSubmittedCount);
+            if (elements.bankTotalShgSubmittedAmount) elements.bankTotalShgSubmittedAmount.textContent = formatCurrency(totals.shgSubmittedAmt);
+            if (elements.bankTotalShgSanctionedCount) elements.bankTotalShgSanctionedCount.textContent = formatNumber(totals.shgSanctionedCount);
+            if (elements.bankTotalShgSanctionedAmount) elements.bankTotalShgSanctionedAmount.textContent = formatCurrency(totals.shgSanctionedAmt);
+            if (elements.bankTotalIndSubmittedCount) elements.bankTotalIndSubmittedCount.textContent = formatNumber(totals.indSubmittedCount);
+            if (elements.bankTotalIndSubmittedAmount) elements.bankTotalIndSubmittedAmount.textContent = formatCurrency(totals.indSubmittedAmt);
+            if (elements.bankTotalIndSanctionedCount) elements.bankTotalIndSanctionedCount.textContent = formatNumber(totals.indSanctionedCount);
+            if (elements.bankTotalIndSanctionedAmount) elements.bankTotalIndSanctionedAmount.textContent = formatCurrency(totals.indSanctionedAmt);
+            
+            if (elements.bankTotalShgConversionRate) {
+                elements.bankTotalShgConversionRate.textContent = `${shgConversionRate}%`;
+                elements.bankTotalShgConversionRate.className = `font-semibold ${shgConversionRate >= 80 ? 'text-green-600' : shgConversionRate >= 50 ? 'text-yellow-600' : 'text-red-600'}`;
+            }
+            if (elements.bankTotalShgConversionBar) {
+                elements.bankTotalShgConversionBar.style.width = `${Math.min(shgConversionRate, 100)}%`;
+                elements.bankTotalShgConversionBar.className = `progress-fill ${shgConversionRate >= 80 ? 'bg-green-500' : shgConversionRate >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`;
+            }
+            
+            if (elements.bankTotalIndConversionRate) {
+                elements.bankTotalIndConversionRate.textContent = `${indConversionRate}%`;
+                elements.bankTotalIndConversionRate.className = `font-semibold ${indConversionRate >= 80 ? 'text-green-600' : indConversionRate >= 50 ? 'text-yellow-600' : 'text-red-600'}`;
+            }
+            if (elements.bankTotalIndConversionBar) {
+                elements.bankTotalIndConversionBar.style.width = `${Math.min(indConversionRate, 100)}%`;
+                elements.bankTotalIndConversionBar.className = `progress-fill ${indConversionRate >= 80 ? 'bg-green-500' : indConversionRate >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`;
+            }
+            
+            // Show total row
+            if (elements.bankTotalRow) elements.bankTotalRow.classList.remove('hidden');
         }
         
         // Render SHG table rows

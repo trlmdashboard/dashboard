@@ -732,8 +732,8 @@
                             <div class="flex items-center space-x-2">
                                 <span class="text-sm text-gray-600">Sort by:</span>
                                 <select id="bankSortSelect" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="bank">Bank Name</option>
                                     <option value="shgSubmitted">SHG Submitted</option>
+                                    <option value="bank">Bank Name</option>
                                     <option value="shgSanctioned">SHG Sanctioned</option>
                                     <option value="indSubmitted">Individual Submitted</option>
                                     <option value="indSanctioned">Individual Sanctioned</option>
@@ -1079,7 +1079,7 @@
                                         <div class="flex items-center">
                                             <i class="fas fa-chart-bar text-yellow-500 mr-2"></i>
                                             Performance
-                                        </div>
+                                    </div>
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                         <div class="flex items-center">
@@ -1260,7 +1260,7 @@
         let filteredBankData = [];
         let sortBy = 'district';
         let individualSortBy = 'district';
-        let bankSortBy = 'bank';
+        let bankSortBy = 'shgSubmitted'; // CHANGED: Default to SHG Submitted
         let searchQuery = '';
         let individualSearchQuery = '';
         let bankSearchQuery = '';
@@ -1509,12 +1509,14 @@
             });
         }
         
-        // Sort banks for bank table
+        // Sort banks for bank table - UPDATED: Default to SHG Submitted in descending order
         function sortBanks(banks) {
             return [...banks].sort((a, b) => {
                 switch(bankSortBy) {
                     case 'shgSubmitted':
                         return b.shgSubmittedCount - a.shgSubmittedCount;
+                    case 'bank':
+                        return a.bankName.localeCompare(b.bankName);
                     case 'shgSanctioned':
                         return b.shgSanctionedCount - a.shgSanctionedCount;
                     case 'indSubmitted':
@@ -1522,7 +1524,8 @@
                     case 'indSanctioned':
                         return b.indSanctionedCount - a.indSanctionedCount;
                     default:
-                        return a.bankName.localeCompare(b.bankName);
+                        // Default to SHG Submitted in descending order
+                        return b.shgSubmittedCount - a.shgSubmittedCount;
                 }
             });
         }

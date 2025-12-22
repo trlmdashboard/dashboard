@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Translator - Capture & Translate Chinese Text</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a3a 0%, #2c3e50 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            color: #bdc3c7;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        @media (min-width: 992px) {
+            .app-container {
+                flex-direction: row;
+            }
+        }
+        
+        .camera-section, .translation-section {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 1.5rem;
+        }
+        
+        .section-title i {
+            color: #3498db;
+        }
+        
+        .camera-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #000;
+            margin-bottom: 20px;
+        }
+        
+        #cameraFeed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+        
+        .camera-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #bdc3c7;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .camera-placeholder i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #7f8c8d;
+        }
+        
+        .camera-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .btn-capture {
+            background: linear-gradient(to right, #2ecc71, #27ae60);
+        }
+        
+        .btn-stop {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+        }
+        
+        .btn:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .captured-images {
+            margin-top: 30px;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .image-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 120px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .image-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .image-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .image-item.active {
+            border: 3px solid #3498db;
+        }
+        
+        .translation-area {
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .text-display {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            overflow-y: auto;
+        }
+        
+        .text-display h3 {
+            margin-bottom: 15px;
+            color: #3498db;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .text-display p {
+            line-height: 1.6;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .chinese-text {
+            font-family: "Microsoft YaHei", "SimHei", sans-serif;
+            color: #f1c40f;
+            border-left: 3px solid #f1c40f;
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .english-text {
+            color: #2ecc71;
+            border-left: 3px solid #2ecc71;
+            padding-left: 15px;
+        }
+        
+        .placeholder-text {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            color: #7f8c8d;
+        }
+        
+        .placeholder-text i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #7f8c8d;
+        }
+        
+        .translation-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-translate {
+            background: linear-gradient(to right, #9b59b6, #8e44ad);
+        }
+        
+        .btn-clear {
+            background: linear-gradient(to right, #e67e22, #d35400);
+        }
+        
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #bdc3c7;
+        }
+        
+        .loader.active {
+            display: block;
+        }
+        
+        .loader i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #3498db;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(to right, #2ecc71, #27ae60);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(150%);
+            transition: transform 0.5s ease;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.error {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+        }
+        
+        .permission-note {
+            background: rgba(231, 76, 60, 0.2);
+            border-left: 4px solid #e74c3c;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .permission-note ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+        
+        .permission-note li {
+            margin-bottom: 5px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .camera-container {
+                height: 300px;
+            }
+            
+            .camera-controls, .translation-controls {
+                justify-content: center;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Camera Translator</h1>
+            <p class="subtitle">Capture images with Chinese text and translate them to English instantly</p>
+        </header>
+        
+        <div class="app-container">
+            <div class="camera-section">
+                <div class="section-title">
+                    <i class="fas fa-camera"></i>
+                    <h2>Camera Feed</h2>
+                </div>
+                
+                <div class="camera-container">
+                    <video id="cameraFeed" autoplay playsinline></video>
+                    <div class="camera-placeholder" id="cameraPlaceholder">
+                        <i class="fas fa-camera"></i>
+                        <p>Camera feed will appear here when started</p>
+                        <p>Click "Start Camera" to begin</p>
+                    </div>
+                </div>
+                
+                <div class="camera-controls">
+                    <button class="btn" id="startCameraBtn">
+                        <i class="fas fa-play"></i> Start Camera
+                    </button>
+                    <button class="btn btn-capture" id="captureBtn" disabled>
+                        <i class="fas fa-camera"></i> Capture Image
+                    </button>
+                    <button class="btn btn-stop" id="stopCameraBtn" disabled>
+                        <i class="fas fa-stop"></i> Stop Camera
+                    </button>
+                </div>
+                
+                <div class="captured-images">
+                    <h3>Captured Images</h3>
+                    <div class="image-grid" id="imageGrid">
+                        <!-- Captured images will appear here -->
+                    </div>
+                    <p id="noImagesText" style="text-align: center; margin-top: 15px; color: #7f8c8d;">
+                        No images captured yet. Capture an image to get started.
+                    </p>
+                </div>
+                
+                <div class="permission-note">
+                    <p><strong>Note:</strong> You need to grant camera permissions to use this app.</p>
+                    <ul>
+                        <li>Make sure your camera is connected and working</li>
+                        <li>Allow camera access when prompted by your browser</li>
+                        <li>If camera doesn't start, check browser settings or try a different browser</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="translation-section">
+                <div class="section-title">
+                    <i class="fas fa-language"></i>
+                    <h2>Translation</h2>
+                </div>
+                
+                <div class="translation-area">
+                    <div class="text-display" id="textDisplay">
+                        <div class="placeholder-text" id="placeholderText">
+                            <i class="fas fa-language"></i>
+                            <p>No text to translate yet</p>
+                            <p>Capture an image with Chinese text to begin translation</p>
+                        </div>
+                        
+                        <div id="translationContent" style="display: none;">
+                            <h3><i class="fas fa-language"></i> Original Text (Chinese)</h3>
+                            <p class="chinese-text" id="chineseText">这里是中文文本示例</p>
+                            
+                            <h3><i class="fas fa-arrow-down"></i> Translated Text (English)</h3>
+                            <p class="english-text" id="englishText">This is example Chinese text</p>
+                        </div>
+                    </div>
+                    
+                    <div class="translation-controls">
+                        <button class="btn btn-translate" id="translateBtn" disabled>
+                            <i class="fas fa-language"></i> Translate Text
+                        </button>
+                        <button class="btn btn-clear" id="clearBtn">
+                            <i class="fas fa-trash"></i> Clear All
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="loader" id="loader">
+                    <i class="fas fa-spinner"></i>
+                    <p>Translating text, please wait...</p>
+                </div>
+                
+                <div class="permission-note" style="margin-top: 30px;">
+                    <p><strong>How to use:</strong></p>
+                    <ul>
+                        <li>Start your camera and capture images containing Chinese text</li>
+                        <li>Select a captured image to display its text</li>
+                        <li>Click "Translate Text" to convert Chinese text to English</li>
+                        <li>For demo purposes, mock translations are used</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="notification" id="notification">
+            <i class="fas fa-check-circle"></i>
+            <span>Camera started successfully!</span>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Camera Translator &copy; 2023 | Note: This demo uses mock translations. For real translations, integrate with a translation API.</p>
+    </footer>
+
+    <script>
+        // DOM Elements
+        const cameraFeed = document.getElementById('cameraFeed');
+        const cameraPlaceholder = document.getElementById('cameraPlaceholder');
+        const startCameraBtn = document.getElementById('startCameraBtn');
+        const stopCameraBtn = document.getElementById('stopCameraBtn');
+        const captureBtn = document.getElementById('captureBtn');
+        const imageGrid = document.getElementById('imageGrid');
+        const noImagesText = document.getElementById('noImagesText');
+        const translateBtn = document.getElementById('translateBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const textDisplay = document.getElementById('textDisplay');
+        const placeholderText = document.getElementById('placeholderText');
+        const translationContent = document.getElementById('translationContent');
+        const chineseText = document.getElementById('chineseText');
+        const englishText = document.getElementById('englishText');
+        const loader = document.getElementById('loader');
+        const notification = document.getElementById('notification');
+        
+        // Application state
+        let stream = null;
+        let capturedImages = [];
+        let selectedImageIndex = -1;
+        
+        // Sample Chinese text for demo (in a real app, you would extract text from images using OCR)
+        const sampleChineseTexts = [
+            "欢迎使用相机翻译应用。这个工具可以帮助您将中文文本翻译成英文。",
+            "人工智能正在改变我们的世界，让翻译变得更加简单快捷。",
+            "中国有着悠久的历史和丰富的文化遗产，吸引着全世界的游客。",
+            "科技发展日新月异，我们的生活因此变得更加便利和高效。",
+            "学习新语言可以开阔我们的视野，帮助我们理解不同的文化。",
+            "环境保护是我们每个人的责任，为了下一代创造更好的世界。"
+        ];
+        
+        // Sample translations for demo
+        const sampleTranslations = [
+            "Welcome to the Camera Translation App. This tool can help you translate Chinese text into English.",
+            "Artificial intelligence is changing our world, making translation simpler and faster.",
+            "China has a long history and rich cultural heritage, attracting tourists from all over the world.",
+            "Technology develops rapidly, making our lives more convenient and efficient.",
+            "Learning a new language can broaden our horizons and help us understand different cultures.",
+            "Environmental protection is everyone's responsibility, creating a better world for the next generation."
+        ];
+        
+        // Start camera function
+        async function startCamera() {
+            try {
+                // Request camera access
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment' // Prefer rear camera
+                    }, 
+                    audio: false 
+                });
+                
+                // Display camera feed
+                cameraFeed.srcObject = stream;
+                cameraFeed.style.display = 'block';
+                cameraPlaceholder.style.display = 'none';
+                
+                // Enable/disable buttons
+                startCameraBtn.disabled = true;
+                stopCameraBtn.disabled = false;
+                captureBtn.disabled = false;
+                
+                showNotification('Camera started successfully!', true);
+                
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                
+                // Show error message
+                cameraPlaceholder.innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i>
+                    <p>Could not access camera</p>
+                    <p>Error: ${error.message}</p>
+                    <p style="font-size: 0.9rem; margin-top: 10px;">Please check camera permissions and try again.</p>
+                `;
+                
+                showNotification('Failed to access camera. Please check permissions.', false);
+            }
+        }
+        
+        // Stop camera function
+        function stopCamera() {
+            if (stream) {
+                // Stop all tracks in the stream
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                
+                // Hide camera feed
+                cameraFeed.style.display = 'none';
+                cameraPlaceholder.style.display = 'flex';
+                
+                // Enable/disable buttons
+                startCameraBtn.disabled = false;
+                stopCameraBtn.disabled = true;
+                captureBtn.disabled = true;
+                
+                showNotification('Camera stopped', true);
+            }
+        }
+        
+        // Capture image from camera
+        function captureImage() {
+            if (!stream) return;
+            
+            // Create canvas to capture image
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            // Set canvas dimensions to match video
+            canvas.width = cameraFeed.videoWidth;
+            canvas.height = cameraFeed.videoHeight;
+            
+            // Draw video frame to canvas
+            context.drawImage(cameraFeed, 0, 0, canvas.width, canvas.height);
+            
+            // Convert canvas to data URL
+            const imageDataUrl = canvas.toDataURL('image/jpeg');
+            
+            // Add to captured images array
+            const imageId = capturedImages.length;
+            capturedImages.push({
+                id: imageId,
+                dataUrl: imageDataUrl,
+                // For demo, assign random Chinese text to each image
+                // In a real app, you would use OCR to extract text from the image
+                chineseText: sampleChineseTexts[imageId % sampleChineseTexts.length],
+                translated: false
+            });
+            
+            // Update UI
+            updateImageGrid();
+            
+            // Select the newly captured image
+            selectImage(imageId);
+            
+            showNotification('Image captured successfully!', true);
+        }
+        
+        // Update the image grid with captured images
+        function updateImageGrid() {
+            // Clear current grid
+            imageGrid.innerHTML = '';
+            
+            if (capturedImages.length === 0) {
+                noImagesText.style.display = 'block';
+                return;
+            }
+            
+            noImagesText.style.display = 'none';
+            
+            // Add each image to the grid
+            capturedImages.forEach((image, index) => {
+                const imageItem = document.createElement('div');
+                imageItem.className = `image-item ${index === selectedImageIndex ? 'active' : ''}`;
+                imageItem.dataset.index = index;
+                
+                imageItem.innerHTML = `
+                    <img src="${image.dataUrl}" alt="Captured image ${index + 1}">
+                    ${image.translated ? '<div style="position: absolute; top: 5px; right: 5px; background: #2ecc71; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;"><i class="fas fa-check"></i></div>' : ''}
+                `;
+                
+                imageItem.addEventListener('click', () => selectImage(index));
+                imageGrid.appendChild(imageItem);
+            });
+        }
+        
+        // Select an image for translation
+        function selectImage(index) {
+            selectedImageIndex = index;
+            const image = capturedImages[index];
+            
+            // Update UI to show selected image
+            updateImageGrid();
+            
+            // Display Chinese text
+            placeholderText.style.display = 'none';
+            translationContent.style.display = 'block';
+            chineseText.textContent = image.chineseText;
+            
+            // If already translated, show translation
+            if (image.translated) {
+                englishText.textContent = image.englishText;
+                translateBtn.disabled = true;
+                translateBtn.innerHTML = '<i class="fas fa-check"></i> Already Translated';
+            } else {
+                englishText.textContent = 'Translation will appear here...';
+                translateBtn.disabled = false;
+                translateBtn.innerHTML = '<i class="fas fa-language"></i> Translate Text';
+            }
+        }
+        
+        // Translate the selected image's text
+        function translateText() {
+            if (selectedImageIndex === -1) return;
+            
+            // Show loader
+            loader.classList.add('active');
+            translateBtn.disabled = true;
+            
+            // Simulate API call delay
+            setTimeout(() => {
+                const image = capturedImages[selectedImageIndex];
+                
+                // For demo, use sample translations
+                // In a real app, you would call a translation API here
+                const translationIndex = selectedImageIndex % sampleTranslations.length;
+                const translatedText = sampleTranslations[translationIndex];
+                
+                // Update image with translation
+                image.englishText = translatedText;
+                image.translated = true;
+                
+                // Update UI
+                englishText.textContent = translatedText;
+                updateImageGrid();
+                
+                // Update translate button
+                translateBtn.innerHTML = '<i class="fas fa-check"></i> Already Translated';
+                
+                // Hide loader
+                loader.classList.remove('active');
+                
+                showNotification('Text translated successfully!', true);
+            }, 1500);
+        }
+        
+        // Clear all captured images
+        function clearAll() {
+            if (capturedImages.length === 0) return;
+            
+            // Reset state
+            capturedImages = [];
+            selectedImageIndex = -1;
+            
+            // Update UI
+            updateImageGrid();
+            placeholderText.style.display = 'flex';
+            translationContent.style.display = 'none';
+            translateBtn.disabled = true;
+            noImagesText.style.display = 'block';
+            
+            showNotification('All images cleared', true);
+        }
+        
+        // Show notification
+        function showNotification(message, isSuccess) {
+            const icon = notification.querySelector('i');
+            const text = notification.querySelector('span');
+            
+            text.textContent = message;
+            
+            if (isSuccess) {
+                notification.classList.remove('error');
+                icon.className = 'fas fa-check-circle';
+            } else {
+                notification.classList.add('error');
+                icon.className = 'fas fa-exclamation-circle';
+            }
+            
+            notification.classList.add('show');
+            
+            // Hide notification after 3 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Event listeners
+        startCameraBtn.addEventListener('click', startCamera);
+        stopCameraBtn.addEventListener('click', stopCamera);
+        captureBtn.addEventListener('click', captureImage);
+        translateBtn.addEventListener('click', translateText);
+        clearBtn.addEventListener('click', clearAll);
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if browser supports mediaDevices API
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                cameraPlaceholder.innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i>
+                    <p>Your browser does not support camera access</p>
+                    <p style="font-size: 0.9rem; margin-top: 10px;">Please try using Chrome, Firefox, or Edge.</p>
+                `;
+                startCameraBtn.disabled = true;
+            }
+        });
+    </script>
+</body>
+</html>

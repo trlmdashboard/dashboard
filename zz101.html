@@ -1,188 +1,353 @@
+
+
+
 <!DOCTYPE html>
-<!-- saved from url=(0053)http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx# -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LSC-CRP Portal</title>
-    <link rel="stylesheet" href="./LSC-CRP Portal_files/all.min.css">
-    <link href="./LSC-CRP Portal_files/select2.min.css" rel="stylesheet">
-    <script src="./LSC-CRP Portal_files/jquery-3.6.0.min.js.download"></script>
-    <script src="./LSC-CRP Portal_files/select2.min.js.download"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     
-    <style>
-        /* ===== DASHBOARD STYLES ===== */
-        .dash-welcome {
-            background: linear-gradient(135deg, #1a6b3c 0%, #2d9b5a 100%);
-            color: white;
-            border-radius: 14px;
-            padding: 22px 24px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+    <style type="text/css">
+
+        /* ===== OVERRIDE MASTER CONTENT PADDING FOR FULL-WIDTH LAYOUT ===== */
+        .content-area {
+            padding: 0 !important;
         }
 
-        .dash-welcome .welcome-text h2 {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .dash-welcome .welcome-text p {
-            font-size: 13px;
-            opacity: 0.85;
-        }
-
-        .dash-welcome .welcome-icon {
-            font-size: 42px;
-            opacity: 0.6;
-        }
-
-        /* ===== STAT CARDS ===== */
-        .stat-cards {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 14px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: 14px;
-            padding: 18px 16px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+        .page-wrapper {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            height: 100%;
+            background: #f0f2f5;
         }
 
-        .stat-card .card-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
+        /* ===== FILTER BAR ===== */
+        .filter-bar {
+            background: white;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e0e4ea;
+            flex-shrink: 0;
+        }
+
+        .category-buttons {
             display: flex;
+            flex-wrap: nowrap;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            margin-bottom: 10px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .category-buttons::-webkit-scrollbar { display: none; }
+
+        .cat-btn {
+            padding: 5px 14px;
+            background: #f0f2f5;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #555;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .cat-btn:hover  { background: #e2e6ea; }
+        .cat-btn.active { background: #1a6b3c; color: white; border-color: #1a6b3c; }
+
+        .search-row {
+            display: flex;
+            gap: 8px;
             align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            margin-bottom: 4px;
         }
 
-        .stat-card .card-icon.green  { background: #d4f4e2; color: #1a6b3c; }
-        .stat-card .card-icon.blue   { background: #dde8ff; color: #2255cc; }
-        .stat-card .card-icon.orange { background: #fff0db; color: #c46b00; }
-        .stat-card .card-icon.purple { background: #f0e4ff; color: #7b2fc9; }
-
-        .stat-card .card-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1a1a2e;
-            line-height: 1;
+        .search-input {
+            flex: 1;
+            padding: 9px 16px;
+            border: 1px solid #ddd;
+            border-radius: 22px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
         }
 
-        .stat-card .card-label {
+        .search-input:focus { border-color: #1a6b3c; box-shadow: 0 0 0 2px rgba(26,107,60,0.15); }
+
+        .search-btn {
+            padding: 9px 18px;
+            background: #1a6b3c;
+            color: white;
+            border: none;
+            border-radius: 22px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .search-btn:hover { background: #155530; }
+
+        .product-count-bar {
+            margin-top: 8px;
             font-size: 12px;
             color: #7a8090;
-            font-weight: 500;
+            text-align: right;
         }
 
-        /* ===== SECTION HEADING ===== */
-        .section-heading {
-            font-size: 15px;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        /* ===== PRODUCT GRID ===== */
+        .product-grid-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+            -webkit-overflow-scrolling: touch;
         }
 
-        .section-heading i {
-            color: #1a6b3c;
-        }
+        @media (min-width: 600px) { .product-grid-container { padding: 12px; } }
+        @media (min-width: 900px) { .product-grid-container { padding: 14px; } }
 
-        /* ===== QUICK ACTIONS ===== */
-        .quick-actions {
+        .product-grid-container::-webkit-scrollbar { width: 5px; }
+        .product-grid-container::-webkit-scrollbar-thumb { background: #c0c7d0; border-radius: 4px; }
+
+        .product-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .quick-action-btn {
-            background: white;
-            border: none;
-            border-radius: 12px;
-            padding: 14px 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            grid-template-columns: repeat(3, 1fr);
             gap: 8px;
-            cursor: pointer;
-            font-size: 11px;
-            color: #444;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            text-decoration: none;
-            transition: transform 0.15s, box-shadow 0.15s;
         }
 
-        .quick-action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        /* Mobile landscape: 5 columns */
+        @media (max-width: 900px) and (orientation: landscape) {
+            .product-grid { grid-template-columns: repeat(5, 1fr); gap: 8px; }
         }
 
-        .quick-action-btn i {
-            font-size: 22px;
-            color: #1a6b3c;
+        /* Tablet portrait: 4 columns */
+        @media (min-width: 600px) and (orientation: portrait) {
+            .product-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
         }
 
-        /* ===== RECENT ORDERS TABLE ===== */
-        .card-box {
+        /* Tablet landscape / small desktop: 4 columns */
+        @media (min-width: 900px) {
+            .product-grid { grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        }
+
+        /* Desktop: 5 columns */
+        @media (min-width: 1200px) {
+            .product-grid { grid-template-columns: repeat(5, 1fr); gap: 14px; }
+        }
+
+        /* ===== PRODUCT CARD ===== */
+        .product-card {
             background: white;
-            border-radius: 14px;
-            padding: 18px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-            margin-bottom: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #eee;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            cursor: pointer;
         }
 
-        .order-table {
+        .product-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.13);
+        }
+
+        .product-card.out-of-stock {
+            opacity: 0.55;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .discount-tag {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: #dc3545;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            z-index: 10;
+        }
+
+        .product-image {
             width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
+            height: 90px;
+            object-fit: cover;
+            background: #f5f5f5;
+            display: block;
         }
 
-        .order-table th {
-            background: #f5f7fa;
-            padding: 10px 12px;
-            text-align: left;
-            color: #7a8090;
-            font-weight: 600;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        /* Taller image on wider screens */
+        @media (min-width: 600px) { .product-image { height: 120px; } }
+        @media (min-width: 900px) { .product-image { height: 140px; } }
+
+        .product-content {
+            padding: 6px 7px 8px;
         }
 
-        .order-table td {
-            padding: 12px 12px;
-            border-bottom: 1px solid #f0f2f5;
-            color: #333;
-        }
+        @media (min-width: 600px) { .product-content { padding: 8px 9px 10px; } }
+        @media (min-width: 900px) { .product-content { padding: 10px 10px 12px; } }
 
-        .order-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .badge {
+        .product-category {
             display: inline-block;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 11px;
+            background: #d4f4e2;
+            color: #1a6b3c;
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-size: 9px;
             font-weight: 600;
+            margin-bottom: 4px;
         }
 
-        .badge-success  { background: #d4f4e2; color: #1a6b3c; }
-        .badge-warning  { background: #fff0db; color: #c46b00; }
-        .badge-info     { background: #dde8ff; color: #2255cc; }
+        @media (min-width: 600px) { .product-category { font-size: 10px; padding: 2px 7px; } }
+
+        .product-name {
+            font-size: 11px;
+            font-weight: 600;
+            color: #222;
+            line-height: 1.3;
+            height: 30px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            margin-bottom: 4px;
+        }
+
+        @media (min-width: 600px) {
+            .product-name { font-size: 12px; height: 32px; }
+        }
+        @media (min-width: 900px) {
+            .product-name { font-size: 13px; height: 36px; margin-bottom: 6px; }
+        }
+
+        .product-price-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+            flex-wrap: wrap;
+        }
+
+        .product-price {
+            font-size: 12px;
+            font-weight: 700;
+            color: #e44d26;
+        }
+
+        @media (min-width: 600px) { .product-price { font-size: 13px; } }
+        @media (min-width: 900px) { .product-price { font-size: 15px; } }
+
+        .original-price {
+            font-size: 12px;
+            color: #aaa;
+            text-decoration: line-through;
+        }
+
+        .product-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .stock-info {
+            margin-top: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            padding-top: 6px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .stock-good { color: #1a6b3c; }
+        .stock-low  { color: #dc3545; }
+        .stock-out  { color: #aaa; font-style: italic; }
+
+        /* ===== SKELETON LOADERS ===== */
+        .skeleton-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .skeleton-img {
+            width: 100%;
+            height: 140px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+        }
+
+        .skeleton-body { padding: 10px; }
+
+        .skeleton-line {
+            height: 12px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            margin-bottom: 8px;
+        }
+
+        .skeleton-line.short { width: 55%; }
+
+        @keyframes shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ===== NO PRODUCTS / ERROR ===== */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 50px 20px;
+            color: #7a8090;
+        }
+
+        .empty-state i { font-size: 52px; color: #ccc; margin-bottom: 16px; display: block; }
+        .empty-state p { font-size: 15px; margin-bottom: 14px; }
+
+        .reset-btn {
+            padding: 8px 22px;
+            background: #1a6b3c;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        /* ===== LOADING MORE ===== */
+        .loading-more {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+
+        .spin-icon {
+            display: inline-block;
+            animation: spin 0.9s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0%   { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
     </style>
 
 
@@ -465,7 +630,7 @@
         }
     </style>
 </head>
-<body cz-shortcut-listen="true">
+<body>
 
     <!-- ===== TOP BAR ===== -->
     <div class="top-bar">
@@ -494,7 +659,7 @@
                 </div>
                 <div class="user-role">LSC-CRP</div>
             </div>
-            <a href="http://localhost:11367/fpc_08_logout.aspx" class="logout-btn">
+            <a href="fpc_08_logout.aspx" class="logout-btn">
                 <i class="fas fa-sign-out-alt"></i> Logout
             </a>
         </div>
@@ -504,22 +669,22 @@
     <div class="slide-menu" id="slideMenu">
         <div class="menu-header">Main Menu</div>
         <ul>
-            <li><a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li><a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#"><i class="fas fa-shopping-cart"></i> My Cart</a></li>
-            <li><a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#"><i class="fas fa-file-invoice"></i> My Orders</a></li>
+            <li><a href="fpc_22_lsc_crp_dashboard.aspx"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="#"><i class="fas fa-shopping-cart"></i> My Cart</a></li>
+            <li><a href="#"><i class="fas fa-file-invoice"></i> My Orders</a></li>
         </ul>
-        <hr class="menu-divider">
+        <hr class="menu-divider" />
         <div class="menu-header">Account</div>
         <ul>
-            <li><a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#"><i class="fas fa-user-circle"></i> My Profile</a></li>
-            <li><a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#"><i class="fas fa-rupee-sign"></i> Income Summary</a></li>
-            <li><a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#"><i class="fas fa-bell"></i> Notifications</a></li>
+            <li><a href="#"><i class="fas fa-user-circle"></i> My Profile</a></li>
+            <li><a href="#"><i class="fas fa-rupee-sign"></i> Income Summary</a></li>
+            <li><a href="#"><i class="fas fa-bell"></i> Notifications</a></li>
         </ul>
-        <hr class="menu-divider">
+        <hr class="menu-divider" />
         <div class="menu-header">Support</div>
         <ul>
-            <li><a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#"><i class="fas fa-headset"></i> Help &amp; Support</a></li>
-            <li><a href="http://localhost:11367/fpc_08_logout.aspx"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <li><a href="#"><i class="fas fa-headset"></i> Help &amp; Support</a></li>
+            <li><a href="fpc_08_logout.aspx"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
     </div>
 
@@ -531,128 +696,374 @@
         <div class="content-area">
             
 
-    <!-- Welcome Banner -->
-    <div class="dash-welcome">
-        <div class="welcome-text">
-            <h2>Welcome, <span id="ContentPlaceHolder1_lbl_welcome_name">cc full name</span>!</h2>
-            <p><span id="ContentPlaceHolder1_lbl_welcome_date">Today: Sunday, 01 March 2026</span></p>
+    
+    <input type="hidden" id="hdnOwnerId"   value="1" />
+    <input type="hidden" id="hdnOwnerType" value="LSC-CRP" />
+
+    <div class="page-wrapper">
+
+        <!-- ===== FILTER BAR ===== -->
+        <div class="filter-bar">
+            <div class="category-buttons" id="categoryButtons">
+                <button class="cat-btn active" data-category="all">All Products</button>
+            </div>
+            <div class="search-row">
+                <input type="text" id="productSearch" class="search-input"
+                       placeholder="Search products..." autocomplete="off" />
+                <button class="search-btn" id="searchButton">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+            <div class="product-count-bar">
+                Showing <span id="productCount">0</span> of <span id="totalProducts">0</span> products
+            </div>
         </div>
-        <div class="welcome-icon">
-            <i class="fas fa-seedling"></i>
+
+        <!-- ===== PRODUCT GRID ===== -->
+        <div class="product-grid-container" id="productGridContainer">
+            <div class="product-grid" id="productGrid"></div>
         </div>
+
     </div>
 
-    <!-- Stat Cards -->
-    <div class="stat-cards">
-        <div class="stat-card">
-            <div class="card-icon green"><i class="fas fa-clipboard-list"></i></div>
-            <div class="card-value">
-                <span id="ContentPlaceHolder1_lbl_total_orders">0</span>
-            </div>
-            <div class="card-label">Total Orders</div>
-        </div>
-        <div class="stat-card">
-            <div class="card-icon blue"><i class="fas fa-shopping-cart"></i></div>
-            <div class="card-value">
-                <span id="ContentPlaceHolder1_lbl_cart_items">0</span>
-            </div>
-            <div class="card-label">Items in Cart</div>
-        </div>
-        <div class="stat-card">
-            <div class="card-icon orange"><i class="fas fa-rupee-sign"></i></div>
-            <div class="card-value">
-                <span id="ContentPlaceHolder1_lbl_income">â‚¹0</span>
-            </div>
-            <div class="card-label">This Month Income</div>
-        </div>
-        <div class="stat-card">
-            <div class="card-icon purple"><i class="fas fa-users"></i></div>
-            <div class="card-value">
-                <span id="ContentPlaceHolder1_lbl_customers">0</span>
-            </div>
-            <div class="card-label">My Customers</div>
-        </div>
-    </div>
+    <script type="text/javascript">
 
-    <!-- Quick Actions -->
-    <div class="section-heading">
-        <i class="fas fa-bolt"></i> Quick Actions
-    </div>
-    <div class="quick-actions">
-        <a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#" class="quick-action-btn">
-            <i class="fas fa-plus-circle"></i>
-            New Order
-        </a>
-        <a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#" class="quick-action-btn">
-            <i class="fas fa-shopping-cart"></i>
-            View Cart
-        </a>
-        <a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#" class="quick-action-btn">
-            <i class="fas fa-file-invoice"></i>
-            My Orders
-        </a>
-        <a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#" class="quick-action-btn">
-            <i class="fas fa-chart-line"></i>
-            Income
-        </a>
-    </div>
+        // ==================== STATE ====================
+        const state = {
+            currentPage     : 1,
+            pageSize        : 100,
+            isLoading       : false,
+            hasMore         : true,
+            totalProducts   : 0,
+            currentCategory : 'all',
+            currentSearchTerm: '',
+            allProducts     : [],
+            categories      : [],
+            productStockLevels: {},
+            ownerId  : parseInt(document.getElementById('hdnOwnerId').value)   || 0,
+            ownerType: 'LSC'            || ''
+            //ownerType: document.getElementById('hdnOwnerType').value            || ''
+        };
 
-    <!-- Recent Orders -->
-    <div class="section-heading">
-        <i class="fas fa-history"></i> Recent Orders
-    </div>
-    <div class="card-box">
-        <table class="order-table">
-            <thead>
-                <tr>
-                    <th>Order #</th>
-                    <th>Item</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>#1001</td>
-                    <td>Rice (5 kg)</td>
-                    <td>â‚¹250</td>
-                    <td><span class="badge badge-success">Delivered</span></td>
-                </tr>
-                <tr>
-                    <td>#1002</td>
-                    <td>Wheat Flour (10 kg)</td>
-                    <td>â‚¹380</td>
-                    <td><span class="badge badge-warning">Pending</span></td>
-                </tr>
-                <tr>
-                    <td>#1003</td>
-                    <td>Pulses (2 kg)</td>
-                    <td>â‚¹160</td>
-                    <td><span class="badge badge-info">Processing</span></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+        // ==================== INIT ====================
+        document.addEventListener('DOMContentLoaded', function () {
+            loadCategories();
+            loadProducts(true);
+            initEventListeners();
+        });
 
+        function initEventListeners() {
+            document.getElementById('searchButton').addEventListener('click', performSearch);
+
+            document.getElementById('productSearch').addEventListener('keyup', function (e) {
+                if (e.key === 'Enter') performSearch();
+            });
+
+            // Infinite scroll
+            document.getElementById('productGridContainer').addEventListener('scroll', function () {
+                if (state.isLoading || !state.hasMore) return;
+                if (this.scrollTop + this.clientHeight >= this.scrollHeight - 250) {
+                    loadProducts(false);
+                }
+            });
+        }
+
+        // ==================== CATEGORIES ====================
+        function loadCategories() {
+            fetch('fpc_23_lscProductPage.aspx/GetCategories', {
+                method : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body   : JSON.stringify({
+                    ownerId  : state.ownerId,
+                    ownerType: state.ownerType
+                })
+            })
+            .then(r => r.json())
+            .then(result => {
+                if (result.d && result.d.success) {
+                    state.categories = result.d.categories || [];
+                    renderCategoryButtons();
+                }
+            })
+            .catch(err => console.error('Error loading categories:', err));
+        }
+
+        function renderCategoryButtons() {
+            const container = document.getElementById('categoryButtons');
+            container.innerHTML = '<button class="cat-btn active" data-category="all">All Products</button>';
+
+            state.categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = 'cat-btn';
+                btn.setAttribute('data-category', cat);
+                btn.textContent = cat;
+                container.appendChild(btn);
+            });
+
+            attachCategoryEvents();
+        }
+
+        function attachCategoryEvents() {
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    state.currentCategory  = this.getAttribute('data-category');
+                    state.currentPage      = 1;
+                    state.hasMore          = true;
+                    loadProducts(true);
+                });
+            });
+        }
+
+        // ==================== PRODUCTS ====================
+        function loadProducts(reset) {
+            if (reset) {
+                state.currentPage  = 1;
+                state.hasMore      = true;
+                state.allProducts  = [];
+                document.getElementById('productGrid').innerHTML = '';
+            }
+
+            if (state.isLoading || !state.hasMore) return;
+
+            state.isLoading = true;
+
+            if (state.currentPage === 1) {
+                showSkeletons();
+            } else {
+                showLoadingMore();
+            }
+
+            fetch('fpc_23_lscProductPage.aspx/GetProducts', {
+                method : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body   : JSON.stringify({
+                    page      : state.currentPage,
+                    pageSize  : state.pageSize,
+                    category  : state.currentCategory === 'all' ? '' : state.currentCategory,
+                    searchTerm: state.currentSearchTerm,
+                    sortBy    : 'newest',
+                    ownerId   : state.ownerId,
+                    ownerType : state.ownerType
+                })
+            })
+            .then(r => r.json())
+            .then(result => {
+                if (result.d && result.d.success) {
+                    const products = result.d.products || [];
+                    state.hasMore      = result.d.hasMore   || false;
+                    state.totalProducts = result.d.totalCount || 0;
+
+                    products.forEach(p => {
+                        state.productStockLevels[p.prod_stock_id] = p.instock || 0;
+                    });
+
+                    state.allProducts = reset ? products : [...state.allProducts, ...products];
+                    renderProducts(products, reset);
+                    state.currentPage++;
+                    updateCountBar();
+                }
+            })
+            .catch(err => {
+                console.error('Error loading products:', err);
+                showErrorState('Failed to load products. Please try again.');
+            })
+            .finally(() => {
+                state.isLoading = false;
+                removeSkeletons();
+                hideLoadingMore();
+            });
+        }
+
+        function renderProducts(products, reset) {
+            const grid = document.getElementById('productGrid');
+
+            if (reset) grid.innerHTML = '';
+
+            const existing = grid.querySelector('.empty-state');
+            if (existing) existing.remove();
+
+            if (products.length === 0 && state.currentPage === 1) {
+                showEmptyState();
+                return;
+            }
+
+            const frag = document.createDocumentFragment();
+            products.forEach(p => frag.appendChild(createProductCard(p)));
+            grid.appendChild(frag);
+        }
+
+        function createProductCard(product) {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+
+            const instock = state.productStockLevels[product.prod_stock_id] || product.instock || 0;
+            if (instock <= 0) card.classList.add('out-of-stock');
+
+            card.setAttribute('data-product-stock-id', product.prod_stock_id);
+            card.setAttribute('data-product-id', product.prod_id);
+
+            let stockClass = 'stock-good';
+            let stockText  = '';
+            if (instock <= 0)  { stockClass = 'stock-out'; stockText = 'Out of Stock'; }
+            else if (instock < 10) { stockClass = 'stock-low'; stockText = `Low Stock: ${instock}`; }
+            else { stockText = `In Stock: ${instock}`; }
+
+            const imageUrl = product.prod_image
+                ? `IMAGES_FPC/products/${product.prod_image}`
+                : 'https://via.placeholder.com/300x200?text=No+Image';
+
+            let html = '';
+
+            if (product.prod_stock_discount_percentage > 0) {
+                html += `<div class="discount-tag">${product.prod_stock_discount_percentage}% OFF</div>`;
+            }
+
+            html += `
+                <img src="${imageUrl}" class="product-image"
+                     alt="${product.prod_name || 'Product'}"
+                     onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                <div class="product-content">
+                    <span class="product-category">${product.category || 'General'}</span>
+                    <div class="product-name">${product.prod_name || 'Product ' + product.prod_id}</div>
+                    <div class="product-price-row">
+                        <span class="product-price">&#8377;${fmt(product.prod_stock_sale_price_after_discount)}</span>`;
+
+            if (product.prod_stock_discount_percentage > 0) {
+                html += `<span class="original-price">&#8377;${fmt(product.prod_stock_sale_price)}</span>`;
+            }
+
+            html += `
+                    </div>
+                    <div class="product-meta">
+                        <span>Unit: ${product.unit || 'Piece'}</span>
+                        <span>${product.sku || 'SKU-' + product.prod_id}</span>
+                    </div>
+                    <div class="stock-info">
+                        <span class="${stockClass}">${stockText}</span>
+                    </div>
+                </div>`;
+
+            card.innerHTML = html;
+            return card;
+        }
+
+        // ==================== SEARCH ====================
+        function performSearch() {
+            state.currentSearchTerm = document.getElementById('productSearch').value.trim();
+            state.currentPage = 1;
+            state.hasMore = true;
+            loadProducts(true);
+        }
+
+        window.clearFilters = function () {
+            state.currentCategory   = 'all';
+            state.currentSearchTerm = '';
+            document.getElementById('productSearch').value = '';
+            document.querySelectorAll('.cat-btn').forEach(b => {
+                b.classList.toggle('active', b.getAttribute('data-category') === 'all');
+            });
+            state.currentPage = 1;
+            state.hasMore = true;
+            loadProducts(true);
+        };
+
+        // ==================== LOADING HELPERS ====================
+        function showSkeletons() {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 8; i++) {
+                const s = document.createElement('div');
+                s.className = 'skeleton-card';
+                s.innerHTML = `<div class="skeleton-img"></div>
+                               <div class="skeleton-body">
+                                 <div class="skeleton-line short"></div>
+                                 <div class="skeleton-line"></div>
+                                 <div class="skeleton-line short"></div>
+                               </div>`;
+                grid.appendChild(s);
+            }
+        }
+
+        function removeSkeletons() {
+            document.querySelectorAll('.skeleton-card').forEach(s => s.remove());
+        }
+
+        function showLoadingMore() {
+            hideLoadingMore();
+            const grid = document.getElementById('productGrid');
+            const div  = document.createElement('div');
+            div.id = 'loadingMoreDiv';
+            div.className = 'loading-more';
+            div.innerHTML = `<i class="fas fa-spinner spin-icon"></i> Loading more products...`;
+            grid.appendChild(div);
+        }
+
+        function hideLoadingMore() {
+            const el = document.getElementById('loadingMoreDiv');
+            if (el) el.remove();
+        }
+
+        function showEmptyState() {
+            const grid = document.getElementById('productGrid');
+            const div  = document.createElement('div');
+            div.className = 'empty-state';
+            const msg = state.currentSearchTerm
+                ? `No products match "<strong>${state.currentSearchTerm}</strong>"`
+                : state.currentCategory !== 'all'
+                    ? `No products in "<strong>${state.currentCategory}</strong>"`
+                    : 'No products available';
+            div.innerHTML = `<i class="fas fa-box-open"></i>
+                             <p>${msg}</p>
+                             <button class="reset-btn" onclick="clearFilters()">Clear Filters</button>`;
+            grid.appendChild(div);
+        }
+
+        function showErrorState(msg) {
+            const grid = document.getElementById('productGrid');
+            const div  = document.createElement('div');
+            div.className = 'empty-state';
+            div.innerHTML = `<i class="fas fa-exclamation-triangle" style="color:#dc3545"></i>
+                             <p>${msg}</p>
+                             <button class="reset-btn" onclick="loadProducts(true)">Try Again</button>`;
+            grid.appendChild(div);
+        }
+
+        function updateCountBar() {
+            document.getElementById('productCount').textContent  = state.allProducts.length;
+            document.getElementById('totalProducts').textContent = state.totalProducts;
+        }
+
+        // ==================== FORMAT HELPER ====================
+        function fmt(n) {
+            return parseFloat(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+    </script>
 
         </div>
     </div>
 
     <!-- ===== BOTTOM NAVIGATION BAR ===== -->
     <nav class="bottom-nav">
-        <a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx" class="bottom-nav-item active" id="nav-home">
+        <a href="fpc_22_lsc_crp_dashboard.aspx" class="bottom-nav-item" id="nav-home">
             <i class="fas fa-home"></i>
             <span>Home</span>
         </a>
-        <a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#" class="bottom-nav-item" id="nav-cart">
+        <a href="fpc_23_lscProductPage.aspx" class="bottom-nav-item" id="nav-product">
+            <i class="fas fa-box-open"></i>
+            <span>Product</span>
+        </a>
+        <a href="#" class="bottom-nav-item" id="nav-cart">
             <i class="fas fa-shopping-cart"></i>
             <span>Cart</span>
         </a>
-        <a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#" class="bottom-nav-item" id="nav-orders">
+        <a href="#" class="bottom-nav-item" id="nav-orders">
             <i class="fas fa-clipboard-list"></i>
             <span>Orders</span>
         </a>
-        <a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#" class="bottom-nav-item" id="nav-income">
+        <a href="#" class="bottom-nav-item" id="nav-income">
             <i class="fas fa-rupee-sign"></i>
             <span>Income</span>
         </a>
@@ -693,7 +1104,8 @@
         (function () {
             const currentPage = window.location.pathname.split('/').pop().toLowerCase();
             const navMap = {
-                'fpc_22_lsc_crp_dashboard.aspx': 'nav-home'
+                'fpc_22_lsc_crp_dashboard.aspx': 'nav-home',
+                'fpc_23_lscproductpage.aspx': 'nav-product'
             };
             const activeId = navMap[currentPage];
             if (activeId) {
@@ -705,11 +1117,10 @@
 
 <!-- Visual Studio Browser Link -->
 <script type="application/json" id="__browserLink_initializationData">
-    {"appName":"Chrome","requestId":"8a71ece002a8436db049ce523e15ba59"}
+    {"appName":"Chrome","requestId":"087bcf85c5314b918ace6fb06b39e8f9"}
 </script>
-<script type="text/javascript" src="./LSC-CRP Portal_files/browserLink" async="async"></script>
+<script type="text/javascript" src="http://localhost:28056/f3365dc9df194f729bae7c8e77bc7399/browserLink" async="async"></script>
 <!-- End Browser Link -->
 
-
-
-<iframe frameborder="0" scrolling="no" style="background-color: transparent; border: 0px; display: none;" src="./LSC-CRP Portal_files/saved_resource.html"></iframe><div id="GOOGLE_INPUT_CHEXT_FLAG" input="" input_stat="{&quot;tlang&quot;:true,&quot;tsbc&quot;:true,&quot;pun&quot;:true,&quot;mk&quot;:true,&quot;ss&quot;:true}" style="display: none;"></div></body></html>
+</body>
+</html>

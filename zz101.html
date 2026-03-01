@@ -5,1119 +5,389 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LSC-CRP Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart Sales Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-    
-    <style type="text/css">
-
-        /* ===== OVERRIDE MASTER CONTENT PADDING FOR FULL-WIDTH LAYOUT ===== */
-        .content-area {
-            padding: 0 !important;
-        }
-
-        .page-wrapper {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            background: #f0f2f5;
-        }
-
-        /* ===== FILTER BAR ===== */
-        .filter-bar {
-            background: white;
-            padding: 12px 16px;
-            border-bottom: 1px solid #e0e4ea;
-            flex-shrink: 0;
-        }
-
-        .category-buttons {
-            display: flex;
-            flex-wrap: nowrap;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 6px;
-            margin-bottom: 10px;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-        }
-
-        .category-buttons::-webkit-scrollbar { display: none; }
-
-        .cat-btn {
-            padding: 5px 14px;
-            background: #f0f2f5;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            font-size: 13px;
-            color: #555;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-
-        .cat-btn:hover  { background: #e2e6ea; }
-        .cat-btn.active { background: #1a6b3c; color: white; border-color: #1a6b3c; }
-
-        .search-row {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 9px 16px;
-            border: 1px solid #ddd;
-            border-radius: 22px;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .search-input:focus { border-color: #1a6b3c; box-shadow: 0 0 0 2px rgba(26,107,60,0.15); }
-
-        .search-btn {
-            padding: 9px 18px;
-            background: #1a6b3c;
-            color: white;
-            border: none;
-            border-radius: 22px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background 0.2s;
-            white-space: nowrap;
-        }
-
-        .search-btn:hover { background: #155530; }
-
-        .product-count-bar {
-            margin-top: 8px;
-            font-size: 12px;
-            color: #7a8090;
-            text-align: right;
-        }
-
-        /* ===== PRODUCT GRID ===== */
-        .product-grid-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 8px;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        @media (min-width: 600px) { .product-grid-container { padding: 12px; } }
-        @media (min-width: 900px) { .product-grid-container { padding: 14px; } }
-
-        .product-grid-container::-webkit-scrollbar { width: 5px; }
-        .product-grid-container::-webkit-scrollbar-thumb { background: #c0c7d0; border-radius: 4px; }
-
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-
-        /* Mobile landscape: 5 columns */
-        @media (max-width: 900px) and (orientation: landscape) {
-            .product-grid { grid-template-columns: repeat(5, 1fr); gap: 8px; }
-        }
-
-        /* Tablet portrait: 4 columns */
-        @media (min-width: 600px) and (orientation: portrait) {
-            .product-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        }
-
-        /* Tablet landscape / small desktop: 4 columns */
-        @media (min-width: 900px) {
-            .product-grid { grid-template-columns: repeat(4, 1fr); gap: 12px; }
-        }
-
-        /* Desktop: 5 columns */
-        @media (min-width: 1200px) {
-            .product-grid { grid-template-columns: repeat(5, 1fr); gap: 14px; }
-        }
-
-        /* ===== PRODUCT CARD ===== */
-        .product-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            border: 1px solid #eee;
-            transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
-            cursor: pointer;
-        }
-
-        .product-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 18px rgba(0,0,0,0.13);
-        }
-
-        .product-card.out-of-stock {
-            opacity: 0.55;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-
-        .discount-tag {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background: #dc3545;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 700;
-            z-index: 10;
-        }
-
-        .product-image {
-            width: 100%;
-            height: 90px;
-            object-fit: cover;
-            background: #f5f5f5;
-            display: block;
-        }
-
-        /* Taller image on wider screens */
-        @media (min-width: 600px) { .product-image { height: 120px; } }
-        @media (min-width: 900px) { .product-image { height: 140px; } }
-
-        .product-content {
-            padding: 6px 7px 8px;
-        }
-
-        @media (min-width: 600px) { .product-content { padding: 8px 9px 10px; } }
-        @media (min-width: 900px) { .product-content { padding: 10px 10px 12px; } }
-
-        .product-category {
-            display: inline-block;
-            background: #d4f4e2;
-            color: #1a6b3c;
-            padding: 1px 6px;
-            border-radius: 10px;
-            font-size: 9px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        @media (min-width: 600px) { .product-category { font-size: 10px; padding: 2px 7px; } }
-
-        .product-name {
-            font-size: 11px;
-            font-weight: 600;
-            color: #222;
-            line-height: 1.3;
-            height: 30px;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            margin-bottom: 4px;
-        }
-
-        @media (min-width: 600px) {
-            .product-name { font-size: 12px; height: 32px; }
-        }
-        @media (min-width: 900px) {
-            .product-name { font-size: 13px; height: 36px; margin-bottom: 6px; }
-        }
-
-        .product-price-row {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 4px;
-            flex-wrap: wrap;
-        }
-
-        .product-price {
-            font-size: 12px;
-            font-weight: 700;
-            color: #e44d26;
-        }
-
-        @media (min-width: 600px) { .product-price { font-size: 13px; } }
-        @media (min-width: 900px) { .product-price { font-size: 15px; } }
-
-        .original-price {
-            font-size: 12px;
-            color: #aaa;
-            text-decoration: line-through;
-        }
-
-        .product-meta {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: #888;
-            margin-bottom: 4px;
-        }
-
-        .stock-info {
-            margin-top: 6px;
-            font-size: 11px;
-            font-weight: 600;
-            padding-top: 6px;
-            border-top: 1px solid #f0f0f0;
-        }
-
-        .stock-good { color: #1a6b3c; }
-        .stock-low  { color: #dc3545; }
-        .stock-out  { color: #aaa; font-style: italic; }
-
-        /* ===== SKELETON LOADERS ===== */
-        .skeleton-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
-
-        .skeleton-img {
-            width: 100%;
-            height: 140px;
-            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.4s infinite;
-        }
-
-        .skeleton-body { padding: 10px; }
-
-        .skeleton-line {
-            height: 12px;
-            border-radius: 6px;
-            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.4s infinite;
-            margin-bottom: 8px;
-        }
-
-        .skeleton-line.short { width: 55%; }
-
-        @keyframes shimmer {
-            0%   { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        /* ===== NO PRODUCTS / ERROR ===== */
-        .empty-state {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 50px 20px;
-            color: #7a8090;
-        }
-
-        .empty-state i { font-size: 52px; color: #ccc; margin-bottom: 16px; display: block; }
-        .empty-state p { font-size: 15px; margin-bottom: 14px; }
-
-        .reset-btn {
-            padding: 8px 22px;
-            background: #1a6b3c;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            font-size: 13px;
-            cursor: pointer;
-        }
-
-        /* ===== LOADING MORE ===== */
-        .loading-more {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 20px;
-            color: #888;
-        }
-
-        .spin-icon {
-            display: inline-block;
-            animation: spin 0.9s linear infinite;
-            margin-right: 8px;
-        }
-
-        @keyframes spin {
-            0%   { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-    </style>
-
-
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background-color: #f0f2f5;
+            min-height: 100vh;
+            min-height: 100dvh;
+            background: linear-gradient(160deg, #0d5c30 0%, #1a6b3c 40%, #2d9b5a 100%);
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
+            justify-content: center;
+            align-items: center;
+            padding: 24px 20px;
+            overflow-x: hidden;
         }
 
-        /* ===== TOP BAR ===== */
-        .top-bar {
-            background: linear-gradient(135deg, #1a6b3c 0%, #2d9b5a 100%);
-            color: white;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
+        /* ===== DECORATIVE BACKGROUND CIRCLES ===== */
+        body::before {
+            content: '';
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            top: -80px;
+            right: -80px;
+            width: 260px;
+            height: 260px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%;
+            pointer-events: none;
         }
 
-        .top-bar-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -60px;
+            left: -60px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+            pointer-events: none;
         }
 
-        .menu-toggle-btn {
-            background: rgba(255,255,255,0.15);
-            border: none;
+        /* ===== TOP LOGO AREA ===== */
+        .logo-area {
+            text-align: center;
+            margin-bottom: 32px;
             color: white;
-            width: 38px;
-            height: 38px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
+        }
+
+        .logo-icon-wrap {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s;
+            margin: 0 auto 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            backdrop-filter: blur(6px);
         }
 
-        .menu-toggle-btn:hover {
-            background: rgba(255,255,255,0.28);
-        }
-
-        .top-bar-center {
-            text-align: center;
-            flex: 1;
-        }
-
-        .top-bar-center .fpc-name {
-            font-size: 15px;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-
-        .top-bar-center .lsc-name {
-            font-size: 12px;
-            opacity: 0.85;
-            font-weight: 400;
-        }
-
-        .top-bar-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .user-greeting {
-            text-align: right;
-        }
-
-        .user-greeting .user-name {
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .user-greeting .user-role {
-            font-size: 11px;
-            opacity: 0.8;
-        }
-
-        .logout-btn {
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.3);
+        .logo-icon-wrap i {
+            font-size: 38px;
             color: white;
-            padding: 7px 14px;
-            border-radius: 8px;
-            cursor: pointer;
+        }
+
+        .logo-area h1 {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .logo-area p {
             font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
-            transition: background 0.2s;
+            opacity: 0.82;
+            font-weight: 400;
+            letter-spacing: 0.2px;
         }
 
-        .logout-btn:hover {
-            background: rgba(255,80,80,0.5);
-            border-color: rgba(255,80,80,0.6);
+        /* ===== LOGIN CARD ===== */
+        .login-card {
+            background: white;
+            border-radius: 24px;
+            padding: 32px 24px 28px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
         }
 
-        /* ===== COLLAPSIBLE SLIDE-IN MENU ===== */
-        .slide-menu {
-            position: fixed;
-            top: 60px;
-            left: -260px;
-            width: 260px;
-            height: calc(100vh - 60px - 65px);
-            background: #1a1a2e;
-            z-index: 999;
-            transition: left 0.3s ease;
-            overflow-y: auto;
-            box-shadow: 3px 0 15px rgba(0,0,0,0.3);
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 4px;
         }
 
-        .slide-menu.open {
-            left: 0;
+        .card-subtitle {
+            font-size: 13px;
+            color: #7a8090;
+            margin-bottom: 26px;
         }
 
-        .slide-menu .menu-header {
-            padding: 18px 20px 10px;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: #888;
+        /* ===== FORM GROUPS ===== */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
             font-weight: 600;
+            color: #444;
+            margin-bottom: 7px;
         }
 
-        .slide-menu ul {
-            list-style: none;
-            padding: 0 10px;
+        .input-wrap {
+            position: relative;
         }
 
-        .slide-menu ul li a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 14px;
-            color: #c8ccd4;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: background 0.2s, color 0.2s;
-            margin-bottom: 2px;
+        .input-wrap i.icon-left {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #1a6b3c;
+            font-size: 16px;
+            pointer-events: none;
         }
 
-        .slide-menu ul li a:hover,
-        .slide-menu ul li a.active {
-            background: rgba(45, 155, 90, 0.25);
-            color: #4eca80;
-        }
-
-        .slide-menu ul li a i {
-            width: 20px;
-            text-align: center;
+        .input-wrap input {
+            width: 100%;
+            padding: 14px 44px 14px 44px;
+            border: 1.5px solid #e0e4ea;
+            border-radius: 12px;
             font-size: 15px;
+            color: #222;
+            background: #f8faf8;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+            -webkit-appearance: none;
         }
 
-        .slide-menu .menu-divider {
-            border: none;
-            border-top: 1px solid #2a2a40;
-            margin: 8px 20px;
+        .input-wrap input:focus {
+            outline: none;
+            border-color: #1a6b3c;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(26,107,60,0.12);
         }
 
-        /* Overlay when menu is open on mobile */
-        .menu-overlay {
+        .input-wrap input::placeholder {
+            color: #bbb;
+            font-size: 14px;
+        }
+
+        /* Password toggle eye icon */
+        .pwd-toggle {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .pwd-toggle:hover { color: #1a6b3c; }
+
+        /* ===== ERROR LABEL ===== */
+        .error-box {
+            background: #fff5f5;
+            border: 1px solid #fcc;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
             display: none;
-            position: fixed;
-            top: 60px;
-            left: 0;
-            right: 0;
-            bottom: 65px;
-            background: rgba(0,0,0,0.4);
-            z-index: 998;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #cc2a2a;
+            font-weight: 500;
         }
 
-        .menu-overlay.show {
+        .error-box.visible { display: flex; }
+        .error-box i { font-size: 15px; flex-shrink: 0; }
+
+        /* ASP label error (hidden span re-styled) */
+        #lbl_error:not(:empty) {
             display: block;
         }
 
-        /* ===== MAIN CONTENT ===== */
-        .main-wrapper {
-            margin-top: 60px;
-            margin-bottom: 65px;
-            height: calc(100vh - 60px - 65px);
-            overflow-y: auto;
-            background: #f0f2f5;
-        }
-
-        .content-area {
-            padding: 20px;
-            min-height: 100%;
-        }
-
-        /* ===== BOTTOM NAVIGATION BAR ===== */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 65px;
-            background: white;
-            border-top: 1px solid #e0e4ea;
+        /* ===== LOGIN BUTTON ===== */
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #1a6b3c 0%, #2d9b5a 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 0.3px;
             display: flex;
-            z-index: 1000;
-            box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
-        }
-
-        .bottom-nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
+            gap: 10px;
             text-decoration: none;
-            color: #9aa0ab;
-            font-size: 11px;
-            gap: 4px;
-            transition: color 0.2s;
-            position: relative;
-            cursor: pointer;
+            transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 6px 20px rgba(26,107,60,0.35);
+            margin-top: 6px;
         }
 
-        .bottom-nav-item i {
-            font-size: 22px;
-            transition: transform 0.2s;
+        .login-btn:active {
+            transform: scale(0.98);
+            opacity: 0.92;
         }
 
-        .bottom-nav-item:hover,
-        .bottom-nav-item.active {
+        .login-btn i { font-size: 16px; }
+
+        /* ===== FOOTER ICONS ===== */
+        .footer-icons {
+            display: flex;
+            justify-content: center;
+            gap: 22px;
+            margin-top: 26px;
+            opacity: 0.35;
+        }
+
+        .footer-icons i {
+            font-size: 20px;
             color: #1a6b3c;
         }
 
-        .bottom-nav-item.active i {
-            transform: translateY(-2px);
+        /* ===== APP VERSION ===== */
+        .app-version {
+            text-align: center;
+            color: rgba(255,255,255,0.5);
+            font-size: 11px;
+            margin-top: 20px;
+            letter-spacing: 0.5px;
         }
 
-        .bottom-nav-item.active::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 20%;
-            right: 20%;
-            height: 3px;
-            background: #1a6b3c;
-            border-radius: 0 0 4px 4px;
-        }
-
-        /* ===== SCROLLBAR ===== */
-        .main-wrapper::-webkit-scrollbar {
-            width: 5px;
-        }
-        .main-wrapper::-webkit-scrollbar-thumb {
-            background: #c0c7d0;
-            border-radius: 4px;
-        }
-        .slide-menu::-webkit-scrollbar {
-            width: 4px;
-        }
-        .slide-menu::-webkit-scrollbar-thumb {
-            background: #333;
+        /* ===== LANDSCAPE ADJUSTMENT ===== */
+        @media (max-height: 600px) and (orientation: landscape) {
+            body { padding: 16px 20px; }
+            .logo-area { margin-bottom: 18px; }
+            .logo-icon-wrap { width: 60px; height: 60px; border-radius: 18px; margin-bottom: 10px; }
+            .logo-icon-wrap i { font-size: 28px; }
+            .logo-area h1 { font-size: 20px; }
+            .login-card { padding: 22px 24px 20px; }
+            .form-group { margin-bottom: 12px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- ===== TOP BAR ===== -->
-    <div class="top-bar">
-        <!-- Left: Hamburger Toggle -->
-        <div class="top-bar-left">
-            <button class="menu-toggle-btn" id="menuToggleBtn" title="Menu">
-                <i class="fas fa-bars" id="menuToggleIcon"></i>
-            </button>
+    <!-- ===== LOGO AREA ===== -->
+    <div class="logo-area">
+        <div class="logo-icon-wrap">
+            <i class="fas fa-seedling"></i>
         </div>
-
-        <!-- Center: FPC & LSC Name -->
-        <div class="top-bar-center">
-            <div class="fpc-name">
-                <span id="lbl_fpc_name">lsc name 1</span>
-            </div>
-            <div class="lsc-name">
-                <span id="lbl_lsc_name">fpc name 1, Damcharra</span>
-            </div>
-        </div>
-
-        <!-- Right: User Info + Logout -->
-        <div class="top-bar-right">
-            <div class="user-greeting">
-                <div class="user-name">
-                    <span id="lbl_user_name">cc full name</span>
-                </div>
-                <div class="user-role">LSC-CRP</div>
-            </div>
-            <a href="fpc_08_logout.aspx" class="logout-btn">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
-        </div>
+        <h1>Smart Sales Pro</h1>
+        <p>FPC-LSC Management Information System</p>
     </div>
 
-    <!-- ===== COLLAPSIBLE SLIDE MENU ===== -->
-    <div class="slide-menu" id="slideMenu">
-        <div class="menu-header">Main Menu</div>
-        <ul>
-            <li><a href="fpc_22_lsc_crp_dashboard.aspx"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li><a href="#"><i class="fas fa-shopping-cart"></i> My Cart</a></li>
-            <li><a href="#"><i class="fas fa-file-invoice"></i> My Orders</a></li>
-        </ul>
-        <hr class="menu-divider" />
-        <div class="menu-header">Account</div>
-        <ul>
-            <li><a href="#"><i class="fas fa-user-circle"></i> My Profile</a></li>
-            <li><a href="#"><i class="fas fa-rupee-sign"></i> Income Summary</a></li>
-            <li><a href="#"><i class="fas fa-bell"></i> Notifications</a></li>
-        </ul>
-        <hr class="menu-divider" />
-        <div class="menu-header">Support</div>
-        <ul>
-            <li><a href="#"><i class="fas fa-headset"></i> Help &amp; Support</a></li>
-            <li><a href="fpc_08_logout.aspx"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-        </ul>
-    </div>
+    <!-- ===== LOGIN CARD ===== -->
+    <div class="login-card">
+        <div class="card-title">Welcome back</div>
+        <div class="card-subtitle">Sign in to continue to your account</div>
 
-    <!-- Overlay (closes menu when clicked) -->
-    <div class="menu-overlay" id="menuOverlay"></div>
+        <form method="post" action="./fpc_01_login_mobile.aspx" id="ctl00">
+<div class="aspNetHidden">
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" />
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="9yvKXyLiYWDmV0ZX7KNOardOk477KklNeH7tFROO20JpRIHqaFbx11xp8H4cYy8YxzqqpZs3e5bNwtq1kCwAzhzM2y6gwsaj1wm6Q9lpjMs=" />
+</div>
 
-    <!-- ===== MAIN CONTENT AREA ===== -->
-    <div class="main-wrapper" id="mainWrapper">
-        <div class="content-area">
+<script type="text/javascript">
+//<![CDATA[
+var theForm = document.forms['ctl00'];
+if (!theForm) {
+    theForm = document.ctl00;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+//]]>
+</script>
+
+
+
             
-
-    
-    <input type="hidden" id="hdnOwnerId"   value="1" />
-    <input type="hidden" id="hdnOwnerType" value="LSC-CRP" />
-
-    <div class="page-wrapper">
-
-        <!-- ===== FILTER BAR ===== -->
-        <div class="filter-bar">
-            <div class="category-buttons" id="categoryButtons">
-                <button class="cat-btn active" data-category="all">All Products</button>
+            <div class="error-box" id="errorBox">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="lbl_error"></span>
             </div>
-            <div class="search-row">
-                <input type="text" id="productSearch" class="search-input"
-                       placeholder="Search products..." autocomplete="off" />
-                <button class="search-btn" id="searchButton">
-                    <i class="fas fa-search"></i> Search
-                </button>
+
+            
+            <div class="form-group">
+                <label for="txt_username">User ID</label>
+                <div class="input-wrap">
+                    <i class="fas fa-user icon-left"></i>
+                    <input name="txt_username" type="text" id="txt_username" placeholder="Enter your User ID" required="true" autocomplete="username" />
+                </div>
             </div>
-            <div class="product-count-bar">
-                Showing <span id="productCount">0</span> of <span id="totalProducts">0</span> products
+
+            
+            <div class="form-group">
+                <label for="txt_password">Password</label>
+                <div class="input-wrap">
+                    <i class="fas fa-lock icon-left"></i>
+                    <input name="txt_password" type="password" id="txt_password" placeholder="Enter your password" required="true" autocomplete="current-password" />
+                    <i class="fas fa-eye pwd-toggle" id="pwdToggle" title="Show/Hide password"></i>
+                </div>
             </div>
-        </div>
 
-        <!-- ===== PRODUCT GRID ===== -->
-        <div class="product-grid-container" id="productGridContainer">
-            <div class="product-grid" id="productGrid"></div>
-        </div>
+            
+            <a id="LinkButton1" class="login-btn" href="javascript:__doPostBack(&#39;LinkButton1&#39;,&#39;&#39;)">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </a>
 
-    </div>
+        
+<div class="aspNetHidden">
 
-    <script type="text/javascript">
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="9BB3B293" />
+</div></form>
 
-        // ==================== STATE ====================
-        const state = {
-            currentPage     : 1,
-            pageSize        : 100,
-            isLoading       : false,
-            hasMore         : true,
-            totalProducts   : 0,
-            currentCategory : 'all',
-            currentSearchTerm: '',
-            allProducts     : [],
-            categories      : [],
-            productStockLevels: {},
-            ownerId  : parseInt(document.getElementById('hdnOwnerId').value)   || 0,
-            ownerType: 'LSC'            || ''
-            //ownerType: document.getElementById('hdnOwnerType').value            || ''
-        };
-
-        // ==================== INIT ====================
-        document.addEventListener('DOMContentLoaded', function () {
-            loadCategories();
-            loadProducts(true);
-            initEventListeners();
-        });
-
-        function initEventListeners() {
-            document.getElementById('searchButton').addEventListener('click', performSearch);
-
-            document.getElementById('productSearch').addEventListener('keyup', function (e) {
-                if (e.key === 'Enter') performSearch();
-            });
-
-            // Infinite scroll
-            document.getElementById('productGridContainer').addEventListener('scroll', function () {
-                if (state.isLoading || !state.hasMore) return;
-                if (this.scrollTop + this.clientHeight >= this.scrollHeight - 250) {
-                    loadProducts(false);
-                }
-            });
-        }
-
-        // ==================== CATEGORIES ====================
-        function loadCategories() {
-            fetch('fpc_23_lscProductPage.aspx/GetCategories', {
-                method : 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body   : JSON.stringify({
-                    ownerId  : state.ownerId,
-                    ownerType: state.ownerType
-                })
-            })
-            .then(r => r.json())
-            .then(result => {
-                if (result.d && result.d.success) {
-                    state.categories = result.d.categories || [];
-                    renderCategoryButtons();
-                }
-            })
-            .catch(err => console.error('Error loading categories:', err));
-        }
-
-        function renderCategoryButtons() {
-            const container = document.getElementById('categoryButtons');
-            container.innerHTML = '<button class="cat-btn active" data-category="all">All Products</button>';
-
-            state.categories.forEach(cat => {
-                const btn = document.createElement('button');
-                btn.className = 'cat-btn';
-                btn.setAttribute('data-category', cat);
-                btn.textContent = cat;
-                container.appendChild(btn);
-            });
-
-            attachCategoryEvents();
-        }
-
-        function attachCategoryEvents() {
-            document.querySelectorAll('.cat-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    state.currentCategory  = this.getAttribute('data-category');
-                    state.currentPage      = 1;
-                    state.hasMore          = true;
-                    loadProducts(true);
-                });
-            });
-        }
-
-        // ==================== PRODUCTS ====================
-        function loadProducts(reset) {
-            if (reset) {
-                state.currentPage  = 1;
-                state.hasMore      = true;
-                state.allProducts  = [];
-                document.getElementById('productGrid').innerHTML = '';
-            }
-
-            if (state.isLoading || !state.hasMore) return;
-
-            state.isLoading = true;
-
-            if (state.currentPage === 1) {
-                showSkeletons();
-            } else {
-                showLoadingMore();
-            }
-
-            fetch('fpc_23_lscProductPage.aspx/GetProducts', {
-                method : 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body   : JSON.stringify({
-                    page      : state.currentPage,
-                    pageSize  : state.pageSize,
-                    category  : state.currentCategory === 'all' ? '' : state.currentCategory,
-                    searchTerm: state.currentSearchTerm,
-                    sortBy    : 'newest',
-                    ownerId   : state.ownerId,
-                    ownerType : state.ownerType
-                })
-            })
-            .then(r => r.json())
-            .then(result => {
-                if (result.d && result.d.success) {
-                    const products = result.d.products || [];
-                    state.hasMore      = result.d.hasMore   || false;
-                    state.totalProducts = result.d.totalCount || 0;
-
-                    products.forEach(p => {
-                        state.productStockLevels[p.prod_stock_id] = p.instock || 0;
-                    });
-
-                    state.allProducts = reset ? products : [...state.allProducts, ...products];
-                    renderProducts(products, reset);
-                    state.currentPage++;
-                    updateCountBar();
-                }
-            })
-            .catch(err => {
-                console.error('Error loading products:', err);
-                showErrorState('Failed to load products. Please try again.');
-            })
-            .finally(() => {
-                state.isLoading = false;
-                removeSkeletons();
-                hideLoadingMore();
-            });
-        }
-
-        function renderProducts(products, reset) {
-            const grid = document.getElementById('productGrid');
-
-            if (reset) grid.innerHTML = '';
-
-            const existing = grid.querySelector('.empty-state');
-            if (existing) existing.remove();
-
-            if (products.length === 0 && state.currentPage === 1) {
-                showEmptyState();
-                return;
-            }
-
-            const frag = document.createDocumentFragment();
-            products.forEach(p => frag.appendChild(createProductCard(p)));
-            grid.appendChild(frag);
-        }
-
-        function createProductCard(product) {
-            const card = document.createElement('div');
-            card.className = 'product-card';
-
-            const instock = state.productStockLevels[product.prod_stock_id] || product.instock || 0;
-            if (instock <= 0) card.classList.add('out-of-stock');
-
-            card.setAttribute('data-product-stock-id', product.prod_stock_id);
-            card.setAttribute('data-product-id', product.prod_id);
-
-            let stockClass = 'stock-good';
-            let stockText  = '';
-            if (instock <= 0)  { stockClass = 'stock-out'; stockText = 'Out of Stock'; }
-            else if (instock < 10) { stockClass = 'stock-low'; stockText = `Low Stock: ${instock}`; }
-            else { stockText = `In Stock: ${instock}`; }
-
-            const imageUrl = product.prod_image
-                ? `IMAGES_FPC/products/${product.prod_image}`
-                : 'https://via.placeholder.com/300x200?text=No+Image';
-
-            let html = '';
-
-            if (product.prod_stock_discount_percentage > 0) {
-                html += `<div class="discount-tag">${product.prod_stock_discount_percentage}% OFF</div>`;
-            }
-
-            html += `
-                <img src="${imageUrl}" class="product-image"
-                     alt="${product.prod_name || 'Product'}"
-                     onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
-                <div class="product-content">
-                    <span class="product-category">${product.category || 'General'}</span>
-                    <div class="product-name">${product.prod_name || 'Product ' + product.prod_id}</div>
-                    <div class="product-price-row">
-                        <span class="product-price">&#8377;${fmt(product.prod_stock_sale_price_after_discount)}</span>`;
-
-            if (product.prod_stock_discount_percentage > 0) {
-                html += `<span class="original-price">&#8377;${fmt(product.prod_stock_sale_price)}</span>`;
-            }
-
-            html += `
-                    </div>
-                    <div class="product-meta">
-                        <span>Unit: ${product.unit || 'Piece'}</span>
-                        <span>${product.sku || 'SKU-' + product.prod_id}</span>
-                    </div>
-                    <div class="stock-info">
-                        <span class="${stockClass}">${stockText}</span>
-                    </div>
-                </div>`;
-
-            card.innerHTML = html;
-            return card;
-        }
-
-        // ==================== SEARCH ====================
-        function performSearch() {
-            state.currentSearchTerm = document.getElementById('productSearch').value.trim();
-            state.currentPage = 1;
-            state.hasMore = true;
-            loadProducts(true);
-        }
-
-        window.clearFilters = function () {
-            state.currentCategory   = 'all';
-            state.currentSearchTerm = '';
-            document.getElementById('productSearch').value = '';
-            document.querySelectorAll('.cat-btn').forEach(b => {
-                b.classList.toggle('active', b.getAttribute('data-category') === 'all');
-            });
-            state.currentPage = 1;
-            state.hasMore = true;
-            loadProducts(true);
-        };
-
-        // ==================== LOADING HELPERS ====================
-        function showSkeletons() {
-            const grid = document.getElementById('productGrid');
-            grid.innerHTML = '';
-            for (let i = 0; i < 8; i++) {
-                const s = document.createElement('div');
-                s.className = 'skeleton-card';
-                s.innerHTML = `<div class="skeleton-img"></div>
-                               <div class="skeleton-body">
-                                 <div class="skeleton-line short"></div>
-                                 <div class="skeleton-line"></div>
-                                 <div class="skeleton-line short"></div>
-                               </div>`;
-                grid.appendChild(s);
-            }
-        }
-
-        function removeSkeletons() {
-            document.querySelectorAll('.skeleton-card').forEach(s => s.remove());
-        }
-
-        function showLoadingMore() {
-            hideLoadingMore();
-            const grid = document.getElementById('productGrid');
-            const div  = document.createElement('div');
-            div.id = 'loadingMoreDiv';
-            div.className = 'loading-more';
-            div.innerHTML = `<i class="fas fa-spinner spin-icon"></i> Loading more products...`;
-            grid.appendChild(div);
-        }
-
-        function hideLoadingMore() {
-            const el = document.getElementById('loadingMoreDiv');
-            if (el) el.remove();
-        }
-
-        function showEmptyState() {
-            const grid = document.getElementById('productGrid');
-            const div  = document.createElement('div');
-            div.className = 'empty-state';
-            const msg = state.currentSearchTerm
-                ? `No products match "<strong>${state.currentSearchTerm}</strong>"`
-                : state.currentCategory !== 'all'
-                    ? `No products in "<strong>${state.currentCategory}</strong>"`
-                    : 'No products available';
-            div.innerHTML = `<i class="fas fa-box-open"></i>
-                             <p>${msg}</p>
-                             <button class="reset-btn" onclick="clearFilters()">Clear Filters</button>`;
-            grid.appendChild(div);
-        }
-
-        function showErrorState(msg) {
-            const grid = document.getElementById('productGrid');
-            const div  = document.createElement('div');
-            div.className = 'empty-state';
-            div.innerHTML = `<i class="fas fa-exclamation-triangle" style="color:#dc3545"></i>
-                             <p>${msg}</p>
-                             <button class="reset-btn" onclick="loadProducts(true)">Try Again</button>`;
-            grid.appendChild(div);
-        }
-
-        function updateCountBar() {
-            document.getElementById('productCount').textContent  = state.allProducts.length;
-            document.getElementById('totalProducts').textContent = state.totalProducts;
-        }
-
-        // ==================== FORMAT HELPER ====================
-        function fmt(n) {
-            return parseFloat(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
-    </script>
-
+        
+        <div class="footer-icons">
+            <i class="fas fa-landmark"></i>
+            <i class="fas fa-network-wired"></i>
+            <i class="fas fa-users"></i>
+            <i class="fas fa-leaf"></i>
         </div>
     </div>
 
-    <!-- ===== BOTTOM NAVIGATION BAR ===== -->
-    <nav class="bottom-nav">
-        <a href="fpc_22_lsc_crp_dashboard.aspx" class="bottom-nav-item" id="nav-home">
-            <i class="fas fa-home"></i>
-            <span>Home</span>
-        </a>
-        <a href="fpc_23_lscProductPage.aspx" class="bottom-nav-item" id="nav-product">
-            <i class="fas fa-box-open"></i>
-            <span>Product</span>
-        </a>
-        <a href="#" class="bottom-nav-item" id="nav-cart">
-            <i class="fas fa-shopping-cart"></i>
-            <span>Cart</span>
-        </a>
-        <a href="#" class="bottom-nav-item" id="nav-orders">
-            <i class="fas fa-clipboard-list"></i>
-            <span>Orders</span>
-        </a>
-        <a href="#" class="bottom-nav-item" id="nav-income">
-            <i class="fas fa-rupee-sign"></i>
-            <span>Income</span>
-        </a>
-    </nav>
+    <div class="app-version">v1.0 &nbsp;&bull;&nbsp; Smart Sales Pro</div>
 
     <script>
-        // ===== COLLAPSIBLE MENU TOGGLE =====
-        const menuToggleBtn = document.getElementById('menuToggleBtn');
-        const menuToggleIcon = document.getElementById('menuToggleIcon');
-        const slideMenu = document.getElementById('slideMenu');
-        const menuOverlay = document.getElementById('menuOverlay');
-
-        function openMenu() {
-            slideMenu.classList.add('open');
-            menuOverlay.classList.add('show');
-            menuToggleIcon.classList.remove('fa-bars');
-            menuToggleIcon.classList.add('fa-times');
-        }
-
-        function closeMenu() {
-            slideMenu.classList.remove('open');
-            menuOverlay.classList.remove('show');
-            menuToggleIcon.classList.remove('fa-times');
-            menuToggleIcon.classList.add('fa-bars');
-        }
-
-        menuToggleBtn.addEventListener('click', function () {
-            if (slideMenu.classList.contains('open')) {
-                closeMenu();
-            } else {
-                openMenu();
-            }
-        });
-
-        menuOverlay.addEventListener('click', closeMenu);
-
-        // ===== BOTTOM NAV ACTIVE STATE =====
+        // ===== SHOW ERROR BOX IF LABEL HAS TEXT =====
         (function () {
-            const currentPage = window.location.pathname.split('/').pop().toLowerCase();
-            const navMap = {
-                'fpc_22_lsc_crp_dashboard.aspx': 'nav-home',
-                'fpc_23_lscproductpage.aspx': 'nav-product'
-            };
-            const activeId = navMap[currentPage];
-            if (activeId) {
-                const el = document.getElementById(activeId);
-                if (el) el.classList.add('active');
+            var lbl = document.getElementById('lbl_error');
+            var box = document.getElementById('errorBox');
+            if (lbl && lbl.innerText.trim() !== '') {
+                box.classList.add('visible');
             }
         })();
+
+        // ===== PASSWORD SHOW / HIDE TOGGLE =====
+        var pwdToggle = document.getElementById('pwdToggle');
+        var pwdInput  = document.getElementById('txt_password');
+
+        pwdToggle.addEventListener('click', function () {
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                pwdToggle.classList.replace('fa-eye', 'fa-eye-slash');
+                pwdToggle.style.color = '#1a6b3c';
+            } else {
+                pwdInput.type = 'password';
+                pwdToggle.classList.replace('fa-eye-slash', 'fa-eye');
+                pwdToggle.style.color = '#aaa';
+            }
+        });
     </script>
 
 <!-- Visual Studio Browser Link -->
 <script type="application/json" id="__browserLink_initializationData">
-    {"appName":"Chrome","requestId":"087bcf85c5314b918ace6fb06b39e8f9"}
+    {"appName":"Chrome","requestId":"eac69608d1bd43c7bf372fee175e7b8b"}
 </script>
 <script type="text/javascript" src="http://localhost:28056/f3365dc9df194f729bae7c8e77bc7399/browserLink" async="async"></script>
 <!-- End Browser Link -->

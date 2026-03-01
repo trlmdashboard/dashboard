@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<!-- saved from url=(0053)http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx# -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LSC-CRP Portal</title>
+    <link rel="stylesheet" href="./LSC-CRP Portal_files/all.min.css">
+    <link href="./LSC-CRP Portal_files/select2.min.css" rel="stylesheet">
+    <script src="./LSC-CRP Portal_files/jquery-3.6.0.min.js.download"></script>
+    <script src="./LSC-CRP Portal_files/select2.min.js.download"></script>
+
+    
+    <style>
+        /* ===== DASHBOARD STYLES ===== */
+        .dash-welcome {
+            background: linear-gradient(135deg, #1a6b3c 0%, #2d9b5a 100%);
+            color: white;
+            border-radius: 14px;
+            padding: 22px 24px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dash-welcome .welcome-text h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .dash-welcome .welcome-text p {
+            font-size: 13px;
+            opacity: 0.85;
+        }
+
+        .dash-welcome .welcome-icon {
+            font-size: 42px;
+            opacity: 0.6;
+        }
+
+        /* ===== STAT CARDS ===== */
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 14px;
+            padding: 18px 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stat-card .card-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        .stat-card .card-icon.green  { background: #d4f4e2; color: #1a6b3c; }
+        .stat-card .card-icon.blue   { background: #dde8ff; color: #2255cc; }
+        .stat-card .card-icon.orange { background: #fff0db; color: #c46b00; }
+        .stat-card .card-icon.purple { background: #f0e4ff; color: #7b2fc9; }
+
+        .stat-card .card-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a2e;
+            line-height: 1;
+        }
+
+        .stat-card .card-label {
+            font-size: 12px;
+            color: #7a8090;
+            font-weight: 500;
+        }
+
+        /* ===== SECTION HEADING ===== */
+        .section-heading {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-heading i {
+            color: #1a6b3c;
+        }
+
+        /* ===== QUICK ACTIONS ===== */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quick-action-btn {
+            background: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 11px;
+            color: #444;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            text-decoration: none;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+
+        .quick-action-btn i {
+            font-size: 22px;
+            color: #1a6b3c;
+        }
+
+        /* ===== RECENT ORDERS TABLE ===== */
+        .card-box {
+            background: white;
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            margin-bottom: 20px;
+        }
+
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .order-table th {
+            background: #f5f7fa;
+            padding: 10px 12px;
+            text-align: left;
+            color: #7a8090;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .order-table td {
+            padding: 12px 12px;
+            border-bottom: 1px solid #f0f2f5;
+            color: #333;
+        }
+
+        .order-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-success  { background: #d4f4e2; color: #1a6b3c; }
+        .badge-warning  { background: #fff0db; color: #c46b00; }
+        .badge-info     { background: #dde8ff; color: #2255cc; }
+    </style>
+
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ===== TOP BAR ===== */
+        .top-bar {
+            background: linear-gradient(135deg, #1a6b3c 0%, #2d9b5a 100%);
+            color: white;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .menu-toggle-btn {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .menu-toggle-btn:hover {
+            background: rgba(255,255,255,0.28);
+        }
+
+        .top-bar-center {
+            text-align: center;
+            flex: 1;
+        }
+
+        .top-bar-center .fpc-name {
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .top-bar-center .lsc-name {
+            font-size: 12px;
+            opacity: 0.85;
+            font-weight: 400;
+        }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-greeting {
+            text-align: right;
+        }
+
+        .user-greeting .user-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .user-greeting .user-role {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 7px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,80,80,0.5);
+            border-color: rgba(255,80,80,0.6);
+        }
+
+        /* ===== COLLAPSIBLE SLIDE-IN MENU ===== */
+        .slide-menu {
+            position: fixed;
+            top: 60px;
+            left: -260px;
+            width: 260px;
+            height: calc(100vh - 60px - 65px);
+            background: #1a1a2e;
+            z-index: 999;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            box-shadow: 3px 0 15px rgba(0,0,0,0.3);
+        }
+
+        .slide-menu.open {
+            left: 0;
+        }
+
+        .slide-menu .menu-header {
+            padding: 18px 20px 10px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .slide-menu ul {
+            list-style: none;
+            padding: 0 10px;
+        }
+
+        .slide-menu ul li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            color: #c8ccd4;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: background 0.2s, color 0.2s;
+            margin-bottom: 2px;
+        }
+
+        .slide-menu ul li a:hover,
+        .slide-menu ul li a.active {
+            background: rgba(45, 155, 90, 0.25);
+            color: #4eca80;
+        }
+
+        .slide-menu ul li a i {
+            width: 20px;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        .slide-menu .menu-divider {
+            border: none;
+            border-top: 1px solid #2a2a40;
+            margin: 8px 20px;
+        }
+
+        /* Overlay when menu is open on mobile */
+        .menu-overlay {
+            display: none;
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 65px;
+            background: rgba(0,0,0,0.4);
+            z-index: 998;
+        }
+
+        .menu-overlay.show {
+            display: block;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-wrapper {
+            margin-top: 60px;
+            margin-bottom: 65px;
+            height: calc(100vh - 60px - 65px);
+            overflow-y: auto;
+            background: #f0f2f5;
+        }
+
+        .content-area {
+            padding: 20px;
+            min-height: 100%;
+        }
+
+        /* ===== BOTTOM NAVIGATION BAR ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 65px;
+            background: white;
+            border-top: 1px solid #e0e4ea;
+            display: flex;
+            z-index: 1000;
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+        }
+
+        .bottom-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #9aa0ab;
+            font-size: 11px;
+            gap: 4px;
+            transition: color 0.2s;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .bottom-nav-item i {
+            font-size: 22px;
+            transition: transform 0.2s;
+        }
+
+        .bottom-nav-item:hover,
+        .bottom-nav-item.active {
+            color: #1a6b3c;
+        }
+
+        .bottom-nav-item.active i {
+            transform: translateY(-2px);
+        }
+
+        .bottom-nav-item.active::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 20%;
+            right: 20%;
+            height: 3px;
+            background: #1a6b3c;
+            border-radius: 0 0 4px 4px;
+        }
+
+        /* ===== SCROLLBAR ===== */
+        .main-wrapper::-webkit-scrollbar {
+            width: 5px;
+        }
+        .main-wrapper::-webkit-scrollbar-thumb {
+            background: #c0c7d0;
+            border-radius: 4px;
+        }
+        .slide-menu::-webkit-scrollbar {
+            width: 4px;
+        }
+        .slide-menu::-webkit-scrollbar-thumb {
+            background: #333;
+        }
+    </style>
+</head>
+<body cz-shortcut-listen="true">
+
+    <!-- ===== TOP BAR ===== -->
+    <div class="top-bar">
+        <!-- Left: Hamburger Toggle -->
+        <div class="top-bar-left">
+            <button class="menu-toggle-btn" id="menuToggleBtn" title="Menu">
+                <i class="fas fa-bars" id="menuToggleIcon"></i>
+            </button>
+        </div>
+
+        <!-- Center: FPC & LSC Name -->
+        <div class="top-bar-center">
+            <div class="fpc-name">
+                <span id="lbl_fpc_name">lsc name 1</span>
+            </div>
+            <div class="lsc-name">
+                <span id="lbl_lsc_name">fpc name 1, Damcharra</span>
+            </div>
+        </div>
+
+        <!-- Right: User Info + Logout -->
+        <div class="top-bar-right">
+            <div class="user-greeting">
+                <div class="user-name">
+                    <span id="lbl_user_name">cc full name</span>
+                </div>
+                <div class="user-role">LSC-CRP</div>
+            </div>
+            <a href="http://localhost:11367/fpc_08_logout.aspx" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- ===== COLLAPSIBLE SLIDE MENU ===== -->
+    <div class="slide-menu" id="slideMenu">
+        <div class="menu-header">Main Menu</div>
+        <ul>
+            <li><a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#"><i class="fas fa-shopping-cart"></i> My Cart</a></li>
+            <li><a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#"><i class="fas fa-file-invoice"></i> My Orders</a></li>
+        </ul>
+        <hr class="menu-divider">
+        <div class="menu-header">Account</div>
+        <ul>
+            <li><a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#"><i class="fas fa-user-circle"></i> My Profile</a></li>
+            <li><a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#"><i class="fas fa-rupee-sign"></i> Income Summary</a></li>
+            <li><a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#"><i class="fas fa-bell"></i> Notifications</a></li>
+        </ul>
+        <hr class="menu-divider">
+        <div class="menu-header">Support</div>
+        <ul>
+            <li><a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#"><i class="fas fa-headset"></i> Help &amp; Support</a></li>
+            <li><a href="http://localhost:11367/fpc_08_logout.aspx"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- Overlay (closes menu when clicked) -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- ===== MAIN CONTENT AREA ===== -->
+    <div class="main-wrapper" id="mainWrapper">
+        <div class="content-area">
+            
+
+    <!-- Welcome Banner -->
+    <div class="dash-welcome">
+        <div class="welcome-text">
+            <h2>Welcome, <span id="ContentPlaceHolder1_lbl_welcome_name">cc full name</span>!</h2>
+            <p><span id="ContentPlaceHolder1_lbl_welcome_date">Today: Sunday, 01 March 2026</span></p>
+        </div>
+        <div class="welcome-icon">
+            <i class="fas fa-seedling"></i>
+        </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="stat-cards">
+        <div class="stat-card">
+            <div class="card-icon green"><i class="fas fa-clipboard-list"></i></div>
+            <div class="card-value">
+                <span id="ContentPlaceHolder1_lbl_total_orders">0</span>
+            </div>
+            <div class="card-label">Total Orders</div>
+        </div>
+        <div class="stat-card">
+            <div class="card-icon blue"><i class="fas fa-shopping-cart"></i></div>
+            <div class="card-value">
+                <span id="ContentPlaceHolder1_lbl_cart_items">0</span>
+            </div>
+            <div class="card-label">Items in Cart</div>
+        </div>
+        <div class="stat-card">
+            <div class="card-icon orange"><i class="fas fa-rupee-sign"></i></div>
+            <div class="card-value">
+                <span id="ContentPlaceHolder1_lbl_income">â‚¹0</span>
+            </div>
+            <div class="card-label">This Month Income</div>
+        </div>
+        <div class="stat-card">
+            <div class="card-icon purple"><i class="fas fa-users"></i></div>
+            <div class="card-value">
+                <span id="ContentPlaceHolder1_lbl_customers">0</span>
+            </div>
+            <div class="card-label">My Customers</div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section-heading">
+        <i class="fas fa-bolt"></i> Quick Actions
+    </div>
+    <div class="quick-actions">
+        <a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#" class="quick-action-btn">
+            <i class="fas fa-plus-circle"></i>
+            New Order
+        </a>
+        <a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#" class="quick-action-btn">
+            <i class="fas fa-shopping-cart"></i>
+            View Cart
+        </a>
+        <a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#" class="quick-action-btn">
+            <i class="fas fa-file-invoice"></i>
+            My Orders
+        </a>
+        <a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#" class="quick-action-btn">
+            <i class="fas fa-chart-line"></i>
+            Income
+        </a>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="section-heading">
+        <i class="fas fa-history"></i> Recent Orders
+    </div>
+    <div class="card-box">
+        <table class="order-table">
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Item</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>#1001</td>
+                    <td>Rice (5 kg)</td>
+                    <td>â‚¹250</td>
+                    <td><span class="badge badge-success">Delivered</span></td>
+                </tr>
+                <tr>
+                    <td>#1002</td>
+                    <td>Wheat Flour (10 kg)</td>
+                    <td>â‚¹380</td>
+                    <td><span class="badge badge-warning">Pending</span></td>
+                </tr>
+                <tr>
+                    <td>#1003</td>
+                    <td>Pulses (2 kg)</td>
+                    <td>â‚¹160</td>
+                    <td><span class="badge badge-info">Processing</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+        </div>
+    </div>
+
+    <!-- ===== BOTTOM NAVIGATION BAR ===== -->
+    <nav class="bottom-nav">
+        <a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx" class="bottom-nav-item active" id="nav-home">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#" class="bottom-nav-item" id="nav-cart">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Cart</span>
+        </a>
+        <a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#" class="bottom-nav-item" id="nav-orders">
+            <i class="fas fa-clipboard-list"></i>
+            <span>Orders</span>
+        </a>
+        <a href="http://localhost:11367/fpc_22_lsc_crp_dashboard.aspx#" class="bottom-nav-item" id="nav-income">
+            <i class="fas fa-rupee-sign"></i>
+            <span>Income</span>
+        </a>
+    </nav>
+
+    <script>
+        // ===== COLLAPSIBLE MENU TOGGLE =====
+        const menuToggleBtn = document.getElementById('menuToggleBtn');
+        const menuToggleIcon = document.getElementById('menuToggleIcon');
+        const slideMenu = document.getElementById('slideMenu');
+        const menuOverlay = document.getElementById('menuOverlay');
+
+        function openMenu() {
+            slideMenu.classList.add('open');
+            menuOverlay.classList.add('show');
+            menuToggleIcon.classList.remove('fa-bars');
+            menuToggleIcon.classList.add('fa-times');
+        }
+
+        function closeMenu() {
+            slideMenu.classList.remove('open');
+            menuOverlay.classList.remove('show');
+            menuToggleIcon.classList.remove('fa-times');
+            menuToggleIcon.classList.add('fa-bars');
+        }
+
+        menuToggleBtn.addEventListener('click', function () {
+            if (slideMenu.classList.contains('open')) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+
+        menuOverlay.addEventListener('click', closeMenu);
+
+        // ===== BOTTOM NAV ACTIVE STATE =====
+        (function () {
+            const currentPage = window.location.pathname.split('/').pop().toLowerCase();
+            const navMap = {
+                'fpc_22_lsc_crp_dashboard.aspx': 'nav-home'
+            };
+            const activeId = navMap[currentPage];
+            if (activeId) {
+                const el = document.getElementById(activeId);
+                if (el) el.classList.add('active');
+            }
+        })();
+    </script>
+
+<!-- Visual Studio Browser Link -->
+<script type="application/json" id="__browserLink_initializationData">
+    {"appName":"Chrome","requestId":"8a71ece002a8436db049ce523e15ba59"}
+</script>
+<script type="text/javascript" src="./LSC-CRP Portal_files/browserLink" async="async"></script>
+<!-- End Browser Link -->
+
+
+
+<iframe frameborder="0" scrolling="no" style="background-color: transparent; border: 0px; display: none;" src="./LSC-CRP Portal_files/saved_resource.html"></iframe><div id="GOOGLE_INPUT_CHEXT_FLAG" input="" input_stat="{&quot;tlang&quot;:true,&quot;tsbc&quot;:true,&quot;pun&quot;:true,&quot;mk&quot;:true,&quot;ss&quot;:true}" style="display: none;"></div></body></html>

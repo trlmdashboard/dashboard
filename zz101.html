@@ -5,299 +5,649 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Sales Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LSC-CRP Portal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style type="text/css">
+        body, html { margin: 0 !important; padding: 0 !important; }
+
+        .content-area {
+            padding: 20px !important;
+            background: #f4f6f9;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* ===== FORM CARD ===== */
+        .form-card {
+            background: white; border-radius: 10px; padding: 24px 28px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px;
+        }
+        .form-card-title {
+            font-size: 16px; font-weight: 700; color: #2c3e50;
+            margin-bottom: 20px; padding-bottom: 12px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .form-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+        .form-col { flex: 1; min-width: 200px; }
+        .form-label {
+            display: block; margin-bottom: 6px; font-size: 13px;
+            font-weight: 600; color: #555;
+        }
+        .form-control {
+            width: 100%; padding: 9px 13px; border: 1px solid #ddd;
+            border-radius: 6px; font-size: 14px; color: #333;
+            background: #fafafa; transition: border 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+        }
+        .form-control:focus {
+            outline: none; border-color: #28a745; background: white;
+            box-shadow: 0 0 0 2px rgba(40,167,69,0.15);
+        }
+        .form-actions { display: flex; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+        .btn-save {
+            padding: 9px 22px; border: none; border-radius: 6px; font-size: 14px;
+            font-weight: 600; cursor: pointer; transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 7px;
+            background: linear-gradient(135deg, #28a745, #20c997); color: white;
+            box-shadow: 0 3px 10px rgba(40,167,69,0.3); text-decoration: none;
+        }
+        .btn-save:hover { background: linear-gradient(135deg, #218838, #1aaa85); transform: translateY(-1px); }
+        .btn-reset {
+            padding: 9px 22px; border: none; border-radius: 6px; font-size: 14px;
+            font-weight: 600; cursor: pointer; transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 7px;
+            background: #6c757d; color: white;
+        }
+        .btn-reset:hover { background: #545b62; }
+        .msg-label { font-size: 13px; font-weight: 600; }
+
+        /* ===== FILTER PANEL ===== */
+        .filter-panel {
+            background: white; border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 18px;
+            overflow: hidden;
+        }
+        .filter-panel-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+        }
+        .filter-panel-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .filter-stats-badge {
+            font-size: 12px; background: rgba(255,255,255,0.2);
+            padding: 3px 10px; border-radius: 20px; white-space: nowrap;
+        }
+        .filter-panel-body { padding: 14px 16px; }
+
+        /* Row 1: search full-width */
+        .filter-search-row { margin-bottom: 10px; }
+        .filter-search-wrap {
+            position: relative; display: flex; align-items: center;
+        }
+        .filter-search-wrap i {
+            position: absolute; left: 12px; color: #aaa; font-size: 13px; pointer-events: none;
+        }
+        .filter-search-wrap input {
+            width: 100%; padding: 9px 12px 9px 34px;
+            border: 1px solid #ddd; border-radius: 6px; font-size: 14px;
+            background: #fafafa; color: #333; box-sizing: border-box;
+            transition: border 0.2s;
+        }
+        .filter-search-wrap input:focus {
+            outline: none; border-color: #28a745; background: white;
+            box-shadow: 0 0 0 2px rgba(40,167,69,0.15);
+        }
+
+        /* Row 2: two dropdowns side by side */
+        .filter-dropdowns-row {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;
+        }
+        .filter-select {
+            width: 100%; padding: 9px 10px; border: 1px solid #ddd; border-radius: 6px;
+            font-size: 13px; background: #fafafa; color: #333; box-sizing: border-box;
+            transition: border 0.2s; appearance: auto;
+        }
+        .filter-select:focus {
+            outline: none; border-color: #28a745; background: white;
+            box-shadow: 0 0 0 2px rgba(40,167,69,0.15);
+        }
+
+        /* Row 3: action buttons */
+        .filter-actions-row {
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+        }
+        .filter-btn {
+            padding: 9px 6px; border: none; border-radius: 6px; font-size: 13px;
+            font-weight: 600; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+            white-space: nowrap;
+        }
+        .filter-btn-primary   { background: #28a745; color: white; }
+        .filter-btn-primary:hover { background: #218838; }
+        .filter-btn-secondary { background: #6c757d; color: white; }
+        .filter-btn-secondary:hover { background: #545b62; }
+        .filter-btn-refresh   { background: #007bff; color: white; }
+        .filter-btn-refresh:hover { background: #0056b3; }
+
+        /* ===== CUSTOMER TABLE â€" desktop ===== */
+        .table-card {
+            background: white; border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;
+        }
+        .customer-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .customer-table thead tr { background: linear-gradient(135deg, #2c3e50, #34495e); }
+        .customer-table thead th {
+            padding: 12px 14px; text-align: left; font-weight: 600;
+            color: white; white-space: nowrap; border: none;
+        }
+        .customer-table thead th.text-center { text-align: center; }
+        .customer-table tbody tr { border-bottom: 1px solid #f0f0f0; transition: background 0.15s; }
+        .customer-table tbody tr:hover { background: #f0fff4; }
+        .customer-table tbody tr:last-child { border-bottom: none; }
+        .customer-table td { padding: 11px 14px; vertical-align: middle; }
+        .customer-table td.text-center { text-align: center; }
+
+        .cust-name-cell { font-weight: 600; color: #2c3e50; }
+        .type-badge {
+            display: inline-block; background: #e3f2fd; color: #0d47a1;
+            padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
+        }
+        .active-badge {
+            display: inline-block; padding: 4px 10px; border-radius: 20px;
+            font-size: 12px; font-weight: 600; white-space: nowrap;
+        }
+        .active-yes { background: #d4edda; color: #155724; }
+        .active-no  { background: #f8d7da; color: #721c24; }
+        /* Desktop edit button â€" compact icon+text, auto width */
+        .edit-btn {
+            padding: 5px 12px; border: none; border-radius: 5px; font-size: 12px;
+            font-weight: 600; cursor: pointer; background: #007bff; color: white;
+            transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px;
+            white-space: nowrap;
+        }
+        .edit-btn:hover { background: #0056b3; transform: translateY(-1px); }
+
+        /* ===== CUSTOMER CARDS â€" mobile only ===== */
+        .customer-cards { display: none; padding: 10px 12px; }
+        .cust-card {
+            background: white;
+            border: 1px solid #e8edf2;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            transition: box-shadow 0.2s;
+        }
+        .cust-card:last-child { margin-bottom: 0; }
+        .cust-card:active { box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+        /* Coloured left accent bar */
+        .cust-card-inner {
+            display: flex; align-items: stretch;
+        }
+        .cust-card-accent {
+            width: 5px; flex-shrink: 0;
+            background: linear-gradient(180deg, #28a745, #20c997);
+            border-radius: 0;
+        }
+        .cust-card-accent.inactive {
+            background: linear-gradient(180deg, #adb5bd, #ced4da);
+        }
+        .cust-card-body {
+            flex: 1; padding: 12px 14px;
+        }
+
+        /* Top row: name + status badge */
+        .cust-card-top {
+            display: flex; align-items: center;
+            justify-content: space-between; gap: 8px; margin-bottom: 6px;
+        }
+        .cust-card-name {
+            font-size: 15px; font-weight: 700; color: #1a202c;
+            flex: 1; line-height: 1.3;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        /* Middle row: phone + type */
+        .cust-card-details {
+            display: flex; align-items: center; gap: 10px;
+            flex-wrap: wrap; margin-bottom: 10px;
+        }
+        .cust-card-phone {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 13px; color: #4a5568; font-weight: 500;
+        }
+        .cust-card-phone i { color: #38a169; font-size: 11px; }
+        .cust-card-sep { color: #cbd5e0; font-size: 11px; }
+
+        /* Edit button â€" right-aligned, compact pill */
+        .cust-card-edit-btn {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 6px 16px; border: none; border-radius: 20px;
+            font-size: 12px; font-weight: 700; cursor: pointer; letter-spacing: 0.3px;
+            background: #ebf4ff; color: #1a56db;
+            transition: all 0.2s;
+        }
+        .cust-card-edit-btn:active { background: #1a56db; color: white; }
+
+        /* ===== EMPTY / LOADING ===== */
+        .empty-state { text-align: center; padding: 60px 20px; color: #aaa; }
+        .empty-state i { font-size: 50px; margin-bottom: 14px; display: block; }
+        .empty-state p { font-size: 16px; margin: 0; }
+        .loading-state { text-align: center; padding: 50px; color: #666; }
+
+        /* ===== PAGINATION ===== */
+        .pagination-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; border-top: 1px solid #f0f0f0;
+            background: #fafafa; flex-wrap: wrap; gap: 10px;
+        }
+        .pagination-info { font-size: 12px; color: #666; }
+        .pagination-right { display: flex; align-items: center; gap: 8px; }
+        .page-size-select {
+            padding: 5px 8px; border: 1px solid #ddd; border-radius: 5px;
+            font-size: 12px; color: #555; background: white; cursor: pointer;
+        }
+        .pagination-buttons { display: flex; gap: 3px; flex-wrap: wrap; }
+        .page-btn {
+            padding: 6px 10px; border: 1px solid #ddd; background: white;
+            border-radius: 5px; font-size: 12px; cursor: pointer; color: #333;
+            transition: all 0.2s; min-width: 32px; text-align: center;
+        }
+        .page-btn:hover:not(:disabled) { background: #28a745; color: white; border-color: #28a745; }
+        .page-btn.active { background: #28a745; color: white; border-color: #28a745; font-weight: 600; }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 640px) {
+            .form-row { flex-direction: column; gap: 0; }
+
+            /* Hide desktop table, show mobile cards */
+            .customer-table { display: none !important; }
+            .customer-cards { display: block; }
+
+            /* Table-card has no extra padding when showing cards */
+            .table-card { background: #f4f6f9; box-shadow: none; border-radius: 0; }
+
+            .pagination-bar { flex-direction: column; align-items: flex-start; }
+            .pagination-right { width: 100%; justify-content: space-between; }
+            .pagination-buttons { flex-wrap: wrap; }
+        }
+    </style>
+
+
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            min-height: 100vh;
-            min-height: 100dvh;
-            background: linear-gradient(160deg, #0d5c30 0%, #1a6b3c 40%, #2d9b5a 100%);
+            background-color: #f0f2f5;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 24px 20px;
-            overflow-x: hidden;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        /* ===== DECORATIVE BACKGROUND CIRCLES ===== */
-        body::before {
-            content: '';
-            position: fixed;
-            top: -80px;
-            right: -80px;
-            width: 260px;
-            height: 260px;
-            background: rgba(255,255,255,0.06);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-
-        body::after {
-            content: '';
-            position: fixed;
-            bottom: -60px;
-            left: -60px;
-            width: 200px;
-            height: 200px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-
-        /* ===== TOP LOGO AREA ===== */
-        .logo-area {
-            text-align: center;
-            margin-bottom: 32px;
-            color: white;
-        }
-
-        .logo-icon-wrap {
-            width: 80px;
-            height: 80px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            backdrop-filter: blur(6px);
-        }
-
-        .logo-icon-wrap i {
-            font-size: 38px;
-            color: white;
-        }
-
-        .logo-area h1 {
-            font-size: 26px;
-            font-weight: 800;
-            letter-spacing: 0.4px;
-            margin-bottom: 6px;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-
-        .logo-area p {
-            font-size: 13px;
-            opacity: 0.82;
-            font-weight: 400;
-            letter-spacing: 0.2px;
-        }
-
-        /* ===== LOGIN CARD ===== */
-        .login-card {
-            background: white;
-            border-radius: 24px;
-            padding: 32px 24px 28px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-        }
-
-        .card-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 4px;
-        }
-
-        .card-subtitle {
-            font-size: 13px;
-            color: #7a8090;
-            margin-bottom: 26px;
-        }
-
-        /* ===== FORM GROUPS ===== */
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: #444;
-            margin-bottom: 7px;
-        }
-
-        .input-wrap {
-            position: relative;
-        }
-
-        .input-wrap i.icon-left {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #1a6b3c;
-            font-size: 16px;
-            pointer-events: none;
-        }
-
-        .input-wrap input {
-            width: 100%;
-            padding: 14px 44px 14px 44px;
-            border: 1.5px solid #e0e4ea;
-            border-radius: 12px;
-            font-size: 15px;
-            color: #222;
-            background: #f8faf8;
-            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-            -webkit-appearance: none;
-        }
-
-        .input-wrap input:focus {
-            outline: none;
-            border-color: #1a6b3c;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(26,107,60,0.12);
-        }
-
-        .input-wrap input::placeholder {
-            color: #bbb;
-            font-size: 14px;
-        }
-
-        /* Password toggle eye icon */
-        .pwd-toggle {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #aaa;
-            font-size: 16px;
-            cursor: pointer;
-            padding: 4px;
-            transition: color 0.2s;
-        }
-
-        .pwd-toggle:hover { color: #1a6b3c; }
-
-        /* ===== ERROR LABEL ===== */
-        .error-box {
-            background: #fff5f5;
-            border: 1px solid #fcc;
-            border-radius: 8px;
-            padding: 10px 14px;
-            margin-bottom: 16px;
-            display: none;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: #cc2a2a;
-            font-weight: 500;
-        }
-
-        .error-box.visible { display: flex; }
-        .error-box i { font-size: 15px; flex-shrink: 0; }
-
-        /* ASP label error (hidden span re-styled) */
-        #lbl_error:not(:empty) {
-            display: block;
-        }
-
-        /* ===== LOGIN BUTTON ===== */
-        .login-btn {
-            width: 100%;
-            padding: 15px;
+        /* ===== TOP BAR ===== */
+        .top-bar {
             background: linear-gradient(135deg, #1a6b3c 0%, #2d9b5a 100%);
             color: white;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .menu-toggle-btn {
+            background: rgba(255,255,255,0.15);
             border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
+            color: white;
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
             cursor: pointer;
-            letter-spacing: 0.3px;
+            font-size: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            text-decoration: none;
-            transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
-            box-shadow: 0 6px 20px rgba(26,107,60,0.35);
-            margin-top: 6px;
+            transition: background 0.2s;
         }
 
-        .login-btn:active {
-            transform: scale(0.98);
-            opacity: 0.92;
+        .menu-toggle-btn:hover {
+            background: rgba(255,255,255,0.28);
         }
 
-        .login-btn i { font-size: 16px; }
+        .top-bar-center {
+            text-align: center;
+            flex: 1;
+        }
 
-        /* ===== FOOTER ICONS ===== */
-        .footer-icons {
+        .top-bar-center .fpc-name {
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .top-bar-center .lsc-name {
+            font-size: 12px;
+            opacity: 0.85;
+            font-weight: 400;
+        }
+
+        .top-bar-right {
             display: flex;
-            justify-content: center;
-            gap: 22px;
-            margin-top: 26px;
-            opacity: 0.35;
+            align-items: center;
+            gap: 10px;
         }
 
-        .footer-icons i {
-            font-size: 20px;
+        .user-greeting {
+            text-align: right;
+        }
+
+        .user-greeting .user-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .user-greeting .user-role {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 7px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,80,80,0.5);
+            border-color: rgba(255,80,80,0.6);
+        }
+
+        /* ===== COLLAPSIBLE SLIDE-IN MENU ===== */
+        .slide-menu {
+            position: fixed;
+            top: 60px;
+            left: -260px;
+            width: 260px;
+            height: calc(100vh - 60px - 65px);
+            background: #1a1a2e;
+            z-index: 999;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            box-shadow: 3px 0 15px rgba(0,0,0,0.3);
+        }
+
+        .slide-menu.open {
+            left: 0;
+        }
+
+        .slide-menu .menu-header {
+            padding: 18px 20px 10px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .slide-menu ul {
+            list-style: none;
+            padding: 0 10px;
+        }
+
+        .slide-menu ul li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            color: #c8ccd4;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: background 0.2s, color 0.2s;
+            margin-bottom: 2px;
+        }
+
+        .slide-menu ul li a:hover,
+        .slide-menu ul li a.active {
+            background: rgba(45, 155, 90, 0.25);
+            color: #4eca80;
+        }
+
+        .slide-menu ul li a i {
+            width: 20px;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        .slide-menu .menu-divider {
+            border: none;
+            border-top: 1px solid #2a2a40;
+            margin: 8px 20px;
+        }
+
+        /* Overlay when menu is open on mobile */
+        .menu-overlay {
+            display: none;
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 65px;
+            background: rgba(0,0,0,0.4);
+            z-index: 998;
+        }
+
+        .menu-overlay.show {
+            display: block;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-wrapper {
+            margin-top: 60px;
+            margin-bottom: 65px;
+            height: calc(100vh - 60px - 65px);
+            overflow-y: auto;
+            background: #f0f2f5;
+        }
+
+        .content-area {
+            padding: 20px;
+            min-height: 100%;
+        }
+
+        /* ===== BOTTOM NAVIGATION BAR ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 65px;
+            background: white;
+            border-top: 1px solid #e0e4ea;
+            display: flex;
+            z-index: 1000;
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+        }
+
+        .bottom-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #9aa0ab;
+            font-size: 11px;
+            gap: 4px;
+            transition: color 0.2s;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .bottom-nav-item i {
+            font-size: 22px;
+            transition: transform 0.2s;
+        }
+
+        .bottom-nav-item:hover,
+        .bottom-nav-item.active {
             color: #1a6b3c;
         }
 
-        /* ===== APP VERSION ===== */
-        .app-version {
-            text-align: center;
-            color: rgba(255,255,255,0.5);
-            font-size: 11px;
-            margin-top: 20px;
-            letter-spacing: 0.5px;
+        .bottom-nav-item.active i {
+            transform: translateY(-2px);
         }
 
-        /* ===== LANDSCAPE ADJUSTMENT ===== */
-        @media (max-height: 600px) and (orientation: landscape) {
-            body { padding: 16px 20px; }
-            .logo-area { margin-bottom: 18px; }
-            .logo-icon-wrap { width: 60px; height: 60px; border-radius: 18px; margin-bottom: 10px; }
-            .logo-icon-wrap i { font-size: 28px; }
-            .logo-area h1 { font-size: 20px; }
-            .login-card { padding: 22px 24px 20px; }
-            .form-group { margin-bottom: 12px; }
+        .bottom-nav-item.active::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 20%;
+            right: 20%;
+            height: 3px;
+            background: #1a6b3c;
+            border-radius: 0 0 4px 4px;
+        }
+
+        /* ===== SCROLLBAR ===== */
+        .main-wrapper::-webkit-scrollbar {
+            width: 5px;
+        }
+        .main-wrapper::-webkit-scrollbar-thumb {
+            background: #c0c7d0;
+            border-radius: 4px;
+        }
+        .slide-menu::-webkit-scrollbar {
+            width: 4px;
+        }
+        .slide-menu::-webkit-scrollbar-thumb {
+            background: #333;
         }
     </style>
 </head>
 <body>
 
-    <!-- ===== LOGO AREA ===== -->
-    <div class="logo-area">
-        <div class="logo-icon-wrap">
-            <i class="fas fa-seedling"></i>
+    <!-- ===== TOP BAR ===== -->
+    <div class="top-bar">
+        <!-- Left: Hamburger Toggle -->
+        <div class="top-bar-left">
+            <button class="menu-toggle-btn" id="menuToggleBtn" title="Menu">
+                <i class="fas fa-bars" id="menuToggleIcon"></i>
+            </button>
         </div>
-        <h1>Smart Sales Pro</h1>
-        <p>FPC-LSC Management Information System</p>
+
+        <!-- Center: FPC & LSC Name -->
+        <div class="top-bar-center">
+            <div class="fpc-name">
+                <span id="lbl_fpc_name">lsc name 2</span>
+            </div>
+            <div class="lsc-name">
+                <span id="lbl_lsc_name">fpc name 2, Damcharra</span>
+            </div>
+        </div>
+
+        <!-- Right: User Info + Logout -->
+        <div class="top-bar-right">
+            <div class="user-greeting">
+                <div class="user-name">
+                    <span id="lbl_user_name">c</span>
+                </div>
+                <div class="user-role">LSC-CRP</div>
+            </div>
+            <a href="fpc_08_logout.aspx" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
     </div>
 
-    <!-- ===== LOGIN CARD ===== -->
-    <div class="login-card">
-        <div class="card-title">Welcome back</div>
-        <div class="card-subtitle">Sign in to continue to your account</div>
+    <!-- ===== COLLAPSIBLE SLIDE MENU ===== -->
+    <div class="slide-menu" id="slideMenu">
+        <div class="menu-header">Main Menu</div>
+        <ul>
+            <li><a href="fpc_22_lsc_crp_dashboard.aspx"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="#"><i class="fas fa-shopping-cart"></i> My Cart</a></li>
+            <li><a href="#"><i class="fas fa-file-invoice"></i> My Orders</a></li>
+        </ul>
+        <hr class="menu-divider" />
+        <div class="menu-header">Account</div>
+        <ul>
+            <li><a href="fpc_24_addCustomerMob.aspx"><i class="fas fa-user-plus"></i> Customers</a></li>
+            <li><a href="#"><i class="fas fa-user-circle"></i> My Profile</a></li>
+            <li><a href="#"><i class="fas fa-bell"></i> Notifications</a></li>
+        </ul>
+        <hr class="menu-divider" />
+        <div class="menu-header">Support</div>
+        <ul>
+            <li><a href="#"><i class="fas fa-headset"></i> Help &amp; Support</a></li>
+            <li><a href="fpc_08_logout.aspx"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
 
-        <form method="post" action="./fpc_01_login_mobile.aspx" id="ctl00">
+    <!-- Overlay (closes menu when clicked) -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- ===== MAIN CONTENT AREA ===== -->
+    <div class="main-wrapper" id="mainWrapper">
+        <div class="content-area">
+            
+
+    
+    <input type="hidden" id="hdnOwnerId"   value="2" />
+    
+    <input type="hidden" id="hdnOwnerType" value="LSC" />
+
+
+    
+    <form method="post" action="./fpc_24_addCustomerMob.aspx" id="userForm">
 <div class="aspNetHidden">
 <input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" />
 <input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" />
-<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="9yvKXyLiYWDmV0ZX7KNOardOk477KklNeH7tFROO20JpRIHqaFbx11xp8H4cYy8YxzqqpZs3e5bNwtq1kCwAzhzM2y6gwsaj1wm6Q9lpjMs=" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="6hIc8owBS8Sf5EbvJmJmEAradfbWf/Kg6vUXZv+IeK9hmKxfWq2D41c2qUXS6vXD19T94QLjFcOze0udr7oo6ImUoUxo3dA+BTxxLqI34ejZ8DpVnsgEl8SxoGAP8H6hA8MbavLnd0tkxEHmbpPk3GBb3Z6CsfLNZdzM7oN5Odn5EcXumaKT9iWUHdzbLYyfZ19YdesG7xc1B1mS0W8sGg==" />
 </div>
 
 <script type="text/javascript">
 //<![CDATA[
-var theForm = document.forms['ctl00'];
+var theForm = document.forms['userForm'];
 if (!theForm) {
-    theForm = document.ctl00;
+    theForm = document.userForm;
 }
 function __doPostBack(eventTarget, eventArgument) {
     if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
@@ -310,86 +660,552 @@ function __doPostBack(eventTarget, eventArgument) {
 </script>
 
 
-
-            
-            <div class="error-box" id="errorBox">
-                <i class="fas fa-exclamation-circle"></i>
-                <span id="lbl_error"></span>
+        <div class="form-card">
+            <div class="form-card-title">
+                <i class="fas fa-user-plus" style="color:#28a745;"></i>
+                <span id="ContentPlaceHolder1_formCardTitle">Add New Customer</span>
             </div>
 
-            
-            <div class="form-group">
-                <label for="txt_username">User ID</label>
-                <div class="input-wrap">
-                    <i class="fas fa-user icon-left"></i>
-                    <input name="txt_username" type="text" id="txt_username" placeholder="Enter your User ID" required="true" autocomplete="username" />
+            <div class="form-row">
+                <div class="form-col">
+                    <label class="form-label">Customer Name <span style="color:red;">*</span></label>
+                    <input name="ctl00$ContentPlaceHolder1$txt_customer_name" type="text" id="ContentPlaceHolder1_txt_customer_name" class="form-control" placeholder="Enter customer name" />
+                </div>
+                <div class="form-col">
+                    <label class="form-label">Customer Type <span style="color:red;">*</span></label>
+                    <select name="ctl00$ContentPlaceHolder1$ddl_customer_type" id="ContentPlaceHolder1_ddl_customer_type" class="form-control">
+	<option value="">-- Select Type --</option>
+	<option value="PG">PG</option>
+	<option value="LSC Farmer">LSC Farmer</option>
+	<option value="LSC">LSC</option>
+	<option value="SHG">SHG</option>
+	<option value="CRP/ NPM Shop">CRP/ NPM Shop</option>
+	<option value="Market">Market</option>
+	<option value="Other">Other</option>
+
+</select>
+                </div>
+                <div class="form-col">
+                    <label class="form-label">Mobile No. <span style="color:red;">*</span></label>
+                    <input name="ctl00$ContentPlaceHolder1$txt_mobile_no" type="text" maxlength="10" id="ContentPlaceHolder1_txt_mobile_no" class="form-control" placeholder="Enter 10-digit mobile number" />
+                </div>
+                <div class="form-col">
+                    <label class="form-label">Status</label>
+                    <select name="ctl00$ContentPlaceHolder1$ddl_customer_active" id="ContentPlaceHolder1_ddl_customer_active" class="form-control">
+	<option value="Active">Active</option>
+	<option value="Inactive">Inactive</option>
+
+</select>
                 </div>
             </div>
 
-            
-            <div class="form-group">
-                <label for="txt_password">Password</label>
-                <div class="input-wrap">
-                    <i class="fas fa-lock icon-left"></i>
-                    <input name="txt_password" type="password" id="txt_password" placeholder="Enter your password" required="true" autocomplete="current-password" />
-                    <i class="fas fa-eye pwd-toggle" id="pwdToggle" title="Show/Hide password"></i>
-                </div>
+            <div class="form-actions">
+                <a id="ContentPlaceHolder1_btn_create_users" class="btn-save" href="javascript:__doPostBack(&#39;ctl00$ContentPlaceHolder1$btn_create_users&#39;,&#39;&#39;)">
+                    <i class="fas fa-save"></i>
+                    <span id="ContentPlaceHolder1_btn_create_users2">Save Customer</span></a>
+                <button type="button" class="btn-reset" onclick="resetForm()">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+                <span id="ContentPlaceHolder1_lbl_error_msg" class="msg-label"></span>
             </div>
 
-            
-            <a id="LinkButton1" class="login-btn" href="javascript:__doPostBack(&#39;LinkButton1&#39;,&#39;&#39;)">
-                <i class="fas fa-sign-in-alt"></i> Sign In
-            </a>
-
-        
+            <input type="hidden" name="ctl00$ContentPlaceHolder1$hf_id" id="ContentPlaceHolder1_hf_id" />
+        </div>
+    
 <div class="aspNetHidden">
 
-	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="9BB3B293" />
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="8A357BEA" />
 </div></form>
 
-        
-        <div class="footer-icons">
-            <i class="fas fa-landmark"></i>
-            <i class="fas fa-network-wired"></i>
-            <i class="fas fa-users"></i>
-            <i class="fas fa-leaf"></i>
+    
+    <div class="filter-panel">
+        <div class="filter-panel-header">
+            <div class="filter-panel-title">
+                <i class="fas fa-filter"></i> Search &amp; Filter
+            </div>
+            <div class="filter-stats-badge" id="filterStats">Loading...</div>
+        </div>
+        <div class="filter-panel-body">
+
+            
+            <div class="filter-search-row">
+                <div class="filter-search-wrap">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search by name or mobile number...">
+                </div>
+            </div>
+
+            
+            <div class="filter-dropdowns-row">
+                <select id="typeFilter" class="filter-select">
+                    <option value="">All Types</option>
+                    <option value="PG">PG</option>
+                    <option value="LSC Farmer">LSC Farmer</option>
+                    <option value="LSC">LSC</option>
+                    <option value="SHG">SHG</option>
+                    <option value="CRP/ NPM Shop">CRP/ NPM Shop</option>
+                    <option value="Market">Market</option>
+                    <option value="Other">Other</option>
+                </select>
+                <select id="activeFilter" class="filter-select">
+                    <option value="">All Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+            </div>
+
+            
+            <div class="filter-actions-row">
+                <button class="filter-btn filter-btn-primary" onclick="applyFilters()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+                <button class="filter-btn filter-btn-secondary" onclick="clearFilters()">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+                <button class="filter-btn filter-btn-refresh" onclick="loadCustomers()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+
         </div>
     </div>
 
-    <div class="app-version">v1.0 &nbsp;&bull;&nbsp; Smart Sales Pro</div>
+    
+    <div class="table-card">
+        <div id="tableContainer">
+            <div class="loading-state" id="loadingState">
+                <i class="fas fa-spinner fa-spin fa-2x" style="color:#28a745;margin-bottom:12px;display:block;"></i>
+                Loading customers...
+            </div>
+
+            
+            <table class="customer-table" id="customerTable" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Customer Name</th>
+                        <th>Mobile No.</th>
+                        <th>Type</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="customerTableBody"></tbody>
+            </table>
+
+            
+            <div class="customer-cards" id="customerCards"></div>
+
+            <div class="empty-state" id="emptyState" style="display:none;">
+                <i class="fas fa-users" style="color:#ccc;"></i>
+                <p>No customers found.</p>
+            </div>
+        </div>
+
+        <div class="pagination-bar" id="paginationBar" style="display:none;">
+            <div class="pagination-info" id="paginationInfo"></div>
+            <div class="pagination-right">
+                <select class="page-size-select" id="pageSizeSelect" onchange="changePageSize()">
+                    <option value="10">10 / page</option>
+                    <option value="20" selected>20 / page</option>
+                    <option value="50">50 / page</option>
+                    <option value="100">100 / page</option>
+                </select>
+                <div class="pagination-buttons" id="paginationButtons"></div>
+            </div>
+        </div>
+    </div>
+
+    
+    <script type="text/javascript">
+
+        // ==================== STATE ====================
+        var state = {
+            ownerId:     parseInt(document.getElementById('hdnOwnerId').value)  || 0,
+            ownerType:   document.getElementById('hdnOwnerType').value           || 'LSC',
+            currentPage: 1,
+            pageSize:    20,
+            totalCount:  0
+        };
+
+        // ==================== INIT ====================
+        document.addEventListener('DOMContentLoaded', function () {
+            loadCustomers();
+            document.getElementById('searchInput').addEventListener('keyup', function (e) {
+                if (e.key === 'Enter') applyFilters();
+            });
+        });
+
+        // ==================== FILTER CONTROLS ====================
+        function applyFilters() {
+            state.currentPage = 1;
+            loadCustomers();
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value  = '';
+            document.getElementById('typeFilter').value   = '';
+            document.getElementById('activeFilter').value = '';
+            state.currentPage = 1;
+            loadCustomers();
+        }
+
+        function changePageSize() {
+            state.pageSize    = parseInt(document.getElementById('pageSizeSelect').value);
+            state.currentPage = 1;
+            loadCustomers();
+        }
+
+        // ==================== LOAD â€” calls WebMethod GetCustomers ====================
+        function loadCustomers(page) {
+            if (page !== undefined) state.currentPage = page;
+            showLoading(true);
+
+            // â”€â”€ Payload sent to WebMethod â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ownerType is always "LSC".
+            // ownerId is resolved from Session("ss_parent_lsc_id") on the server
+            // and injected into hdnOwnerId via GetOwnerId() inline expression.
+            var payload = {
+                ownerId:      state.ownerId,
+                ownerType:    state.ownerType,
+                page:         state.currentPage,
+                pageSize:     state.pageSize,
+                searchText:   document.getElementById('searchInput').value.trim(),
+                typeFilter:   document.getElementById('typeFilter').value,
+                activeFilter: document.getElementById('activeFilter').value
+            };
+            // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+            fetch('fpc_24_addCustomerMob.aspx/GetCustomers', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(payload)
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                var result = data.d !== undefined ? data.d : data;
+                if (!result.success) {
+                    showError(result.errorMessage || 'Failed to load customers.');
+                    return;
+                }
+                state.totalCount = result.totalCount || 0;
+                renderRows(result.customers || []);
+                renderPagination();
+            })
+            .catch(function (err) { showError('Network error: ' + err.message); });
+        }
+
+        // ==================== RENDER ROWS ====================
+        function renderRows(rows) {
+            var startSeq = (state.currentPage - 1) * state.pageSize + 1;
+
+            document.getElementById('filterStats').innerHTML =
+                rows.length + ' / ' + state.totalCount + ' customers';
+
+            if (rows.length === 0) {
+                document.getElementById('customerTable').style.display = 'none';
+                document.getElementById('customerCards').style.display = 'none';
+                document.getElementById('emptyState').style.display    = 'block';
+                document.getElementById('paginationBar').style.display = 'none';
+                showLoading(false);
+                return;
+            }
+
+            // â”€â”€ Desktop table rows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            var tbody = document.getElementById('customerTableBody');
+            tbody.innerHTML = '';
+
+            // â”€â”€ Mobile cards container â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            var cards = document.getElementById('customerCards');
+            cards.innerHTML = '';
+
+            rows.forEach(function (r, idx) {
+                var isActive   = (r.customerActive === 'Active');
+                var badgeClass = isActive ? 'active-yes' : 'active-no';
+                var badgeText  = isActive ? 'Active'     : 'Inactive';
+                var seq        = startSeq + idx;
+
+                // Desktop <tr>
+                var tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td style="color:#888;font-size:12px;">' + seq + '</td>' +
+                    '<td class="cust-name-cell">' + escapeHtml(r.customerName) + '</td>' +
+                    '<td>' + escapeHtml(r.customerPhone) + '</td>' +
+                    '<td><span class="type-badge">' + escapeHtml(r.customerType) + '</span></td>' +
+                    '<td class="text-center">' +
+                        '<span class="active-badge ' + badgeClass + '">' + badgeText + '</span>' +
+                    '</td>' +
+                    '<td class="text-center">' +
+                        '<button class="edit-btn" onclick="editCustomer(' + r.customerId + ')">' +
+                            '<i class="fas fa-edit"></i> Edit' +
+                        '</button>' +
+                    '</td>';
+                tbody.appendChild(tr);
+
+                // Mobile card
+                var accentClass = isActive ? '' : ' inactive';
+                var card = document.createElement('div');
+                card.className = 'cust-card';
+                card.innerHTML =
+                    '<div class="cust-card-inner">' +
+                        '<div class="cust-card-accent' + accentClass + '"></div>' +
+                        '<div class="cust-card-body">' +
+                            '<div class="cust-card-top">' +
+                                '<div class="cust-card-name">' + escapeHtml(r.customerName) + '</div>' +
+                                '<span class="active-badge ' + badgeClass + '">' + badgeText + '</span>' +
+                            '</div>' +
+                            '<div class="cust-card-details">' +
+                                '<span class="cust-card-phone">' +
+                                    '<i class="fas fa-phone-alt"></i>' +
+                                    escapeHtml(r.customerPhone) +
+                                '</span>' +
+                                '<span class="cust-card-sep">|</span>' +
+                                '<span class="type-badge">' + escapeHtml(r.customerType) + '</span>' +
+                            '</div>' +
+                            '<div style="display:flex;justify-content:flex-end;">' +
+                                '<button class="cust-card-edit-btn" onclick="editCustomer(' + r.customerId + ')">' +
+                                    '<i class="fas fa-pen"></i> Edit' +
+                                '</button>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
+                cards.appendChild(card);
+            });
+
+            document.getElementById('customerTable').style.display = '';
+            document.getElementById('customerCards').style.display = 'block';
+            document.getElementById('emptyState').style.display    = 'none';
+            showLoading(false);
+        }
+
+        // ==================== EDIT â€” populate form via GetCustomerById ====================
+        function editCustomer(customerId) {
+            fetch('fpc_24_addCustomerMob.aspx/GetCustomerById', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ customerId: customerId })
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                var result = data.d !== undefined ? data.d : data;
+                if (!result.success) {
+                    alert(result.errorMessage || 'Could not load customer details.');
+                    return;
+                }
+                var c = result.customer;
+
+                // Populate ASP.NET server controls by ClientID
+                document.getElementById('ContentPlaceHolder1_txt_customer_name').value = c.customerName;
+                document.getElementById('ContentPlaceHolder1_txt_mobile_no').value     = c.customerPhone;
+                document.getElementById('ContentPlaceHolder1_hf_id').value             = c.customerId;
+
+                setDropdown('ContentPlaceHolder1_ddl_customer_type',   c.customerType);
+                setDropdown('ContentPlaceHolder1_ddl_customer_active', c.customerActive);
+
+                // Switch button & title to update mode
+                document.getElementById('ContentPlaceHolder1_btn_create_users2').innerText = 'Update Customer';
+                document.getElementById('ContentPlaceHolder1_formCardTitle').innerText     = 'Edit Customer';
+
+                // Scroll form into view
+                document.getElementById('userForm').scrollIntoView({ behavior: 'smooth' });
+            })
+            .catch(function (err) { alert('Network error: ' + err.message); });
+        }
+
+        function setDropdown(clientId, value) {
+            var sel = document.getElementById(clientId);
+            if (!sel) return;
+            for (var i = 0; i < sel.options.length; i++) {
+                if (sel.options[i].value === value || sel.options[i].text === value) {
+                    sel.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('ContentPlaceHolder1_txt_customer_name').value           = '';
+            document.getElementById('ContentPlaceHolder1_txt_mobile_no').value               = '';
+            document.getElementById('ContentPlaceHolder1_hf_id').value                       = '';
+            document.getElementById('ContentPlaceHolder1_ddl_customer_type').selectedIndex   = 0;
+            document.getElementById('ContentPlaceHolder1_ddl_customer_active').selectedIndex = 0;
+            document.getElementById('ContentPlaceHolder1_btn_create_users2').innerText       = 'Save Customer';
+            document.getElementById('ContentPlaceHolder1_formCardTitle').innerText           = 'Add New Customer';
+            document.getElementById('ContentPlaceHolder1_lbl_error_msg').innerText           = '';
+        }
+
+        // ==================== PAGINATION ====================
+        function renderPagination() {
+            var totalPages = Math.ceil(state.totalCount / state.pageSize);
+            var bar  = document.getElementById('paginationBar');
+            var info = document.getElementById('paginationInfo');
+            var btns = document.getElementById('paginationButtons');
+
+            if (state.totalCount === 0) { bar.style.display = 'none'; return; }
+
+            bar.style.display = 'flex';
+            var s = (state.currentPage - 1) * state.pageSize + 1;
+            var e = Math.min(state.currentPage * state.pageSize, state.totalCount);
+            info.innerHTML =
+                'Showing <strong>' + s + '&ndash;' + e + '</strong> of <strong>' +
+                state.totalCount + '</strong> &nbsp;|&nbsp; Page <strong>' +
+                state.currentPage + '</strong> of <strong>' + totalPages + '</strong>';
+
+            btns.innerHTML = '';
+
+            // First & Prev
+            mkBtn(btns, '&laquo;',  1,                      state.currentPage === 1,          'First page');
+            mkBtn(btns, '&lsaquo;', state.currentPage - 1,  state.currentPage === 1,          'Previous page');
+
+            // Page window (5 pages centred on current)
+            var ws = Math.max(1, state.currentPage - 2);
+            var we = Math.min(totalPages, ws + 4);
+            if (we - ws < 4) ws = Math.max(1, we - 4);
+
+            if (ws > 1) mkEllipsis(btns);
+            for (var p = ws; p <= we; p++) {
+                (function (pg) {
+                    var b = document.createElement('button');
+                    b.className   = 'page-btn' + (pg === state.currentPage ? ' active' : '');
+                    b.textContent = pg;
+                    b.onclick     = function () { loadCustomers(pg); };
+                    btns.appendChild(b);
+                })(p);
+            }
+            if (we < totalPages) mkEllipsis(btns);
+
+            // Next & Last
+            mkBtn(btns, '&rsaquo;', state.currentPage + 1, state.currentPage === totalPages, 'Next page');
+            mkBtn(btns, '&raquo;',  totalPages,            state.currentPage === totalPages, 'Last page');
+        }
+
+        function mkBtn(container, label, targetPage, disabled, title) {
+            var b = document.createElement('button');
+            b.className = 'page-btn';
+            b.innerHTML = label;
+            b.disabled  = disabled;
+            b.title     = title || '';
+            if (!disabled) b.onclick = function () { loadCustomers(targetPage); };
+            container.appendChild(b);
+        }
+
+        function mkEllipsis(container) {
+            var b = document.createElement('button');
+            b.className = 'page-btn';
+            b.innerHTML = '&hellip;';
+            b.disabled  = true;
+            container.appendChild(b);
+        }
+
+        // ==================== HELPERS ====================
+        function showLoading(flag) {
+            document.getElementById('loadingState').style.display = flag ? 'block' : 'none';
+            if (flag) {
+                document.getElementById('customerTable').style.display = 'none';
+                document.getElementById('customerCards').style.display = 'none';
+                document.getElementById('emptyState').style.display    = 'none';
+            }
+        }
+
+        function showError(msg) {
+            document.getElementById('loadingState').style.display  = 'none';
+            document.getElementById('customerTable').style.display = 'none';
+            document.getElementById('customerCards').style.display = 'none';
+            document.getElementById('emptyState').style.display    = 'block';
+            document.getElementById('emptyState').innerHTML =
+                '<i class="fas fa-exclamation-triangle" style="color:#dc3545;font-size:40px;margin-bottom:10px;display:block;"></i>' +
+                '<p>' + msg + '</p>';
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    </script>
+
+
+        </div>
+    </div>
+
+    <!-- ===== BOTTOM NAVIGATION BAR ===== -->
+    <nav class="bottom-nav">
+        <a href="fpc_22_lsc_crp_dashboard.aspx" class="bottom-nav-item" id="nav-home">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="fpc_23_lscProductPage.aspx" class="bottom-nav-item" id="nav-product">
+            <i class="fas fa-box-open"></i>
+            <span>Product</span>
+        </a>
+        <a href="#" class="bottom-nav-item" id="nav-cart">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Cart</span>
+        </a>
+        <a href="#" class="bottom-nav-item" id="nav-orders">
+            <i class="fas fa-clipboard-list"></i>
+            <span>Orders</span>
+        </a>
+        <a href="fpc_24_addCustomerMob.aspx" class="bottom-nav-item" id="nav-customer">
+            <i class="fas fa-user-plus"></i>
+            <span>Customer</span>
+        </a>
+    </nav>
 
     <script>
-        // ===== SHOW ERROR BOX IF LABEL HAS TEXT =====
-        (function () {
-            var lbl = document.getElementById('lbl_error');
-            var box = document.getElementById('errorBox');
-            if (lbl && lbl.innerText.trim() !== '') {
-                box.classList.add('visible');
-            }
-        })();
+        // ===== COLLAPSIBLE MENU TOGGLE =====
+        const menuToggleBtn = document.getElementById('menuToggleBtn');
+        const menuToggleIcon = document.getElementById('menuToggleIcon');
+        const slideMenu = document.getElementById('slideMenu');
+        const menuOverlay = document.getElementById('menuOverlay');
 
-        // ===== PASSWORD SHOW / HIDE TOGGLE =====
-        var pwdToggle = document.getElementById('pwdToggle');
-        var pwdInput  = document.getElementById('txt_password');
+        function openMenu() {
+            slideMenu.classList.add('open');
+            menuOverlay.classList.add('show');
+            menuToggleIcon.classList.remove('fa-bars');
+            menuToggleIcon.classList.add('fa-times');
+        }
 
-        pwdToggle.addEventListener('click', function () {
-            if (pwdInput.type === 'password') {
-                pwdInput.type = 'text';
-                pwdToggle.classList.replace('fa-eye', 'fa-eye-slash');
-                pwdToggle.style.color = '#1a6b3c';
+        function closeMenu() {
+            slideMenu.classList.remove('open');
+            menuOverlay.classList.remove('show');
+            menuToggleIcon.classList.remove('fa-times');
+            menuToggleIcon.classList.add('fa-bars');
+        }
+
+        menuToggleBtn.addEventListener('click', function () {
+            if (slideMenu.classList.contains('open')) {
+                closeMenu();
             } else {
-                pwdInput.type = 'password';
-                pwdToggle.classList.replace('fa-eye-slash', 'fa-eye');
-                pwdToggle.style.color = '#aaa';
+                openMenu();
             }
         });
+
+        menuOverlay.addEventListener('click', closeMenu);
+
+        // ===== BOTTOM NAV ACTIVE STATE =====
+        (function () {
+            const currentPage = window.location.pathname.split('/').pop().toLowerCase();
+            const navMap = {
+                'fpc_22_lsc_crp_dashboard.aspx': 'nav-home',
+                'fpc_23_lscproductpage.aspx'   : 'nav-product',
+                'fpc_24_addcustomermob.aspx'   : 'nav-customer'
+            };
+            const activeId = navMap[currentPage];
+            if (activeId) {
+                const el = document.getElementById(activeId);
+                if (el) el.classList.add('active');
+            }
+        })();
     </script>
 
 <!-- Visual Studio Browser Link -->
 <script type="application/json" id="__browserLink_initializationData">
-    {"appName":"Chrome","requestId":"eac69608d1bd43c7bf372fee175e7b8b"}
+    {"appName":"Chrome","requestId":"ddc4753211974fa9a69a5174ff967be6"}
 </script>
-<script type="text/javascript" src="http://localhost:28056/f3365dc9df194f729bae7c8e77bc7399/browserLink" async="async"></script>
+<script type="text/javascript" src="http://localhost:38807/f8e5471f403c46e5941a84ef7b5b70a5/browserLink" async="async"></script>
 <!-- End Browser Link -->
 
 </body>

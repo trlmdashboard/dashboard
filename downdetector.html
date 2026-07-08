@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pulse // Uptime Console</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg: #0A0D0B;
+    --panel: #10160F;
+    --panel-2: #141B13;
+    --grid: #1D2A1E;
+    --green: #5FFFB0;
+    --green-dim: #2C6B4C;
+    --amber: #FFB454;
+    --red: #FF5C5C;
+    --red-dim: #6B2C2C;
+    --text: #E8F5EE;
+    --text-dim: #7A9186;
+    --mono: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/100% 28px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/28px 100%,
+      var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 28px 20px 60px;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: var(--green);
+    text-transform: uppercase;
+  }
+  h1 {
+    font-family: var(--mono);
+    font-size: 30px;
+    letter-spacing: 1px;
+    margin: 4px 0 2px;
+    font-weight: 700;
+  }
+  .sub {
+    color: var(--text-dim);
+    font-size: 13px;
+    margin-bottom: 22px;
+    max-width: 560px;
+    line-height: 1.5;
+  }
+  .sub b { color: var(--text); font-weight: 600; }
+
+  .controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+  input[type="text"] {
+    flex: 1 1 320px;
+    background: var(--panel);
+    border: 1px solid var(--grid);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    padding: 12px 14px;
+    border-radius: 4px;
+    outline: none;
+  }
+  input[type="text"]:focus { border-color: var(--green-dim); }
+  input[type="text"]::placeholder { color: var(--text-dim); }
+
+  select {
+    background: var(--panel);
+    border: 1px solid var(--grid);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 12px 10px;
+    border-radius: 4px;
+    outline: none;
+  }
+
+  button {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 12px 20px;
+    border-radius: 4px;
+    border: 1px solid var(--green-dim);
+    background: transparent;
+    color: var(--green);
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  button:hover { background: rgba(95,255,176,0.08); }
+  button.stop { border-color: var(--red-dim); color: var(--red); }
+  button.stop:hover { background: rgba(255,92,92,0.08); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    background: var(--panel);
+    border: 1px solid var(--grid);
+    border-radius: 6px;
+    padding: 22px 24px;
+    margin-bottom: 18px;
+  }
+  .status-block { display: flex; align-items: center; gap: 14px; }
+  .dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--text-dim);
+    box-shadow: 0 0 0 0 transparent;
+  }
+  .dot.up { background: var(--green); box-shadow: 0 0 14px 2px rgba(95,255,176,0.6); }
+  .dot.down { background: var(--red); box-shadow: 0 0 14px 2px rgba(255,92,92,0.6); animation: blink 1s infinite; }
+  .dot.checking { background: var(--amber); animation: blink 0.6s infinite; }
+  @keyframes blink { 50% { opacity: 0.3; } }
+
+  .status-text { font-family: var(--mono); font-size: 22px; font-weight: 700; letter-spacing: 1px; }
+  .status-text.up { color: var(--green); }
+  .status-text.down { color: var(--red); }
+  .status-text.checking { color: var(--amber); }
+  .status-text.idle { color: var(--text-dim); }
+
+  .status-meta { font-family: var(--mono); font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
+  .hero-metrics { display: flex; gap: 28px; }
+  .hero-metric { text-align: right; }
+  .hero-metric .val { font-family: var(--mono); font-size: 24px; font-weight: 700; }
+  .hero-metric .lab { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
+
+  /* Pulse strip - signature element */
+  .pulse-panel {
+    background: var(--panel);
+    border: 1px solid var(--grid);
+    border-radius: 6px;
+    padding: 16px 18px 10px;
+    margin-bottom: 18px;
+  }
+  .pulse-label {
+    font-family: var(--mono); font-size: 11px; color: var(--text-dim);
+    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px;
+  }
+  .pulse-strip {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 46px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+  .tick {
+    flex: 0 0 5px;
+    min-width: 5px;
+    border-radius: 1px;
+    background: var(--grid);
+    position: relative;
+    cursor: default;
+  }
+  .tick.up { background: var(--green); }
+  .tick.down { background: var(--red); height: 46px !important; }
+  .tick:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: 52px; left: 50%; transform: translateX(-50%);
+    background: #000; color: var(--text);
+    font-family: var(--mono); font-size: 10px;
+    padding: 4px 6px; border-radius: 3px;
+    white-space: nowrap; border: 1px solid var(--grid);
+    z-index: 5;
+  }
+  .pulse-empty { color: var(--text-dim); font-family: var(--mono); font-size: 12px; padding: 12px 0; }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--grid);
+    border-radius: 6px;
+    padding: 18px;
+  }
+  .panel h2 {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin: 0 0 14px;
+  }
+  .chart-wrap { height: 220px; }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .stat {
+    background: var(--panel-2);
+    border: 1px solid var(--grid);
+    border-radius: 4px;
+    padding: 12px;
+  }
+  .stat .v { font-family: var(--mono); font-size: 20px; font-weight: 700; }
+  .stat .l { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; margin-top: 3px; }
+  .stat .v.green { color: var(--green); }
+  .stat .v.red { color: var(--red); }
+
+  .log {
+    margin-top: 18px;
+  }
+  .log table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
+  .log th { text-align: left; color: var(--text-dim); font-weight: 500; padding: 6px 8px; border-bottom: 1px solid var(--grid); text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .log td { padding: 6px 8px; border-bottom: 1px solid var(--grid); }
+  .log tr:first-child td { color: var(--text); }
+  .badge { padding: 2px 6px; border-radius: 3px; font-size: 10px; letter-spacing: 1px; }
+  .badge.up { background: rgba(95,255,176,0.12); color: var(--green); }
+  .badge.down { background: rgba(255,92,92,0.12); color: var(--red); }
+  .log-scroll { max-height: 200px; overflow-y: auto; }
+
+  .footnote {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 24px;
+    line-height: 1.6;
+    border-top: 1px solid var(--grid);
+    padding-top: 14px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">// network reachability</div>
+  <h1>PULSE — UPTIME CONSOLE</h1>
+  <p class="sub">Enter a URL to start polling it at a fixed interval. <b>Green</b> ticks mean the request resolved, <b>red</b> means it didn't (timeout, DNS failure, connection refused, or blocked). Browser cross-origin limits mean exact HTTP status codes aren't always visible — this measures <b>reachability</b>, not full server health.</p>
+
+  <div class="controls">
+    <input type="text" id="urlInput" placeholder="https://example.com" autocomplete="off">
+    <select id="intervalSelect">
+      <option value="5">Every 5s</option>
+      <option value="10" selected>Every 10s</option>
+      <option value="30">Every 30s</option>
+      <option value="60">Every 60s</option>
+    </select>
+    <button id="toggleBtn">Start</button>
+  </div>
+
+  <div class="hero">
+    <div class="status-block">
+      <div class="dot idle" id="statusDot"></div>
+      <div>
+        <div class="status-text idle" id="statusText">STANDBY</div>
+        <div class="status-meta" id="statusMeta">no target set</div>
+      </div>
+    </div>
+    <div class="hero-metrics">
+      <div class="hero-metric">
+        <div class="val" id="lastMs">—</div>
+        <div class="lab">Latency (ms)</div>
+      </div>
+      <div class="hero-metric">
+        <div class="val" id="lastCheckTime">—</div>
+        <div class="lab">Last Checked</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pulse-panel">
+    <div class="pulse-label">Pulse Strip — one tick per check</div>
+    <div class="pulse-strip" id="pulseStrip">
+      <div class="pulse-empty">No checks yet. Enter a URL and hit Start.</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <h2>Response Time Trend</h2>
+      <div class="chart-wrap"><canvas id="chart"></canvas></div>
+    </div>
+    <div class="panel">
+      <h2>Analytics</h2>
+      <div class="stat-grid">
+        <div class="stat"><div class="v green" id="statUptime">—</div><div class="l">Uptime</div></div>
+        <div class="stat"><div class="v" id="statChecks">0</div><div class="l">Total Checks</div></div>
+        <div class="stat"><div class="v" id="statAvg">—</div><div class="l">Avg Latency</div></div>
+        <div class="stat"><div class="v" id="statMinMax">—</div><div class="l">Min / Max ms</div></div>
+        <div class="stat"><div class="v red" id="statIncidents">0</div><div class="l">Incidents</div></div>
+        <div class="stat"><div class="v red" id="statLongestDown">—</div><div class="l">Longest Outage</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel log">
+    <h2>Recent Checks</h2>
+    <div class="log-scroll">
+      <table>
+        <thead><tr><th>Time</th><th>Status</th><th>Latency</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="3" style="color:var(--text-dim)">No data yet</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footnote">
+    Runs entirely in your browser — no data leaves this page. Because most third-party sites don't send CORS headers, checks use a "no-cors" probe: the browser attempts the connection but can't read the response body or status code, only whether the request completed. This is a solid signal for "is something answering at this address" but can occasionally miss server-side errors on same-origin-friendly sites. History is kept for this session only and resets on page reload.
+  </div>
+</div>
+
+<script>
+(function(){
+  let monitoring = false;
+  let timer = null;
+  let checks = []; // {t: Date, status: 'up'|'down', ms: number|null}
+  let intervalSec = 10;
+  let chart = null;
+  const MAX_KEEP = 500;
+  const MAX_CHART_POINTS = 60;
+
+  const urlInput = document.getElementById('urlInput');
+  const intervalSelect = document.getElementById('intervalSelect');
+  const toggleBtn = document.getElementById('toggleBtn');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const statusMeta = document.getElementById('statusMeta');
+  const lastMs = document.getElementById('lastMs');
+  const lastCheckTime = document.getElementById('lastCheckTime');
+  const pulseStrip = document.getElementById('pulseStrip');
+  const logBody = document.getElementById('logBody');
+
+  function normalizeUrl(v){
+    v = v.trim();
+    if (!v) return null;
+    if (!/^https?:\/\//i.test(v)) v = 'https://' + v;
+    try { new URL(v); return v; } catch(e) { return null; }
+  }
+
+  function setStatus(state, meta){
+    statusDot.className = 'dot ' + state;
+    statusText.className = 'status-text ' + state;
+    statusText.textContent = state === 'up' ? 'ONLINE' : state === 'down' ? 'OFFLINE' : state === 'checking' ? 'CHECKING' : 'STANDBY';
+    statusMeta.textContent = meta || '';
+  }
+
+  async function probe(targetUrl){
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const start = performance.now();
+    try {
+      await fetch(targetUrl, { mode: 'no-cors', cache: 'no-store', signal: controller.signal });
+      const ms = Math.round(performance.now() - start);
+      clearTimeout(timeoutId);
+      return { status: 'up', ms };
+    } catch (e) {
+      clearTimeout(timeoutId);
+      return { status: 'down', ms: null };
+    }
+  }
+
+  function fmtTime(d){
+    return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  }
+
+  function initChart(){
+    const ctx = document.getElementById('chart').getContext('2d');
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Latency (ms)',
+          data: [],
+          borderColor: '#5FFFB0',
+          backgroundColor: 'rgba(95,255,176,0.08)',
+          pointBackgroundColor: [],
+          pointRadius: 3,
+          tension: 0.25,
+          fill: true,
+          spanGaps: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 200 },
+        scales: {
+          x: { ticks: { color: '#7A9186', font: { family: 'ui-monospace', size: 10 } }, grid: { color: '#1D2A1E' } },
+          y: { ticks: { color: '#7A9186', font: { family: 'ui-monospace', size: 10 } }, grid: { color: '#1D2A1E' }, beginAtZero: true }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+
+  function updateChart(){
+    const recent = checks.slice(-MAX_CHART_POINTS);
+    chart.data.labels = recent.map(c => fmtTime(c.t));
+    chart.data.datasets[0].data = recent.map(c => c.status === 'up' ? c.ms : 0);
+    chart.data.datasets[0].pointBackgroundColor = recent.map(c => c.status === 'up' ? '#5FFFB0' : '#FF5C5C');
+    chart.update();
+  }
+
+  function updatePulseStrip(){
+    if (checks.length === 0) {
+      pulseStrip.innerHTML = '<div class="pulse-empty">No checks yet. Enter a URL and hit Start.</div>';
+      return;
+    }
+    const maxMs = Math.max(...checks.filter(c=>c.ms!=null).map(c=>c.ms), 1);
+    const recent = checks.slice(-120);
+    pulseStrip.innerHTML = recent.map(c => {
+      const h = c.status === 'up' ? Math.max(6, Math.round((c.ms / maxMs) * 44)) : 46;
+      const tip = fmtTime(c.t) + ' — ' + (c.status === 'up' ? c.ms + 'ms' : 'down');
+      return `<div class="tick ${c.status}" style="height:${h}px" data-tip="${tip}"></div>`;
+    }).join('');
+    pulseStrip.scrollLeft = pulseStrip.scrollWidth;
+  }
+
+  function updateLog(){
+    const recent = checks.slice(-30).reverse();
+    logBody.innerHTML = recent.map(c => `
+      <tr>
+        <td>${fmtTime(c.t)}</td>
+        <td><span class="badge ${c.status}">${c.status === 'up' ? 'UP' : 'DOWN'}</span></td>
+        <td>${c.status === 'up' ? c.ms + ' ms' : '—'}</td>
+      </tr>
+    `).join('');
+  }
+
+  function updateStats(){
+    const total = checks.length;
+    const upChecks = checks.filter(c => c.status === 'up');
+    const downChecks = checks.filter(c => c.status === 'down');
+    const uptimePct = total ? ((upChecks.length / total) * 100).toFixed(1) : null;
+
+    document.getElementById('statUptime').textContent = uptimePct !== null ? uptimePct + '%' : '—';
+    document.getElementById('statChecks').textContent = total;
+
+    if (upChecks.length) {
+      const avg = Math.round(upChecks.reduce((s,c)=>s+c.ms,0) / upChecks.length);
+      const min = Math.min(...upChecks.map(c=>c.ms));
+      const max = Math.max(...upChecks.map(c=>c.ms));
+      document.getElementById('statAvg').textContent = avg + ' ms';
+      document.getElementById('statMinMax').textContent = min + ' / ' + max;
+    } else {
+      document.getElementById('statAvg').textContent = '—';
+      document.getElementById('statMinMax').textContent = '—';
+    }
+
+    // incidents = transitions from up (or start) into down
+    let incidents = 0;
+    let prevStatus = null;
+    let curDownStreak = 0;
+    let longestDownStreak = 0;
+    for (const c of checks) {
+      if (c.status === 'down') {
+        if (prevStatus !== 'down') incidents++;
+        curDownStreak++;
+        longestDownStreak = Math.max(longestDownStreak, curDownStreak);
+      } else {
+        curDownStreak = 0;
+      }
+      prevStatus = c.status;
+    }
+    document.getElementById('statIncidents').textContent = incidents;
+    document.getElementById('statLongestDown').textContent = longestDownStreak
+      ? (longestDownStreak * intervalSec) + 's'
+      : '—';
+  }
+
+  async function runCheck(targetUrl){
+    setStatus('checking', targetUrl);
+    const result = await probe(targetUrl);
+    const entry = { t: new Date(), status: result.status, ms: result.ms };
+    checks.push(entry);
+    if (checks.length > MAX_KEEP) checks = checks.slice(-MAX_KEEP);
+
+    setStatus(result.status, targetUrl);
+    lastMs.textContent = result.status === 'up' ? result.ms : '—';
+    lastCheckTime.textContent = fmtTime(entry.t);
+
+    updatePulseStrip();
+    updateChart();
+    updateStats();
+    updateLog();
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    if (!monitoring) {
+      const target = normalizeUrl(urlInput.value);
+      if (!target) {
+        urlInput.style.borderColor = 'var(--red)';
+        setTimeout(() => urlInput.style.borderColor = '', 900);
+        return;
+      }
+      intervalSec = parseInt(intervalSelect.value, 10);
+      monitoring = true;
+      toggleBtn.textContent = 'Stop';
+      toggleBtn.classList.add('stop');
+      urlInput.disabled = true;
+      intervalSelect.disabled = true;
+      runCheck(target);
+      timer = setInterval(() => runCheck(target), intervalSec * 1000);
+    } else {
+      monitoring = false;
+      clearInterval(timer);
+      toggleBtn.textContent = 'Start';
+      toggleBtn.classList.remove('stop');
+      urlInput.disabled = false;
+      intervalSelect.disabled = false;
+      setStatus('idle', 'monitoring stopped');
+    }
+  });
+
+  urlInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') toggleBtn.click();
+  });
+
+  initChart();
+})();
+</script>
+</body>
+</html>

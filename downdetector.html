@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pulse // Uptime Console</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <style>
   :root{
     --bg: #0A0D0B;
@@ -34,220 +33,109 @@
     padding: 28px 20px 60px;
   }
   .wrap { max-width: 1040px; margin: 0 auto; }
-
-  .eyebrow {
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 3px;
-    color: var(--green);
-    text-transform: uppercase;
-  }
-  h1 {
-    font-family: var(--mono);
-    font-size: 30px;
-    letter-spacing: 1px;
-    margin: 4px 0 2px;
-    font-weight: 700;
-  }
-  .sub {
-    color: var(--text-dim);
-    font-size: 13px;
-    margin-bottom: 22px;
-    max-width: 640px;
-    line-height: 1.5;
-  }
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 3px; color: var(--green); text-transform: uppercase; }
+  h1 { font-family: var(--mono); font-size: 30px; letter-spacing: 1px; margin: 4px 0 2px; font-weight: 700; }
+  .sub { color: var(--text-dim); font-size: 13px; margin-bottom: 22px; max-width: 640px; line-height: 1.5; }
   .sub b { color: var(--text); font-weight: 600; }
 
-  .controls {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 18px;
-  }
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
   input[type="text"] {
-    flex: 1 1 320px;
-    background: var(--panel);
-    border: 1px solid var(--grid);
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 14px;
-    padding: 12px 14px;
-    border-radius: 4px;
-    outline: none;
+    flex: 1 1 320px; background: var(--panel); border: 1px solid var(--grid); color: var(--text);
+    font-family: var(--mono); font-size: 14px; padding: 12px 14px; border-radius: 4px; outline: none;
   }
   input[type="text"]:focus { border-color: var(--green-dim); }
   input[type="text"]::placeholder { color: var(--text-dim); }
-
-  select {
-    background: var(--panel);
-    border: 1px solid var(--grid);
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 13px;
-    padding: 12px 10px;
-    border-radius: 4px;
-    outline: none;
-  }
+  select { background: var(--panel); border: 1px solid var(--grid); color: var(--text); font-family: var(--mono); font-size: 13px; padding: 12px 10px; border-radius: 4px; outline: none; }
 
   button {
-    font-family: var(--mono);
-    font-size: 13px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 12px 20px;
-    border-radius: 4px;
-    border: 1px solid var(--green-dim);
-    background: transparent;
-    color: var(--green);
-    cursor: pointer;
-    transition: background 0.15s ease;
+    font-family: var(--mono); font-size: 13px; letter-spacing: 1px; text-transform: uppercase;
+    padding: 12px 20px; border-radius: 4px; border: 1px solid var(--green-dim);
+    background: transparent; color: var(--green); cursor: pointer; transition: background 0.15s ease;
   }
   button:hover { background: rgba(95,255,176,0.08); }
   button.stop { border-color: var(--red-dim); color: var(--red); }
   button.stop:hover { background: rgba(255,92,92,0.08); }
-  button.ghost { border-color: var(--grid); color: var(--text-dim); padding: 12px 14px; }
+  button.ghost { border-color: var(--grid); color: var(--text-dim); padding: 8px 14px; font-size: 11px; }
   button.ghost:hover { background: rgba(255,255,255,0.04); color: var(--text); }
   button:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  /* Overview chip strip */
-  .overview {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-  }
-  .chip {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--panel); border: 1px solid var(--grid);
-    border-radius: 20px; padding: 6px 12px 6px 8px;
-    font-family: var(--mono); font-size: 11px; color: var(--text-dim);
-    cursor: pointer;
-  }
+  #statusLine { font-family: var(--mono); font-size: 11px; color: var(--text-dim); margin: -10px 0 18px; min-height: 14px; }
+  #statusLine.err { color: var(--red); }
+
+  .overview { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .chip { display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--grid); border-radius: 20px; padding: 6px 12px 6px 8px; font-family: var(--mono); font-size: 11px; color: var(--text-dim); cursor: pointer; }
   .chip .cdot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); flex: none; }
   .chip .cdot.up { background: var(--green); }
   .chip .cdot.down { background: var(--red); }
   .chip .cdot.checking { background: var(--amber); }
   .chip span.u { color: var(--text); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-  .empty-state {
-    text-align: center;
-    color: var(--text-dim);
-    font-family: var(--mono);
-    font-size: 13px;
-    border: 1px dashed var(--grid);
-    border-radius: 6px;
-    padding: 40px 20px;
-    margin-bottom: 20px;
-  }
+  .empty-state { text-align: center; color: var(--text-dim); font-family: var(--mono); font-size: 13px; border: 1px dashed var(--grid); border-radius: 6px; padding: 40px 20px; margin-bottom: 20px; }
 
-  .monitor-card {
-    background: var(--panel);
-    border: 1px solid var(--grid);
-    border-radius: 6px;
-    padding: 20px;
-    margin-bottom: 22px;
-  }
-
-  .card-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
+  .monitor-card { background: var(--panel); border: 1px solid var(--grid); border-radius: 6px; padding: 20px; margin-bottom: 22px; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
   .card-title { display: flex; align-items: center; gap: 12px; min-width: 0; }
   .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--text-dim); flex: none; }
   .dot.up { background: var(--green); box-shadow: 0 0 14px 2px rgba(95,255,176,0.6); }
   .dot.down { background: var(--red); box-shadow: 0 0 14px 2px rgba(255,92,92,0.6); animation: blink 1s infinite; }
   .dot.checking { background: var(--amber); animation: blink 0.6s infinite; }
   @keyframes blink { 50% { opacity: 0.3; } }
-
-  .card-url { font-family: var(--mono); font-weight: 700; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card-url { font-family: var(--mono); font-weight: 700; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; }
   .card-meta { font-family: var(--mono); font-size: 11px; color: var(--text-dim); margin-top: 2px; }
   .card-actions { display: flex; gap: 8px; align-items: center; }
-  .card-actions button { padding: 8px 14px; font-size: 11px; }
 
   .hero-metrics { display: flex; gap: 24px; }
   .hero-metric { text-align: right; }
   .hero-metric .val { font-family: var(--mono); font-size: 20px; font-weight: 700; }
   .hero-metric .lab { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
 
-  .pulse-label {
-    font-family: var(--mono); font-size: 11px; color: var(--text-dim);
-    letter-spacing: 2px; text-transform: uppercase; margin: 14px 0 8px;
-  }
-  .pulse-strip {
-    display: flex;
-    align-items: flex-end;
-    gap: 2px;
-    height: 46px;
-    overflow-x: auto;
-    padding-bottom: 2px;
-  }
-  .tick {
-    flex: 0 0 5px;
-    min-width: 5px;
-    border-radius: 1px;
-    background: var(--grid);
-    position: relative;
-    cursor: default;
-  }
+  .section-label { font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; margin: 14px 0 8px; }
+
+  .pulse-strip { display: flex; align-items: flex-end; gap: 2px; height: 46px; overflow-x: auto; padding-bottom: 2px; }
+  .tick { flex: 0 0 5px; min-width: 5px; border-radius: 1px; background: var(--grid); position: relative; cursor: default; }
   .tick.up { background: var(--green); }
   .tick.down { background: var(--red); height: 46px !important; }
   .tick:hover::after {
-    content: attr(data-tip);
-    position: absolute;
-    bottom: 52px; left: 50%; transform: translateX(-50%);
-    background: #000; color: var(--text);
-    font-family: var(--mono); font-size: 10px;
-    padding: 4px 6px; border-radius: 3px;
-    white-space: nowrap; border: 1px solid var(--grid);
-    z-index: 5;
+    content: attr(data-tip); position: absolute; bottom: 52px; left: 50%; transform: translateX(-50%);
+    background: #000; color: var(--text); font-family: var(--mono); font-size: 10px; padding: 4px 6px;
+    border-radius: 3px; white-space: nowrap; border: 1px solid var(--grid); z-index: 5;
   }
   .pulse-empty { color: var(--text-dim); font-family: var(--mono); font-size: 12px; padding: 12px 0; }
 
-  .grid-2 {
-    display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    gap: 18px;
-    margin-top: 6px;
-  }
+  .grid-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; margin-top: 6px; }
   @media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } }
 
-  .inner-panel {
-    background: var(--panel-2);
-    border: 1px solid var(--grid);
-    border-radius: 6px;
-    padding: 16px;
-  }
-  .inner-panel h3 {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin: 0 0 12px;
-  }
-  .chart-wrap { height: 200px; }
+  .inner-panel { background: var(--panel-2); border: 1px solid var(--grid); border-radius: 6px; padding: 16px; }
+  .inner-panel h3 { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); margin: 0 0 12px; }
+  .chart-wrap svg { width: 100%; height: 200px; display: block; }
 
-  .stat-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   @media (max-width: 480px) { .stat-grid { grid-template-columns: 1fr 1fr; } }
-  .stat {
-    background: var(--panel);
-    border: 1px solid var(--grid);
-    border-radius: 4px;
-    padding: 10px;
-  }
+  .stat { background: var(--panel); border: 1px solid var(--grid); border-radius: 4px; padding: 10px; }
   .stat .v { font-family: var(--mono); font-size: 16px; font-weight: 700; }
   .stat .l { font-size: 9px; color: var(--text-dim); letter-spacing: 0.6px; text-transform: uppercase; margin-top: 3px; }
   .stat .v.green { color: var(--green); }
   .stat .v.red { color: var(--red); }
   .stat .v.amber { color: var(--amber); }
+
+  .details-toggle { font-family: var(--mono); font-size: 11px; color: var(--green); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; margin-top: 14px; display: inline-block; user-select: none; }
+  .details-panel { display: none; margin-top: 14px; }
+  .details-panel.open { display: block; }
+
+  .pct-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; margin-bottom: 16px; }
+  .pct-table th, .pct-table td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--grid); }
+  .pct-table th { color: var(--text-dim); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; font-weight: 500; }
+
+  .hist-row { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; margin-bottom: 5px; }
+  .hist-label { width: 90px; flex: none; color: var(--text-dim); }
+  .hist-bar-wrap { flex: 1; background: var(--panel); border-radius: 3px; overflow: hidden; height: 14px; }
+  .hist-bar { height: 100%; background: var(--green); }
+  .hist-count { width: 34px; flex: none; text-align: right; color: var(--text-dim); }
+
+  .incident-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
+  .incident-table th, .incident-table td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--grid); }
+  .incident-table th { color: var(--text-dim); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; font-weight: 500; }
+  .incident-table td.ongoing { color: var(--red); }
 
   .log { margin-top: 16px; }
   .log table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
@@ -259,15 +147,7 @@
   .badge.down { background: rgba(255,92,92,0.12); color: var(--red); }
   .log-scroll { max-height: 200px; overflow-y: auto; }
 
-  .footnote {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-dim);
-    margin-top: 24px;
-    line-height: 1.6;
-    border-top: 1px solid var(--grid);
-    padding-top: 14px;
-  }
+  .footnote { font-family: var(--mono); font-size: 11px; color: var(--text-dim); margin-top: 24px; line-height: 1.6; border-top: 1px solid var(--grid); padding-top: 14px; }
 </style>
 </head>
 <body>
@@ -284,8 +164,9 @@
       <option value="30">Every 30s</option>
       <option value="60">Every 60s</option>
     </select>
-    <button id="addBtn">+ Add URL</button>
+    <button id="addBtn" type="button">+ Add URL</button>
   </div>
+  <div id="statusLine"></div>
 
   <div class="overview" id="overview"></div>
 
@@ -294,18 +175,19 @@
   </div>
 
   <div class="footnote">
-    Runs entirely in your browser — no data leaves this page. Because most third-party sites don't send CORS headers, checks use a "no-cors" probe: the browser attempts the connection but can't read the response body or status code, only whether the request completed. This is a solid signal for "is something answering at this address" but can occasionally miss server-side errors on same-origin-friendly sites. Each tracker keeps its own independent history for this session only, and everything resets on page reload.
+    Runs entirely in your browser — no data leaves this page except the checks themselves. Because most third-party sites don't send CORS headers, checks use a "no-cors" probe: the browser attempts the connection but can't read the response body or status code, only whether the request completed. This is a solid signal for "is something answering at this address" but can occasionally miss server-side errors on same-origin-friendly sites. Each tracker keeps its own independent history for this session only, and everything resets on page reload.
   </div>
 </div>
 
 <script>
 (function(){
-  const MAX_KEEP = 500;
-  const MAX_CHART_POINTS = 60;
+  'use strict';
+  const MAX_KEEP = 1000;
   const MAX_PULSE_TICKS = 120;
   const MAX_LOG_ROWS = 30;
+  const SVG_NS = 'http://www.w3.org/2000/svg';
 
-  let monitors = {}; // id -> monitor object
+  let monitors = {};
   let nextId = 1;
 
   const urlInput = document.getElementById('urlInput');
@@ -314,17 +196,22 @@
   const monitorsContainer = document.getElementById('monitorsContainer');
   const emptyState = document.getElementById('emptyState');
   const overview = document.getElementById('overview');
+  const statusLine = document.getElementById('statusLine');
+
+  function showStatusLine(msg, isErr){
+    statusLine.textContent = msg || '';
+    statusLine.className = isErr ? 'err' : '';
+  }
 
   function normalizeUrl(v){
-    v = v.trim();
+    v = (v || '').trim();
     if (!v) return null;
     if (!/^https?:\/\//i.test(v)) v = 'https://' + v;
     try { new URL(v); return v; } catch(e) { return null; }
   }
 
-  function fmtTime(d){
-    return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-  }
+  function fmtTime(d){ return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'}); }
+  function fmtDateTime(d){ return d.toLocaleDateString([], {month:'short', day:'numeric'}) + ' ' + fmtTime(d); }
 
   function fmtDuration(seconds){
     if (seconds == null || isNaN(seconds)) return '—';
@@ -337,6 +224,12 @@
 
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function percentile(sortedArr, p){
+    if (!sortedArr.length) return null;
+    const idx = Math.min(sortedArr.length - 1, Math.floor(p * sortedArr.length));
+    return sortedArr[idx];
   }
 
   async function probe(targetUrl){
@@ -366,25 +259,24 @@
     let avg = null, median = null, p95 = null, min = null, max = null, jitter = null;
     if (latencies.length) {
       avg = latencies.reduce((s,v)=>s+v,0) / latencies.length;
-      median = latencies[Math.floor(latencies.length/2)];
-      p95 = latencies[Math.min(latencies.length-1, Math.floor(latencies.length*0.95))];
+      median = percentile(latencies, 0.5);
+      p95 = percentile(latencies, 0.95);
       min = latencies[0];
       max = latencies[latencies.length-1];
       const variance = latencies.reduce((s,v)=>s+Math.pow(v-avg,2),0) / latencies.length;
       jitter = Math.sqrt(variance);
     }
 
-    // streaks & incidents
     let incidents = 0, prevStatus = null;
-    let curStreakType = null, curStreakLen = 0;
+    let curStreakLen = 0;
     let longestDownStreak = 0, longestUpStreak = 0;
     let runDown = 0, runUp = 0;
     let downStreakLengths = [];
     let lastIncidentTime = null;
 
-    checks.forEach((c, i) => {
+    checks.forEach((c) => {
       if (c.status === 'down') {
-        if (prevStatus !== 'down') { incidents++; }
+        if (prevStatus !== 'down') incidents++;
         runDown++; runUp = 0;
         longestDownStreak = Math.max(longestDownStreak, runDown);
         lastIncidentTime = c.t;
@@ -397,9 +289,9 @@
     });
     if (prevStatus === 'down') downStreakLengths.push(runDown);
 
+    let curStreakType = null;
     if (checks.length) {
-      const last = checks[checks.length-1];
-      curStreakType = last.status;
+      curStreakType = checks[checks.length-1].status;
       for (let i = checks.length-1; i >= 0; i--) {
         if (checks[i].status === curStreakType) curStreakLen++; else break;
       }
@@ -414,63 +306,151 @@
     return {
       total, upCount: upChecks.length, downCount: downChecks.length,
       uptimePct, errorRatePct,
-      avg, median, p95, min, max, jitter,
+      avg, median, p95, min, max, jitter, latencies,
       incidents, longestDownStreak, longestUpStreak,
       longestDownSec: longestDownStreak * intervalSec,
       longestUpSec: longestUpStreak * intervalSec,
       curStreakType, curStreakSec: curStreakLen * intervalSec,
-      mttrSec, mtbfSec, lastIncidentTime,
-      spanSec
+      mttrSec, mtbfSec, lastIncidentTime, spanSec
     };
+  }
+
+  function extractIncidents(checks, intervalSec){
+    const incidents = [];
+    let cur = null;
+    checks.forEach((c) => {
+      if (c.status === 'down') {
+        if (!cur) cur = { start: c.t, end: null, ongoing: true };
+      } else {
+        if (cur) { cur.end = c.t; cur.ongoing = false; incidents.push(cur); cur = null; }
+      }
+    });
+    if (cur) incidents.push(cur);
+    return incidents.map(inc => {
+      const endTime = inc.end || new Date();
+      const durSec = Math.max(intervalSec, (endTime - inc.start) / 1000);
+      return { start: inc.start, end: inc.end, ongoing: inc.ongoing, durSec };
+    }).reverse();
+  }
+
+  function buildHistogram(latencies){
+    if (!latencies.length) return [];
+    const min = latencies[0], max = latencies[latencies.length-1];
+    const bucketCount = Math.min(6, Math.max(3, Math.ceil(Math.sqrt(latencies.length))));
+    const span = Math.max(1, max - min);
+    const bucketSize = span / bucketCount;
+    const buckets = new Array(bucketCount).fill(0);
+    latencies.forEach(v => {
+      let idx = Math.floor((v - min) / bucketSize);
+      if (idx >= bucketCount) idx = bucketCount - 1;
+      if (idx < 0) idx = 0;
+      buckets[idx]++;
+    });
+    const maxCount = Math.max(...buckets, 1);
+    return buckets.map((count, i) => ({
+      label: Math.round(min + i*bucketSize) + '-' + Math.round(min + (i+1)*bucketSize) + 'ms',
+      count, pct: count / maxCount * 100
+    }));
+  }
+
+  function buildTrendSVG(checks){
+    const W = 560, H = 200, padL = 36, padR = 10, padT = 12, padB = 22;
+    const recent = checks.slice(-60);
+    if (recent.length < 2) {
+      return '<svg viewBox="0 0 ' + W + ' ' + H + '"><text x="' + (W/2) + '" y="' + (H/2) + '" text-anchor="middle" fill="#7A9186" font-family="ui-monospace" font-size="12">Collecting data…</text></svg>';
+    }
+    const ups = recent.filter(c => c.status === 'up');
+    const maxMs = Math.max(...ups.map(c => c.ms), 10);
+    const innerW = W - padL - padR, innerH = H - padT - padB;
+    const xStep = innerW / (recent.length - 1);
+
+    let path = '', dots = '';
+    let started = false;
+    recent.forEach((c, i) => {
+      const x = padL + i * xStep;
+      if (c.status === 'up') {
+        const y = padT + innerH - (c.ms / maxMs) * innerH;
+        path += (started ? ' L ' : 'M ') + x.toFixed(1) + ' ' + y.toFixed(1);
+        started = true;
+        dots += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="2.5" fill="#5FFFB0" />';
+      } else {
+        started = false;
+        dots += '<circle cx="' + x.toFixed(1) + '" cy="' + (padT + innerH).toFixed(1) + '" r="3" fill="#FF5C5C" />';
+      }
+    });
+
+    let gridLines = '';
+    for (let g = 0; g <= 3; g++) {
+      const gy = padT + (innerH / 3) * g;
+      gridLines += '<line x1="' + padL + '" y1="' + gy.toFixed(1) + '" x2="' + (W-padR) + '" y2="' + gy.toFixed(1) + '" stroke="#1D2A1E" stroke-width="1" />';
+      const val = Math.round(maxMs - (maxMs/3)*g);
+      gridLines += '<text x="' + (padL-6) + '" y="' + (gy+3).toFixed(1) + '" text-anchor="end" fill="#7A9186" font-family="ui-monospace" font-size="9">' + val + '</text>';
+    }
+
+    const firstLabel = fmtTime(recent[0].t);
+    const lastLabel = fmtTime(recent[recent.length-1].t);
+
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' +
+      gridLines +
+      '<path d="' + path + '" fill="none" stroke="#5FFFB0" stroke-width="1.6" />' +
+      dots +
+      '<text x="' + padL + '" y="' + (H-6) + '" fill="#7A9186" font-family="ui-monospace" font-size="9">' + firstLabel + '</text>' +
+      '<text x="' + (W-padR) + '" y="' + (H-6) + '" text-anchor="end" fill="#7A9186" font-family="ui-monospace" font-size="9">' + lastLabel + '</text>' +
+      '</svg>';
   }
 
   function createMonitorCard(monitor){
     const card = document.createElement('div');
     card.className = 'monitor-card';
     card.id = 'mon-' + monitor.id;
-    card.innerHTML = `
-      <div class="card-head">
-        <div class="card-title">
-          <div class="dot idle" data-role="dot"></div>
-          <div style="min-width:0;">
-            <div class="card-url" data-role="urltext"></div>
-            <div class="card-meta" data-role="meta">standby</div>
-          </div>
-        </div>
-        <div class="hero-metrics">
-          <div class="hero-metric"><div class="val" data-role="lastms">—</div><div class="lab">Latency</div></div>
-          <div class="hero-metric"><div class="val" data-role="lastcheck">—</div><div class="lab">Last Checked</div></div>
-        </div>
-        <div class="card-actions">
-          <button data-role="toggle" class="stop">Pause</button>
-          <button data-role="remove" class="ghost">Remove</button>
-        </div>
-      </div>
-
-      <div class="pulse-label">Pulse Strip — one tick per check</div>
-      <div class="pulse-strip" data-role="pulse"><div class="pulse-empty">Waiting for first check…</div></div>
-
-      <div class="grid-2">
-        <div class="inner-panel">
-          <h3>Response Time Trend</h3>
-          <div class="chart-wrap"><canvas data-role="chart"></canvas></div>
-        </div>
-        <div class="inner-panel">
-          <h3>Analytics</h3>
-          <div class="stat-grid" data-role="stats"></div>
-        </div>
-      </div>
-
-      <div class="log">
-        <h3 style="font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin:16px 0 10px;">Recent Checks</h3>
-        <div class="log-scroll">
-          <table>
-            <thead><tr><th>Time</th><th>Status</th><th>Latency</th></tr></thead>
-            <tbody data-role="logbody"><tr><td colspan="3" style="color:var(--text-dim)">No data yet</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    `;
+    card.innerHTML =
+      '<div class="card-head">' +
+        '<div class="card-title">' +
+          '<div class="dot idle" data-role="dot"></div>' +
+          '<div style="min-width:0;">' +
+            '<div class="card-url" data-role="urltext"></div>' +
+            '<div class="card-meta" data-role="meta">standby</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="hero-metrics">' +
+          '<div class="hero-metric"><div class="val" data-role="lastms">—</div><div class="lab">Latency</div></div>' +
+          '<div class="hero-metric"><div class="val" data-role="lastcheck">—</div><div class="lab">Last Checked</div></div>' +
+        '</div>' +
+        '<div class="card-actions">' +
+          '<button data-role="toggle" class="stop" type="button">Pause</button>' +
+          '<button data-role="remove" class="ghost" type="button">Remove</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="section-label">Pulse Strip — one tick per check</div>' +
+      '<div class="pulse-strip" data-role="pulse"><div class="pulse-empty">Waiting for first check…</div></div>' +
+      '<div class="grid-2">' +
+        '<div class="inner-panel">' +
+          '<h3>Response Time Trend</h3>' +
+          '<div class="chart-wrap" data-role="chart"></div>' +
+        '</div>' +
+        '<div class="inner-panel">' +
+          '<h3>Analytics</h3>' +
+          '<div class="stat-grid" data-role="stats"></div>' +
+        '</div>' +
+      '</div>' +
+      '<span class="details-toggle" data-role="detailsToggle">+ Show detailed statistics</span>' +
+      '<div class="details-panel" data-role="detailsPanel">' +
+        '<div class="section-label">Latency Percentiles</div>' +
+        '<table class="pct-table" data-role="pctTable"></table>' +
+        '<div class="section-label">Latency Distribution</div>' +
+        '<div data-role="histogram" style="margin-bottom:16px;"></div>' +
+        '<div class="section-label">Downtime Incidents</div>' +
+        '<table class="incident-table" data-role="incidentTable"></table>' +
+      '</div>' +
+      '<div class="log">' +
+        '<h3 style="font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin:16px 0 10px;">Recent Checks</h3>' +
+        '<div class="log-scroll">' +
+          '<table>' +
+            '<thead><tr><th>Time</th><th>Status</th><th>Latency</th></tr></thead>' +
+            '<tbody data-role="logbody"><tr><td colspan="3" style="color:var(--text-dim)">No data yet</td></tr></tbody>' +
+          '</table>' +
+        '</div>' +
+      '</div>';
 
     monitor.dom = {
       card,
@@ -482,9 +462,14 @@
       toggle: card.querySelector('[data-role="toggle"]'),
       remove: card.querySelector('[data-role="remove"]'),
       pulse: card.querySelector('[data-role="pulse"]'),
-      chartCanvas: card.querySelector('[data-role="chart"]'),
+      chart: card.querySelector('[data-role="chart"]'),
       stats: card.querySelector('[data-role="stats"]'),
       logbody: card.querySelector('[data-role="logbody"]'),
+      detailsToggle: card.querySelector('[data-role="detailsToggle"]'),
+      detailsPanel: card.querySelector('[data-role="detailsPanel"]'),
+      pctTable: card.querySelector('[data-role="pctTable"]'),
+      histogram: card.querySelector('[data-role="histogram"]'),
+      incidentTable: card.querySelector('[data-role="incidentTable"]'),
     };
 
     monitor.dom.urltext.textContent = monitor.url;
@@ -492,34 +477,9 @@
 
     monitor.dom.toggle.addEventListener('click', () => toggleMonitor(monitor.id));
     monitor.dom.remove.addEventListener('click', () => removeMonitor(monitor.id));
-
-    const ctx = monitor.dom.chartCanvas.getContext('2d');
-    monitor.chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Latency (ms)',
-          data: [],
-          borderColor: '#5FFFB0',
-          backgroundColor: 'rgba(95,255,176,0.08)',
-          pointBackgroundColor: [],
-          pointRadius: 3,
-          tension: 0.25,
-          fill: true,
-          spanGaps: true,
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: { duration: 200 },
-        scales: {
-          x: { ticks: { color: '#7A9186', font: { family: 'ui-monospace', size: 10 } }, grid: { color: '#1D2A1E' } },
-          y: { ticks: { color: '#7A9186', font: { family: 'ui-monospace', size: 10 } }, grid: { color: '#1D2A1E' }, beginAtZero: true }
-        },
-        plugins: { legend: { display: false } }
-      }
+    monitor.dom.detailsToggle.addEventListener('click', () => {
+      const open = monitor.dom.detailsPanel.classList.toggle('open');
+      monitor.dom.detailsToggle.textContent = (open ? '- Hide' : '+ Show') + ' detailed statistics';
     });
 
     return card;
@@ -545,8 +505,45 @@
       { v: s.lastIncidentTime ? fmtTime(s.lastIncidentTime) : '—', l: 'Last Incident', cls: '' },
     ];
     monitor.dom.stats.innerHTML = items.map(it =>
-      `<div class="stat"><div class="v ${it.cls}">${it.v}</div><div class="l">${it.l}</div></div>`
+      '<div class="stat"><div class="v ' + it.cls + '">' + it.v + '</div><div class="l">' + it.l + '</div></div>'
     ).join('');
+    return s;
+  }
+
+  function renderDetails(monitor, s){
+    const p = (frac) => percentile(s.latencies, frac);
+    const rows = [
+      ['P50 (Median)', s.median],
+      ['P75', p(0.75)],
+      ['P90', p(0.90)],
+      ['P95', s.p95],
+      ['P99', p(0.99)],
+    ];
+    monitor.dom.pctTable.innerHTML =
+      '<thead><tr><th>Percentile</th><th>Latency</th></tr></thead><tbody>' +
+      rows.map(r => '<tr><td>' + r[0] + '</td><td>' + (r[1] !== null && r[1] !== undefined ? r[1] + ' ms' : '—') + '</td></tr>').join('') +
+      '</tbody>';
+
+    const hist = buildHistogram(s.latencies);
+    monitor.dom.histogram.innerHTML = hist.length
+      ? hist.map(b =>
+          '<div class="hist-row"><div class="hist-label">' + b.label + '</div>' +
+          '<div class="hist-bar-wrap"><div class="hist-bar" style="width:' + b.pct.toFixed(0) + '%"></div></div>' +
+          '<div class="hist-count">' + b.count + '</div></div>'
+        ).join('')
+      : '<div class="pulse-empty">Not enough data yet.</div>';
+
+    const incidents = extractIncidents(monitor.checks, monitor.intervalSec);
+    monitor.dom.incidentTable.innerHTML =
+      '<thead><tr><th>Start</th><th>End</th><th>Duration</th></tr></thead><tbody>' +
+      (incidents.length
+        ? incidents.slice(0, 20).map(inc =>
+            '<tr><td>' + fmtDateTime(inc.start) + '</td>' +
+            '<td' + (inc.ongoing ? ' class="ongoing"' : '') + '>' + (inc.ongoing ? 'ongoing' : fmtDateTime(inc.end)) + '</td>' +
+            '<td>' + fmtDuration(inc.durSec) + '</td></tr>'
+          ).join('')
+        : '<tr><td colspan="3" style="color:var(--text-dim)">No downtime recorded</td></tr>') +
+      '</tbody>';
   }
 
   function renderPulseStrip(monitor){
@@ -560,17 +557,13 @@
     monitor.dom.pulse.innerHTML = recent.map(c => {
       const h = c.status === 'up' ? Math.max(6, Math.round((c.ms / maxMs) * 44)) : 46;
       const tip = fmtTime(c.t) + ' — ' + (c.status === 'up' ? c.ms + 'ms' : 'down');
-      return `<div class="tick ${c.status}" style="height:${h}px" data-tip="${escapeHtml(tip)}"></div>`;
+      return '<div class="tick ' + c.status + '" style="height:' + h + 'px" data-tip="' + escapeHtml(tip) + '"></div>';
     }).join('');
     monitor.dom.pulse.scrollLeft = monitor.dom.pulse.scrollWidth;
   }
 
   function renderChart(monitor){
-    const recent = monitor.checks.slice(-MAX_CHART_POINTS);
-    monitor.chart.data.labels = recent.map(c => fmtTime(c.t));
-    monitor.chart.data.datasets[0].data = recent.map(c => c.status === 'up' ? c.ms : 0);
-    monitor.chart.data.datasets[0].pointBackgroundColor = recent.map(c => c.status === 'up' ? '#5FFFB0' : '#FF5C5C');
-    monitor.chart.update();
+    monitor.dom.chart.innerHTML = buildTrendSVG(monitor.checks);
   }
 
   function renderLog(monitor){
@@ -579,13 +572,11 @@
       monitor.dom.logbody.innerHTML = '<tr><td colspan="3" style="color:var(--text-dim)">No data yet</td></tr>';
       return;
     }
-    monitor.dom.logbody.innerHTML = recent.map(c => `
-      <tr>
-        <td>${fmtTime(c.t)}</td>
-        <td><span class="badge ${c.status}">${c.status === 'up' ? 'UP' : 'DOWN'}</span></td>
-        <td>${c.status === 'up' ? c.ms + ' ms' : '—'}</td>
-      </tr>
-    `).join('');
+    monitor.dom.logbody.innerHTML = recent.map(c =>
+      '<tr><td>' + fmtTime(c.t) + '</td>' +
+      '<td><span class="badge ' + c.status + '">' + (c.status === 'up' ? 'UP' : 'DOWN') + '</span></td>' +
+      '<td>' + (c.status === 'up' ? c.ms + ' ms' : '—') + '</td></tr>'
+    ).join('');
   }
 
   function renderOverview(){
@@ -595,11 +586,11 @@
       const m = monitors[id];
       const last = m.checks[m.checks.length-1];
       const state = m.monitoring ? (last ? last.status : 'checking') : 'idle';
-      return `<div class="chip" data-jump="${id}"><span class="cdot ${state}"></span><span class="u">${escapeHtml(m.url.replace(/^https?:\/\//,''))}</span></div>`;
+      return '<div class="chip" data-jump="' + id + '"><span class="cdot ' + state + '"></span><span class="u">' + escapeHtml(m.url.replace(/^https?:\/\//,'')) + '</span></div>';
     }).join('');
     overview.querySelectorAll('.chip').forEach(chip => {
       chip.addEventListener('click', () => {
-        const el = document.getElementById('mon-' + chip.dataset.jump);
+        const el = document.getElementById('mon-' + chip.getAttribute('data-jump'));
         if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
       });
     });
@@ -614,6 +605,7 @@
     if (!monitor.monitoring) return;
     setCardStatus(monitor, 'checking', 'checking…');
     const result = await probe(monitor.url);
+    if (!monitors[monitor.id]) return; // removed while probing
     const entry = { t: new Date(), status: result.status, ms: result.ms };
     monitor.checks.push(entry);
     if (monitor.checks.length > MAX_KEEP) monitor.checks = monitor.checks.slice(-MAX_KEEP);
@@ -624,7 +616,8 @@
 
     renderPulseStrip(monitor);
     renderChart(monitor);
-    renderStatGrid(monitor);
+    const s = renderStatGrid(monitor);
+    renderDetails(monitor, s);
     renderLog(monitor);
     renderOverview();
   }
@@ -652,7 +645,6 @@
     const monitor = monitors[id];
     if (!monitor) return;
     clearInterval(monitor.timer);
-    monitor.chart.destroy();
     monitor.dom.card.remove();
     delete monitors[id];
     if (Object.keys(monitors).length === 0) emptyState.style.display = '';
@@ -672,22 +664,28 @@
     renderOverview();
   }
 
-  addBtn.addEventListener('click', () => {
-    const target = normalizeUrl(urlInput.value);
+  function handleAddClick(){
+    showStatusLine('');
+    const raw = urlInput.value;
+    const target = normalizeUrl(raw);
     if (!target) {
       urlInput.style.borderColor = 'var(--red)';
-      setTimeout(() => urlInput.style.borderColor = '', 900);
+      showStatusLine('Enter a valid URL, e.g. example.com or https://example.com', true);
+      setTimeout(() => { urlInput.style.borderColor = ''; }, 1200);
       return;
     }
-    const intervalSec = parseInt(intervalSelect.value, 10);
-    addMonitor(target, intervalSec);
-    urlInput.value = '';
-    urlInput.focus();
-  });
+    const intervalSec = parseInt(intervalSelect.value, 10) || 10;
+    try {
+      addMonitor(target, intervalSec);
+      urlInput.value = '';
+      urlInput.focus();
+    } catch (err) {
+      showStatusLine('Something went wrong adding this tracker: ' + err.message, true);
+    }
+  }
 
-  urlInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') addBtn.click();
-  });
+  addBtn.addEventListener('click', handleAddClick);
+  urlInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddClick(); } });
 })();
 </script>
 </body>

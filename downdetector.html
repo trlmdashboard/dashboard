@@ -33,7 +33,7 @@
     min-height: 100vh;
     padding: 28px 20px 60px;
   }
-  .wrap { max-width: 980px; margin: 0 auto; }
+  .wrap { max-width: 1040px; margin: 0 auto; }
 
   .eyebrow {
     font-family: var(--mono);
@@ -53,7 +53,7 @@
     color: var(--text-dim);
     font-size: 13px;
     margin-bottom: 22px;
-    max-width: 560px;
+    max-width: 640px;
     line-height: 1.5;
   }
   .sub b { color: var(--text); font-weight: 600; }
@@ -62,7 +62,7 @@
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
-    margin-bottom: 22px;
+    margin-bottom: 18px;
   }
   input[type="text"] {
     flex: 1 1 320px;
@@ -105,55 +105,77 @@
   button:hover { background: rgba(95,255,176,0.08); }
   button.stop { border-color: var(--red-dim); color: var(--red); }
   button.stop:hover { background: rgba(255,92,92,0.08); }
+  button.ghost { border-color: var(--grid); color: var(--text-dim); padding: 12px 14px; }
+  button.ghost:hover { background: rgba(255,255,255,0.04); color: var(--text); }
   button:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  .hero {
+  /* Overview chip strip */
+  .overview {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .chip {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--panel); border: 1px solid var(--grid);
+    border-radius: 20px; padding: 6px 12px 6px 8px;
+    font-family: var(--mono); font-size: 11px; color: var(--text-dim);
+    cursor: pointer;
+  }
+  .chip .cdot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); flex: none; }
+  .chip .cdot.up { background: var(--green); }
+  .chip .cdot.down { background: var(--red); }
+  .chip .cdot.checking { background: var(--amber); }
+  .chip span.u { color: var(--text); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .empty-state {
+    text-align: center;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 13px;
+    border: 1px dashed var(--grid);
+    border-radius: 6px;
+    padding: 40px 20px;
+    margin-bottom: 20px;
+  }
+
+  .monitor-card {
+    background: var(--panel);
+    border: 1px solid var(--grid);
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 22px;
+  }
+
+  .card-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 16px;
-    background: var(--panel);
-    border: 1px solid var(--grid);
-    border-radius: 6px;
-    padding: 22px 24px;
-    margin-bottom: 18px;
+    gap: 10px;
+    margin-bottom: 16px;
   }
-  .status-block { display: flex; align-items: center; gap: 14px; }
-  .dot {
-    width: 14px; height: 14px; border-radius: 50%;
-    background: var(--text-dim);
-    box-shadow: 0 0 0 0 transparent;
-  }
+  .card-title { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--text-dim); flex: none; }
   .dot.up { background: var(--green); box-shadow: 0 0 14px 2px rgba(95,255,176,0.6); }
   .dot.down { background: var(--red); box-shadow: 0 0 14px 2px rgba(255,92,92,0.6); animation: blink 1s infinite; }
   .dot.checking { background: var(--amber); animation: blink 0.6s infinite; }
   @keyframes blink { 50% { opacity: 0.3; } }
 
-  .status-text { font-family: var(--mono); font-size: 22px; font-weight: 700; letter-spacing: 1px; }
-  .status-text.up { color: var(--green); }
-  .status-text.down { color: var(--red); }
-  .status-text.checking { color: var(--amber); }
-  .status-text.idle { color: var(--text-dim); }
+  .card-url { font-family: var(--mono); font-weight: 700; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card-meta { font-family: var(--mono); font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .card-actions { display: flex; gap: 8px; align-items: center; }
+  .card-actions button { padding: 8px 14px; font-size: 11px; }
 
-  .status-meta { font-family: var(--mono); font-size: 12px; color: var(--text-dim); margin-top: 2px; }
-
-  .hero-metrics { display: flex; gap: 28px; }
+  .hero-metrics { display: flex; gap: 24px; }
   .hero-metric { text-align: right; }
-  .hero-metric .val { font-family: var(--mono); font-size: 24px; font-weight: 700; }
-  .hero-metric .lab { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
+  .hero-metric .val { font-family: var(--mono); font-size: 20px; font-weight: 700; }
+  .hero-metric .lab { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
 
-  /* Pulse strip - signature element */
-  .pulse-panel {
-    background: var(--panel);
-    border: 1px solid var(--grid);
-    border-radius: 6px;
-    padding: 16px 18px 10px;
-    margin-bottom: 18px;
-  }
   .pulse-label {
     font-family: var(--mono); font-size: 11px; color: var(--text-dim);
-    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px;
+    letter-spacing: 2px; text-transform: uppercase; margin: 14px 0 8px;
   }
   .pulse-strip {
     display: flex;
@@ -187,50 +209,51 @@
 
   .grid-2 {
     display: grid;
-    grid-template-columns: 1.4fr 1fr;
+    grid-template-columns: 1.3fr 1fr;
     gap: 18px;
+    margin-top: 6px;
   }
-  @media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
+  @media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } }
 
-  .panel {
-    background: var(--panel);
+  .inner-panel {
+    background: var(--panel-2);
     border: 1px solid var(--grid);
     border-radius: 6px;
-    padding: 18px;
+    padding: 16px;
   }
-  .panel h2 {
+  .inner-panel h3 {
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 2px;
     text-transform: uppercase;
     color: var(--text-dim);
-    margin: 0 0 14px;
+    margin: 0 0 12px;
   }
-  .chart-wrap { height: 220px; }
+  .chart-wrap { height: 200px; }
 
   .stat-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
   }
+  @media (max-width: 480px) { .stat-grid { grid-template-columns: 1fr 1fr; } }
   .stat {
-    background: var(--panel-2);
+    background: var(--panel);
     border: 1px solid var(--grid);
     border-radius: 4px;
-    padding: 12px;
+    padding: 10px;
   }
-  .stat .v { font-family: var(--mono); font-size: 20px; font-weight: 700; }
-  .stat .l { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; margin-top: 3px; }
+  .stat .v { font-family: var(--mono); font-size: 16px; font-weight: 700; }
+  .stat .l { font-size: 9px; color: var(--text-dim); letter-spacing: 0.6px; text-transform: uppercase; margin-top: 3px; }
   .stat .v.green { color: var(--green); }
   .stat .v.red { color: var(--red); }
+  .stat .v.amber { color: var(--amber); }
 
-  .log {
-    margin-top: 18px;
-  }
+  .log { margin-top: 16px; }
   .log table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
   .log th { text-align: left; color: var(--text-dim); font-weight: 500; padding: 6px 8px; border-bottom: 1px solid var(--grid); text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
   .log td { padding: 6px 8px; border-bottom: 1px solid var(--grid); }
-  .log tr:first-child td { color: var(--text); }
+  .log tbody td { color: var(--text); }
   .badge { padding: 2px 6px; border-radius: 3px; font-size: 10px; letter-spacing: 1px; }
   .badge.up { background: rgba(95,255,176,0.12); color: var(--green); }
   .badge.down { background: rgba(255,92,92,0.12); color: var(--red); }
@@ -251,7 +274,7 @@
 <div class="wrap">
   <div class="eyebrow">// network reachability</div>
   <h1>PULSE — UPTIME CONSOLE</h1>
-  <p class="sub">Enter a URL to start polling it at a fixed interval. <b>Green</b> ticks mean the request resolved, <b>red</b> means it didn't (timeout, DNS failure, connection refused, or blocked). Browser cross-origin limits mean exact HTTP status codes aren't always visible — this measures <b>reachability</b>, not full server health.</p>
+  <p class="sub">Add one or more URLs to poll them independently on their own interval. <b>Green</b> ticks mean the request resolved, <b>red</b> means it didn't (timeout, DNS failure, connection refused, or blocked). Browser cross-origin limits mean exact HTTP status codes aren't always visible — this measures <b>reachability</b>, not full server health.</p>
 
   <div class="controls">
     <input type="text" id="urlInput" placeholder="https://example.com" autocomplete="off">
@@ -261,89 +284,36 @@
       <option value="30">Every 30s</option>
       <option value="60">Every 60s</option>
     </select>
-    <button id="toggleBtn">Start</button>
+    <button id="addBtn">+ Add URL</button>
   </div>
 
-  <div class="hero">
-    <div class="status-block">
-      <div class="dot idle" id="statusDot"></div>
-      <div>
-        <div class="status-text idle" id="statusText">STANDBY</div>
-        <div class="status-meta" id="statusMeta">no target set</div>
-      </div>
-    </div>
-    <div class="hero-metrics">
-      <div class="hero-metric">
-        <div class="val" id="lastMs">—</div>
-        <div class="lab">Latency (ms)</div>
-      </div>
-      <div class="hero-metric">
-        <div class="val" id="lastCheckTime">—</div>
-        <div class="lab">Last Checked</div>
-      </div>
-    </div>
-  </div>
+  <div class="overview" id="overview"></div>
 
-  <div class="pulse-panel">
-    <div class="pulse-label">Pulse Strip — one tick per check</div>
-    <div class="pulse-strip" id="pulseStrip">
-      <div class="pulse-empty">No checks yet. Enter a URL and hit Start.</div>
-    </div>
-  </div>
-
-  <div class="grid-2">
-    <div class="panel">
-      <h2>Response Time Trend</h2>
-      <div class="chart-wrap"><canvas id="chart"></canvas></div>
-    </div>
-    <div class="panel">
-      <h2>Analytics</h2>
-      <div class="stat-grid">
-        <div class="stat"><div class="v green" id="statUptime">—</div><div class="l">Uptime</div></div>
-        <div class="stat"><div class="v" id="statChecks">0</div><div class="l">Total Checks</div></div>
-        <div class="stat"><div class="v" id="statAvg">—</div><div class="l">Avg Latency</div></div>
-        <div class="stat"><div class="v" id="statMinMax">—</div><div class="l">Min / Max ms</div></div>
-        <div class="stat"><div class="v red" id="statIncidents">0</div><div class="l">Incidents</div></div>
-        <div class="stat"><div class="v red" id="statLongestDown">—</div><div class="l">Longest Outage</div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="panel log">
-    <h2>Recent Checks</h2>
-    <div class="log-scroll">
-      <table>
-        <thead><tr><th>Time</th><th>Status</th><th>Latency</th></tr></thead>
-        <tbody id="logBody"><tr><td colspan="3" style="color:var(--text-dim)">No data yet</td></tr></tbody>
-      </table>
-    </div>
+  <div id="monitorsContainer">
+    <div class="empty-state" id="emptyState">No trackers yet — add a URL above to start monitoring.</div>
   </div>
 
   <div class="footnote">
-    Runs entirely in your browser — no data leaves this page. Because most third-party sites don't send CORS headers, checks use a "no-cors" probe: the browser attempts the connection but can't read the response body or status code, only whether the request completed. This is a solid signal for "is something answering at this address" but can occasionally miss server-side errors on same-origin-friendly sites. History is kept for this session only and resets on page reload.
+    Runs entirely in your browser — no data leaves this page. Because most third-party sites don't send CORS headers, checks use a "no-cors" probe: the browser attempts the connection but can't read the response body or status code, only whether the request completed. This is a solid signal for "is something answering at this address" but can occasionally miss server-side errors on same-origin-friendly sites. Each tracker keeps its own independent history for this session only, and everything resets on page reload.
   </div>
 </div>
 
 <script>
 (function(){
-  let monitoring = false;
-  let timer = null;
-  let checks = []; // {t: Date, status: 'up'|'down', ms: number|null}
-  let intervalSec = 10;
-  let chart = null;
   const MAX_KEEP = 500;
   const MAX_CHART_POINTS = 60;
+  const MAX_PULSE_TICKS = 120;
+  const MAX_LOG_ROWS = 30;
+
+  let monitors = {}; // id -> monitor object
+  let nextId = 1;
 
   const urlInput = document.getElementById('urlInput');
   const intervalSelect = document.getElementById('intervalSelect');
-  const toggleBtn = document.getElementById('toggleBtn');
-  const statusDot = document.getElementById('statusDot');
-  const statusText = document.getElementById('statusText');
-  const statusMeta = document.getElementById('statusMeta');
-  const lastMs = document.getElementById('lastMs');
-  const lastCheckTime = document.getElementById('lastCheckTime');
-  const pulseStrip = document.getElementById('pulseStrip');
-  const logBody = document.getElementById('logBody');
+  const addBtn = document.getElementById('addBtn');
+  const monitorsContainer = document.getElementById('monitorsContainer');
+  const emptyState = document.getElementById('emptyState');
+  const overview = document.getElementById('overview');
 
   function normalizeUrl(v){
     v = v.trim();
@@ -352,11 +322,21 @@
     try { new URL(v); return v; } catch(e) { return null; }
   }
 
-  function setStatus(state, meta){
-    statusDot.className = 'dot ' + state;
-    statusText.className = 'status-text ' + state;
-    statusText.textContent = state === 'up' ? 'ONLINE' : state === 'down' ? 'OFFLINE' : state === 'checking' ? 'CHECKING' : 'STANDBY';
-    statusMeta.textContent = meta || '';
+  function fmtTime(d){
+    return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  }
+
+  function fmtDuration(seconds){
+    if (seconds == null || isNaN(seconds)) return '—';
+    if (seconds < 60) return Math.round(seconds) + 's';
+    if (seconds < 3600) return Math.round(seconds/60) + 'm ' + Math.round(seconds%60) + 's';
+    const h = Math.floor(seconds/3600);
+    const m = Math.round((seconds%3600)/60);
+    return h + 'h ' + m + 'm';
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
   async function probe(targetUrl){
@@ -374,13 +354,147 @@
     }
   }
 
-  function fmtTime(d){
-    return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  function computeStats(checks, intervalSec){
+    const total = checks.length;
+    const upChecks = checks.filter(c => c.status === 'up');
+    const downChecks = checks.filter(c => c.status === 'down');
+    const latencies = upChecks.map(c => c.ms).sort((a,b) => a-b);
+
+    const uptimePct = total ? (upChecks.length/total*100) : null;
+    const errorRatePct = total ? (downChecks.length/total*100) : null;
+
+    let avg = null, median = null, p95 = null, min = null, max = null, jitter = null;
+    if (latencies.length) {
+      avg = latencies.reduce((s,v)=>s+v,0) / latencies.length;
+      median = latencies[Math.floor(latencies.length/2)];
+      p95 = latencies[Math.min(latencies.length-1, Math.floor(latencies.length*0.95))];
+      min = latencies[0];
+      max = latencies[latencies.length-1];
+      const variance = latencies.reduce((s,v)=>s+Math.pow(v-avg,2),0) / latencies.length;
+      jitter = Math.sqrt(variance);
+    }
+
+    // streaks & incidents
+    let incidents = 0, prevStatus = null;
+    let curStreakType = null, curStreakLen = 0;
+    let longestDownStreak = 0, longestUpStreak = 0;
+    let runDown = 0, runUp = 0;
+    let downStreakLengths = [];
+    let lastIncidentTime = null;
+
+    checks.forEach((c, i) => {
+      if (c.status === 'down') {
+        if (prevStatus !== 'down') { incidents++; }
+        runDown++; runUp = 0;
+        longestDownStreak = Math.max(longestDownStreak, runDown);
+        lastIncidentTime = c.t;
+      } else {
+        if (prevStatus === 'down') downStreakLengths.push(runDown);
+        runUp++; runDown = 0;
+        longestUpStreak = Math.max(longestUpStreak, runUp);
+      }
+      prevStatus = c.status;
+    });
+    if (prevStatus === 'down') downStreakLengths.push(runDown);
+
+    if (checks.length) {
+      const last = checks[checks.length-1];
+      curStreakType = last.status;
+      for (let i = checks.length-1; i >= 0; i--) {
+        if (checks[i].status === curStreakType) curStreakLen++; else break;
+      }
+    }
+
+    const mttrSec = downStreakLengths.length
+      ? (downStreakLengths.reduce((s,v)=>s+v,0) / downStreakLengths.length) * intervalSec
+      : null;
+    const spanSec = total * intervalSec;
+    const mtbfSec = incidents > 0 ? spanSec / incidents : null;
+
+    return {
+      total, upCount: upChecks.length, downCount: downChecks.length,
+      uptimePct, errorRatePct,
+      avg, median, p95, min, max, jitter,
+      incidents, longestDownStreak, longestUpStreak,
+      longestDownSec: longestDownStreak * intervalSec,
+      longestUpSec: longestUpStreak * intervalSec,
+      curStreakType, curStreakSec: curStreakLen * intervalSec,
+      mttrSec, mtbfSec, lastIncidentTime,
+      spanSec
+    };
   }
 
-  function initChart(){
-    const ctx = document.getElementById('chart').getContext('2d');
-    chart = new Chart(ctx, {
+  function createMonitorCard(monitor){
+    const card = document.createElement('div');
+    card.className = 'monitor-card';
+    card.id = 'mon-' + monitor.id;
+    card.innerHTML = `
+      <div class="card-head">
+        <div class="card-title">
+          <div class="dot idle" data-role="dot"></div>
+          <div style="min-width:0;">
+            <div class="card-url" data-role="urltext"></div>
+            <div class="card-meta" data-role="meta">standby</div>
+          </div>
+        </div>
+        <div class="hero-metrics">
+          <div class="hero-metric"><div class="val" data-role="lastms">—</div><div class="lab">Latency</div></div>
+          <div class="hero-metric"><div class="val" data-role="lastcheck">—</div><div class="lab">Last Checked</div></div>
+        </div>
+        <div class="card-actions">
+          <button data-role="toggle" class="stop">Pause</button>
+          <button data-role="remove" class="ghost">Remove</button>
+        </div>
+      </div>
+
+      <div class="pulse-label">Pulse Strip — one tick per check</div>
+      <div class="pulse-strip" data-role="pulse"><div class="pulse-empty">Waiting for first check…</div></div>
+
+      <div class="grid-2">
+        <div class="inner-panel">
+          <h3>Response Time Trend</h3>
+          <div class="chart-wrap"><canvas data-role="chart"></canvas></div>
+        </div>
+        <div class="inner-panel">
+          <h3>Analytics</h3>
+          <div class="stat-grid" data-role="stats"></div>
+        </div>
+      </div>
+
+      <div class="log">
+        <h3 style="font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin:16px 0 10px;">Recent Checks</h3>
+        <div class="log-scroll">
+          <table>
+            <thead><tr><th>Time</th><th>Status</th><th>Latency</th></tr></thead>
+            <tbody data-role="logbody"><tr><td colspan="3" style="color:var(--text-dim)">No data yet</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    monitor.dom = {
+      card,
+      dot: card.querySelector('[data-role="dot"]'),
+      urltext: card.querySelector('[data-role="urltext"]'),
+      meta: card.querySelector('[data-role="meta"]'),
+      lastms: card.querySelector('[data-role="lastms"]'),
+      lastcheck: card.querySelector('[data-role="lastcheck"]'),
+      toggle: card.querySelector('[data-role="toggle"]'),
+      remove: card.querySelector('[data-role="remove"]'),
+      pulse: card.querySelector('[data-role="pulse"]'),
+      chartCanvas: card.querySelector('[data-role="chart"]'),
+      stats: card.querySelector('[data-role="stats"]'),
+      logbody: card.querySelector('[data-role="logbody"]'),
+    };
+
+    monitor.dom.urltext.textContent = monitor.url;
+    monitor.dom.urltext.title = monitor.url;
+
+    monitor.dom.toggle.addEventListener('click', () => toggleMonitor(monitor.id));
+    monitor.dom.remove.addEventListener('click', () => removeMonitor(monitor.id));
+
+    const ctx = monitor.dom.chartCanvas.getContext('2d');
+    monitor.chart = new Chart(ctx, {
       type: 'line',
       data: {
         labels: [],
@@ -407,34 +521,65 @@
         plugins: { legend: { display: false } }
       }
     });
+
+    return card;
   }
 
-  function updateChart(){
-    const recent = checks.slice(-MAX_CHART_POINTS);
-    chart.data.labels = recent.map(c => fmtTime(c.t));
-    chart.data.datasets[0].data = recent.map(c => c.status === 'up' ? c.ms : 0);
-    chart.data.datasets[0].pointBackgroundColor = recent.map(c => c.status === 'up' ? '#5FFFB0' : '#FF5C5C');
-    chart.update();
+  function renderStatGrid(monitor){
+    const s = computeStats(monitor.checks, monitor.intervalSec);
+    const items = [
+      { v: s.uptimePct !== null ? s.uptimePct.toFixed(1) + '%' : '—', l: 'Uptime', cls: 'green' },
+      { v: s.errorRatePct !== null ? s.errorRatePct.toFixed(1) + '%' : '—', l: 'Error Rate', cls: 'red' },
+      { v: s.total, l: 'Total Checks', cls: '' },
+      { v: s.avg !== null ? Math.round(s.avg) + ' ms' : '—', l: 'Avg Latency', cls: '' },
+      { v: s.median !== null ? s.median + ' ms' : '—', l: 'Median', cls: '' },
+      { v: s.p95 !== null ? s.p95 + ' ms' : '—', l: 'P95 Latency', cls: 'amber' },
+      { v: (s.min !== null && s.max !== null) ? s.min + ' / ' + s.max : '—', l: 'Min / Max ms', cls: '' },
+      { v: s.jitter !== null ? Math.round(s.jitter) + ' ms' : '—', l: 'Jitter (σ)', cls: '' },
+      { v: s.incidents, l: 'Incidents', cls: 'red' },
+      { v: s.curStreakType ? fmtDuration(s.curStreakSec) : '—', l: s.curStreakType === 'down' ? 'Current Downtime' : 'Current Uptime', cls: s.curStreakType === 'down' ? 'red' : 'green' },
+      { v: fmtDuration(s.longestDownSec), l: 'Longest Outage', cls: 'red' },
+      { v: fmtDuration(s.longestUpSec), l: 'Longest Streak', cls: 'green' },
+      { v: s.mttrSec !== null ? fmtDuration(s.mttrSec) : '—', l: 'Avg Recovery (MTTR)', cls: 'amber' },
+      { v: s.mtbfSec !== null ? fmtDuration(s.mtbfSec) : '—', l: 'Avg Between Fails', cls: '' },
+      { v: s.lastIncidentTime ? fmtTime(s.lastIncidentTime) : '—', l: 'Last Incident', cls: '' },
+    ];
+    monitor.dom.stats.innerHTML = items.map(it =>
+      `<div class="stat"><div class="v ${it.cls}">${it.v}</div><div class="l">${it.l}</div></div>`
+    ).join('');
   }
 
-  function updatePulseStrip(){
+  function renderPulseStrip(monitor){
+    const checks = monitor.checks;
     if (checks.length === 0) {
-      pulseStrip.innerHTML = '<div class="pulse-empty">No checks yet. Enter a URL and hit Start.</div>';
+      monitor.dom.pulse.innerHTML = '<div class="pulse-empty">Waiting for first check…</div>';
       return;
     }
     const maxMs = Math.max(...checks.filter(c=>c.ms!=null).map(c=>c.ms), 1);
-    const recent = checks.slice(-120);
-    pulseStrip.innerHTML = recent.map(c => {
+    const recent = checks.slice(-MAX_PULSE_TICKS);
+    monitor.dom.pulse.innerHTML = recent.map(c => {
       const h = c.status === 'up' ? Math.max(6, Math.round((c.ms / maxMs) * 44)) : 46;
       const tip = fmtTime(c.t) + ' — ' + (c.status === 'up' ? c.ms + 'ms' : 'down');
-      return `<div class="tick ${c.status}" style="height:${h}px" data-tip="${tip}"></div>`;
+      return `<div class="tick ${c.status}" style="height:${h}px" data-tip="${escapeHtml(tip)}"></div>`;
     }).join('');
-    pulseStrip.scrollLeft = pulseStrip.scrollWidth;
+    monitor.dom.pulse.scrollLeft = monitor.dom.pulse.scrollWidth;
   }
 
-  function updateLog(){
-    const recent = checks.slice(-30).reverse();
-    logBody.innerHTML = recent.map(c => `
+  function renderChart(monitor){
+    const recent = monitor.checks.slice(-MAX_CHART_POINTS);
+    monitor.chart.data.labels = recent.map(c => fmtTime(c.t));
+    monitor.chart.data.datasets[0].data = recent.map(c => c.status === 'up' ? c.ms : 0);
+    monitor.chart.data.datasets[0].pointBackgroundColor = recent.map(c => c.status === 'up' ? '#5FFFB0' : '#FF5C5C');
+    monitor.chart.update();
+  }
+
+  function renderLog(monitor){
+    const recent = monitor.checks.slice(-MAX_LOG_ROWS).slice().reverse();
+    if (!recent.length) {
+      monitor.dom.logbody.innerHTML = '<tr><td colspan="3" style="color:var(--text-dim)">No data yet</td></tr>';
+      return;
+    }
+    monitor.dom.logbody.innerHTML = recent.map(c => `
       <tr>
         <td>${fmtTime(c.t)}</td>
         <td><span class="badge ${c.status}">${c.status === 'up' ? 'UP' : 'DOWN'}</span></td>
@@ -443,96 +588,106 @@
     `).join('');
   }
 
-  function updateStats(){
-    const total = checks.length;
-    const upChecks = checks.filter(c => c.status === 'up');
-    const downChecks = checks.filter(c => c.status === 'down');
-    const uptimePct = total ? ((upChecks.length / total) * 100).toFixed(1) : null;
-
-    document.getElementById('statUptime').textContent = uptimePct !== null ? uptimePct + '%' : '—';
-    document.getElementById('statChecks').textContent = total;
-
-    if (upChecks.length) {
-      const avg = Math.round(upChecks.reduce((s,c)=>s+c.ms,0) / upChecks.length);
-      const min = Math.min(...upChecks.map(c=>c.ms));
-      const max = Math.max(...upChecks.map(c=>c.ms));
-      document.getElementById('statAvg').textContent = avg + ' ms';
-      document.getElementById('statMinMax').textContent = min + ' / ' + max;
-    } else {
-      document.getElementById('statAvg').textContent = '—';
-      document.getElementById('statMinMax').textContent = '—';
-    }
-
-    // incidents = transitions from up (or start) into down
-    let incidents = 0;
-    let prevStatus = null;
-    let curDownStreak = 0;
-    let longestDownStreak = 0;
-    for (const c of checks) {
-      if (c.status === 'down') {
-        if (prevStatus !== 'down') incidents++;
-        curDownStreak++;
-        longestDownStreak = Math.max(longestDownStreak, curDownStreak);
-      } else {
-        curDownStreak = 0;
-      }
-      prevStatus = c.status;
-    }
-    document.getElementById('statIncidents').textContent = incidents;
-    document.getElementById('statLongestDown').textContent = longestDownStreak
-      ? (longestDownStreak * intervalSec) + 's'
-      : '—';
+  function renderOverview(){
+    const ids = Object.keys(monitors);
+    if (!ids.length) { overview.innerHTML = ''; return; }
+    overview.innerHTML = ids.map(id => {
+      const m = monitors[id];
+      const last = m.checks[m.checks.length-1];
+      const state = m.monitoring ? (last ? last.status : 'checking') : 'idle';
+      return `<div class="chip" data-jump="${id}"><span class="cdot ${state}"></span><span class="u">${escapeHtml(m.url.replace(/^https?:\/\//,''))}</span></div>`;
+    }).join('');
+    overview.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const el = document.getElementById('mon-' + chip.dataset.jump);
+        if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+      });
+    });
   }
 
-  async function runCheck(targetUrl){
-    setStatus('checking', targetUrl);
-    const result = await probe(targetUrl);
+  function setCardStatus(monitor, state, metaText){
+    monitor.dom.dot.className = 'dot ' + state;
+    monitor.dom.meta.textContent = metaText || '';
+  }
+
+  async function runCheck(monitor){
+    if (!monitor.monitoring) return;
+    setCardStatus(monitor, 'checking', 'checking…');
+    const result = await probe(monitor.url);
     const entry = { t: new Date(), status: result.status, ms: result.ms };
-    checks.push(entry);
-    if (checks.length > MAX_KEEP) checks = checks.slice(-MAX_KEEP);
+    monitor.checks.push(entry);
+    if (monitor.checks.length > MAX_KEEP) monitor.checks = monitor.checks.slice(-MAX_KEEP);
 
-    setStatus(result.status, targetUrl);
-    lastMs.textContent = result.status === 'up' ? result.ms : '—';
-    lastCheckTime.textContent = fmtTime(entry.t);
+    setCardStatus(monitor, result.status, result.status === 'up' ? 'reachable' : 'unreachable');
+    monitor.dom.lastms.textContent = result.status === 'up' ? result.ms : '—';
+    monitor.dom.lastcheck.textContent = fmtTime(entry.t);
 
-    updatePulseStrip();
-    updateChart();
-    updateStats();
-    updateLog();
+    renderPulseStrip(monitor);
+    renderChart(monitor);
+    renderStatGrid(monitor);
+    renderLog(monitor);
+    renderOverview();
   }
 
-  toggleBtn.addEventListener('click', () => {
-    if (!monitoring) {
-      const target = normalizeUrl(urlInput.value);
-      if (!target) {
-        urlInput.style.borderColor = 'var(--red)';
-        setTimeout(() => urlInput.style.borderColor = '', 900);
-        return;
-      }
-      intervalSec = parseInt(intervalSelect.value, 10);
-      monitoring = true;
-      toggleBtn.textContent = 'Stop';
-      toggleBtn.classList.add('stop');
-      urlInput.disabled = true;
-      intervalSelect.disabled = true;
-      runCheck(target);
-      timer = setInterval(() => runCheck(target), intervalSec * 1000);
+  function toggleMonitor(id){
+    const monitor = monitors[id];
+    if (!monitor) return;
+    if (monitor.monitoring) {
+      monitor.monitoring = false;
+      clearInterval(monitor.timer);
+      monitor.dom.toggle.textContent = 'Resume';
+      monitor.dom.toggle.classList.remove('stop');
+      setCardStatus(monitor, 'idle', 'paused');
     } else {
-      monitoring = false;
-      clearInterval(timer);
-      toggleBtn.textContent = 'Start';
-      toggleBtn.classList.remove('stop');
-      urlInput.disabled = false;
-      intervalSelect.disabled = false;
-      setStatus('idle', 'monitoring stopped');
+      monitor.monitoring = true;
+      monitor.dom.toggle.textContent = 'Pause';
+      monitor.dom.toggle.classList.add('stop');
+      runCheck(monitor);
+      monitor.timer = setInterval(() => runCheck(monitor), monitor.intervalSec * 1000);
     }
+    renderOverview();
+  }
+
+  function removeMonitor(id){
+    const monitor = monitors[id];
+    if (!monitor) return;
+    clearInterval(monitor.timer);
+    monitor.chart.destroy();
+    monitor.dom.card.remove();
+    delete monitors[id];
+    if (Object.keys(monitors).length === 0) emptyState.style.display = '';
+    renderOverview();
+  }
+
+  function addMonitor(url, intervalSec){
+    const id = String(nextId++);
+    const monitor = { id, url, intervalSec, checks: [], monitoring: true, timer: null };
+    monitors[id] = monitor;
+    emptyState.style.display = 'none';
+    const card = createMonitorCard(monitor);
+    monitorsContainer.appendChild(card);
+    setCardStatus(monitor, 'checking', 'starting…');
+    runCheck(monitor);
+    monitor.timer = setInterval(() => runCheck(monitor), intervalSec * 1000);
+    renderOverview();
+  }
+
+  addBtn.addEventListener('click', () => {
+    const target = normalizeUrl(urlInput.value);
+    if (!target) {
+      urlInput.style.borderColor = 'var(--red)';
+      setTimeout(() => urlInput.style.borderColor = '', 900);
+      return;
+    }
+    const intervalSec = parseInt(intervalSelect.value, 10);
+    addMonitor(target, intervalSec);
+    urlInput.value = '';
+    urlInput.focus();
   });
 
   urlInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') toggleBtn.click();
+    if (e.key === 'Enter') addBtn.click();
   });
-
-  initChart();
 })();
 </script>
 </body>

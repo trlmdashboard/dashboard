@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Website Load Tester</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --good: #4ade80;
+    --bad: #f87171;
+    --warn: #fbbf24;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  p.sub { color: var(--muted); margin-top: 0; }
+  .panel {
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 1px solid #334155;
+  }
+  .warning {
+    background: #451a03;
+    border: 1px solid var(--warn);
+    color: #fde68a;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  .warning strong { color: var(--warn); }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; margin-top: 12px; }
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    background: #0b1220;
+    color: var(--text);
+    font-size: 14px;
+  }
+  .row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .row > div { flex: 1; min-width: 140px; }
+  .checkbox-row { display: flex; align-items: flex-start; gap: 10px; margin-top: 16px; }
+  .checkbox-row input { width: auto; margin-top: 3px; }
+  .checkbox-row span { font-size: 13px; color: #fde68a; }
+  button {
+    margin-top: 18px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  #startBtn { background: var(--accent); color: #04263a; }
+  #stopBtn { background: var(--bad); color: #3a0404; margin-left: 10px; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-top: 16px; }
+  .stat { background: #0b1220; border-radius: 10px; padding: 14px; border: 1px solid #334155; }
+  .stat .val { font-size: 22px; font-weight: 700; }
+  .stat .label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .ok { color: var(--good); }
+  .err { color: var(--bad); }
+  #log {
+    height: 160px;
+    overflow-y: auto;
+    background: #0b1220;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--muted);
+    border: 1px solid #334155;
+    margin-top: 14px;
+  }
+  #log div.e { color: var(--bad); }
+  #log div.s { color: var(--good); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Website Load Tester</h1>
+  <p class="sub">Client-side load testing with capped concurrency and duration.</p>
+
+  <div class="warning">
+    <strong>Only test sites you own or have explicit written permission to test.</strong>
+    Sending high-volume requests to a website you don't control can be indistinguishable
+    from a denial-of-service attack and may be illegal in your jurisdiction (e.g. under
+    computer misuse laws). This tool intentionally caps concurrency and duration and
+    cannot bypass CORS or hide your origin.
+  </div>
+
+  <div class="panel">
+    <label>Target URL</label>
+    <input type="text" id="url" placeholder="https://your-own-site.com/">
+
+    <div class="row">
+      <div>
+        <label>Concurrent requests (max 30)</label>
+        <input type="number" id="concurrency" value="5" min="1" max="30">
+      </div>
+      <div>
+        <label>Duration in seconds (max 60)</label>
+        <input type="number" id="duration" value="10" min="1" max="60">
+      </div>
+      <div>
+        <label>Delay between waves (ms)</label>
+        <input type="number" id="delay" value="200" min="0" max="5000">
+      </div>
+    </div>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="consent">
+      <span>I confirm I own this website, or have explicit permission from the owner to load test it.</span>
+    </div>
+
+    <button id="startBtn">Start Test</button>
+    <button id="stopBtn" disabled>Stop</button>
+
+    <div class="stats">
+      <div class="stat"><div class="val" id="sent">0</div><div class="label">Requests Sent</div></div>
+      <div class="stat"><div class="val ok" id="success">0</div><div class="label">Succeeded</div></div>
+      <div class="stat"><div class="val err" id="failed">0</div><div class="label">Failed</div></div>
+      <div class="stat"><div class="val" id="rps">0</div><div class="label">Req / sec</div></div>
+      <div class="stat"><div class="val" id="avgLatency">0 ms</div><div class="label">Avg Latency</div></div>
+      <div class="stat"><div class="val" id="maxLatency">0 ms</div><div class="label">Max Latency</div></div>
+    </div>
+
+    <div id="log"></div>
+  </div>
+</div>
+
+<script>
+const MAX_CONCURRENCY = 30;
+const MAX_DURATION = 60;
+
+const urlInput = document.getElementById('url');
+const concurrencyInput = document.getElementById('concurrency');
+const durationInput = document.getElementById('duration');
+const delayInput = document.getElementById('delay');
+const consent = document.getElementById('consent');
+const startBtn = document.getElementById('startBtn');
+const stopBtn = document.getElementById('stopBtn');
+const logEl = document.getElementById('log');
+
+const sentEl = document.getElementById('sent');
+const successEl = document.getElementById('success');
+const failedEl = document.getElementById('failed');
+const rpsEl = document.getElementById('rps');
+const avgLatencyEl = document.getElementById('avgLatency');
+const maxLatencyEl = document.getElementById('maxLatency');
+
+let running = false;
+let stats = { sent: 0, success: 0, failed: 0, latencies: [] };
+let testStart = 0;
+
+function log(msg, cls) {
+  const d = document.createElement('div');
+  if (cls) d.className = cls;
+  d.textContent = msg;
+  logEl.appendChild(d);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function updateStats() {
+  sentEl.textContent = stats.sent;
+  successEl.textContent = stats.success;
+  failedEl.textContent = stats.failed;
+  const elapsedSec = Math.max((Date.now() - testStart) / 1000, 0.001);
+  rpsEl.textContent = (stats.sent / elapsedSec).toFixed(1);
+  if (stats.latencies.length) {
+    const avg = stats.latencies.reduce((a, b) => a + b, 0) / stats.latencies.length;
+    avgLatencyEl.textContent = Math.round(avg) + ' ms';
+    maxLatencyEl.textContent = Math.round(Math.max(...stats.latencies)) + ' ms';
+  }
+}
+
+async function fireRequest(url) {
+  const t0 = performance.now();
+  stats.sent++;
+  try {
+    // no-cors avoids hard failures on cross-origin responses but means
+    // we can't read status codes for third-party sites — that's expected.
+    await fetch(url, { mode: 'no-cors', cache: 'no-store' });
+    const t1 = performance.now();
+    stats.success++;
+    stats.latencies.push(t1 - t0);
+    log(`OK  ${Math.round(t1 - t0)}ms`, 's');
+  } catch (err) {
+    stats.failed++;
+    log(`ERR ${err.message}`, 'e');
+  }
+  updateStats();
+}
+
+async function runWave(url, concurrency) {
+  const proms = [];
+  for (let i = 0; i < concurrency; i++) {
+    proms.push(fireRequest(url));
+  }
+  await Promise.all(proms);
+}
+
+async function startTest() {
+  const url = urlInput.value.trim();
+  if (!url) { alert('Please enter a URL.'); return; }
+  if (!consent.checked) { alert('Please confirm you have permission to test this site.'); return; }
+  try { new URL(url); } catch { alert('Please enter a valid URL, including https://'); return; }
+
+  let concurrency = parseInt(concurrencyInput.value, 10) || 1;
+  let duration = parseInt(durationInput.value, 10) || 1;
+  const delay = Math.max(parseInt(delayInput.value, 10) || 0, 0);
+
+  concurrency = Math.min(concurrency, MAX_CONCURRENCY);
+  duration = Math.min(duration, MAX_DURATION);
+  concurrencyInput.value = concurrency;
+  durationInput.value = duration;
+
+  stats = { sent: 0, success: 0, failed: 0, latencies: [] };
+  logEl.innerHTML = '';
+  updateStats();
+
+  running = true;
+  testStart = Date.now();
+  startBtn.disabled = true;
+  stopBtn.disabled = false;
+  urlInput.disabled = true;
+
+  log(`Starting test: ${url} | concurrency=${concurrency} | duration=${duration}s`);
+
+  const endTime = testStart + duration * 1000;
+  while (running && Date.now() < endTime) {
+    await runWave(url, concurrency);
+    if (delay > 0) await new Promise(r => setTimeout(r, delay));
+  }
+
+  stopTest();
+}
+
+function stopTest() {
+  running = false;
+  startBtn.disabled = false;
+  stopBtn.disabled = true;
+  urlInput.disabled = false;
+  log('Test finished.');
+}
+
+startBtn.addEventListener('click', startTest);
+stopBtn.addEventListener('click', () => { running = false; log('Stopping…'); });
+</script>
+</body>
+</html>

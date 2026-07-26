@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Website / API Load Tester</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --good: #4ade80;
+    --bad: #f87171;
+    --warn: #fbbf24;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  p.sub { color: var(--muted); margin-top: 0; }
+  .panel {
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 1px solid #334155;
+  }
+  .warning {
+    background: #451a03;
+    border: 1px solid var(--warn);
+    color: #fde68a;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  .warning strong { color: var(--warn); }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; margin-top: 12px; }
+  input[type="text"], input[type="number"], select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    background: #0b1220;
+    color: var(--text);
+    font-size: 14px;
+  }
+  .row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .row > div { flex: 1; min-width: 140px; }
+  .mode-tabs { display: flex; gap: 8px; margin-top: 10px; }
+  .mode-tabs button {
+    flex: 1; margin: 0; padding: 10px; font-size: 13px; font-weight: 600;
+    background: #0b1220; color: var(--muted); border: 1px solid #334155; border-radius: 8px; cursor: pointer;
+  }
+  .mode-tabs button.active { background: var(--accent); color: #04263a; border-color: var(--accent); }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .checkbox-row { display: flex; align-items: flex-start; gap: 10px; margin-top: 16px; }
+  .checkbox-row input { width: auto; margin-top: 3px; }
+  .checkbox-row span { font-size: 13px; color: #fde68a; }
+  button.action {
+    margin-top: 18px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #startBtn { background: var(--accent); color: #04263a; }
+  #stopBtn { background: var(--bad); color: #3a0404; margin-left: 10px; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-top: 16px; }
+  .stat { background: #0b1220; border-radius: 10px; padding: 14px; border: 1px solid #334155; }
+  .stat .val { font-size: 22px; font-weight: 700; }
+  .stat .label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .ok { color: var(--good); }
+  .err { color: var(--bad); }
+  table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #334155; }
+  th { color: var(--muted); font-weight: 600; }
+  tr.fail-row td { color: var(--bad); }
+  #log {
+    height: 140px;
+    overflow-y: auto;
+    background: #0b1220;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--muted);
+    border: 1px solid #334155;
+    margin-top: 14px;
+  }
+  #log div.e { color: var(--bad); }
+  #log div.s { color: var(--good); }
+  #log div.i { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Website / API Load Tester</h1>
+  <p class="sub">Manual load, or automatic step-ramp to find the concurrency level where errors start.</p>
+
+  <div class="warning">
+    <strong>Only test URLs you own or have explicit written permission to test</strong> — including your own
+    Apps Script web app deployments. Firing high-volume requests at anything else is indistinguishable
+    from a denial-of-service attack and may be illegal. Limits below are capped intentionally: there is no
+    "unlimited" mode, because a page that fires unbounded requests is a DoS tool, not a test tool.
+  </div>
+
+  <div class="panel">
+    <label>Target URL (e.g. your Apps Script /exec web app URL)</label>
+    <input type="text" id="url" placeholder="https://script.google.com/macros/s/AKfycb.../exec">
+    <p class="hint">If this is cross-origin and doesn't send CORS headers, browsers will block reading the
+      status code — you'll still see timing, but errors may show as generic network failures.</p>
+
+    <div class="mode-tabs">
+      <button id="tabManual" class="active">Manual (fixed load)</button>
+      <button id="tabRamp">Step-Ramp (auto-find failing point)</button>
+    </div>
+
+    <!-- MANUAL MODE -->
+    <div id="manualPanel">
+      <div class="row">
+        <div>
+          <label>Concurrent requests (max 100)</label>
+          <input type="number" id="concurrency" value="20" min="1" max="100">
+        </div>
+        <div>
+          <label>Duration in seconds (max 300)</label>
+          <input type="number" id="duration" value="30" min="1" max="300">
+        </div>
+        <div>
+          <label>Delay between waves (ms)</label>
+          <input type="number" id="delay" value="150" min="0" max="5000">
+        </div>
+      </div>
+    </div>
+
+    <!-- RAMP MODE -->
+    <div id="rampPanel" style="display:none;">
+      <div class="row">
+        <div>
+          <label>Start concurrency</label>
+          <input type="number" id="rampStart" value="5" min="1" max="100">
+        </div>
+        <div>
+          <label>Step increment</label>
+          <input type="number" id="rampStep" value="10" min="1" max="50">
+        </div>
+        <div>
+          <label>Max concurrency (hard cap 100)</label>
+          <input type="number" id="rampMax" value="100" min="1" max="100">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Requests per stage</label>
+          <input type="number" id="rampStageRequests" value="20" min="1" max="200">
+        </div>
+        <div>
+          <label>Auto-stop error rate % (stop when a stage crosses this)</label>
+          <input type="number" id="rampErrorThreshold" value="20" min="1" max="100">
+        </div>
+        <div>
+          <label>Total test time cap (seconds, max 300)</label>
+          <input type="number" id="rampMaxDuration" value="180" min="10" max="300">
+        </div>
+      </div>
+      <p class="hint">Each stage fires "requests per stage" total calls at that stage's concurrency, measures
+        the error rate, then moves to the next stage. The test stops automatically once error rate crosses
+        your threshold, concurrency hits the max, or the time cap is reached — whichever comes first.</p>
+    </div>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="consent">
+      <span>I confirm I own this URL/service, or have explicit permission from the owner to load test it.</span>
+    </div>
+
+    <button class="action" id="startBtn">Start Test</button>
+    <button class="action" id="stopBtn" disabled>Stop</button>
+
+    <div class="stats">
+      <div class="stat"><div class="val" id="sent">0</div><div class="label">Requests Sent</div></div>
+      <div class="stat"><div class="val ok" id="success">0</div><div class="label">Succeeded</div></div>
+      <div class="stat"><div class="val err" id="failed">0</div><div class="label">Failed</div></div>
+      <div class="stat"><div class="val" id="rps">0</div><div class="label">Req / sec</div></div>
+      <div class="stat"><div class="val" id="avgLatency">0 ms</div><div class="label">Avg Latency</div></div>
+      <div class="stat"><div class="val" id="currentStage">-</div><div class="label">Current Stage</div></div>
+    </div>
+
+    <table id="stageTable" style="display:none;">
+      <thead>
+        <tr><th>Stage</th><th>Concurrency</th><th>Sent</th><th>OK</th><th>Failed</th><th>Error %</th><th>Avg Latency</th></tr>
+      </thead>
+      <tbody id="stageBody"></tbody>
+    </table>
+
+    <div id="log"></div>
+  </div>
+</div>
+
+<script>
+const MAX_CONCURRENCY = 100;
+const MAX_DURATION = 300;
+
+const urlInput = document.getElementById('url');
+const consent = document.getElementById('consent');
+const startBtn = document.getElementById('startBtn');
+const stopBtn = document.getElementById('stopBtn');
+const logEl = document.getElementById('log');
+const stageTable = document.getElementById('stageTable');
+const stageBody = document.getElementById('stageBody');
+
+const sentEl = document.getElementById('sent');
+const successEl = document.getElementById('success');
+const failedEl = document.getElementById('failed');
+const rpsEl = document.getElementById('rps');
+const avgLatencyEl = document.getElementById('avgLatency');
+const currentStageEl = document.getElementById('currentStage');
+
+const tabManual = document.getElementById('tabManual');
+const tabRamp = document.getElementById('tabRamp');
+const manualPanel = document.getElementById('manualPanel');
+const rampPanel = document.getElementById('rampPanel');
+
+let mode = 'manual';
+tabManual.addEventListener('click', () => setMode('manual'));
+tabRamp.addEventListener('click', () => setMode('ramp'));
+function setMode(m) {
+  mode = m;
+  tabManual.classList.toggle('active', m === 'manual');
+  tabRamp.classList.toggle('active', m === 'ramp');
+  manualPanel.style.display = m === 'manual' ? 'block' : 'none';
+  rampPanel.style.display = m === 'ramp' ? 'block' : 'none';
+}
+
+let running = false;
+let stats = { sent: 0, success: 0, failed: 0, latencies: [] };
+let testStart = 0;
+
+function log(msg, cls) {
+  const d = document.createElement('div');
+  if (cls) d.className = cls;
+  d.textContent = msg;
+  logEl.appendChild(d);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function updateStats() {
+  sentEl.textContent = stats.sent;
+  successEl.textContent = stats.success;
+  failedEl.textContent = stats.failed;
+  const elapsedSec = Math.max((Date.now() - testStart) / 1000, 0.001);
+  rpsEl.textContent = (stats.sent / elapsedSec).toFixed(1);
+  if (stats.latencies.length) {
+    const avg = stats.latencies.reduce((a, b) => a + b, 0) / stats.latencies.length;
+    avgLatencyEl.textContent = Math.round(avg) + ' ms';
+  }
+}
+
+// Real fetch with actual status code reading (no no-cors) — appropriate since
+// the person is testing their own endpoint (e.g. an Apps Script web app).
+async function fireRequest(url) {
+  const t0 = performance.now();
+  stats.sent++;
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    const t1 = performance.now();
+    stats.latencies.push(t1 - t0);
+    if (res.ok) {
+      stats.success++;
+      log(`OK  ${res.status}  ${Math.round(t1 - t0)}ms`, 's');
+      return true;
+    } else {
+      stats.failed++;
+      log(`FAIL ${res.status}  ${Math.round(t1 - t0)}ms`, 'e');
+      return false;
+    }
+  } catch (err) {
+    stats.failed++;
+    log(`ERR ${err.message}`, 'e');
+    return false;
+  } finally {
+    updateStats();
+  }
+}
+
+async function runWave(url, concurrency) {
+  const proms = [];
+  for (let i = 0; i < concurrency; i++) proms.push(fireRequest(url));
+  return Promise.all(proms);
+}
+
+function resetUI() {
+  stats = { sent: 0, success: 0, failed: 0, latencies: [] };
+  logEl.innerHTML = '';
+  stageBody.innerHTML = '';
+  stageTable.style.display = 'none';
+  currentStageEl.textContent = '-';
+  updateStats();
+}
+
+function validateCommon() {
+  const url = urlInput.value.trim();
+  if (!url) { alert('Please enter a URL.'); return null; }
+  if (!consent.checked) { alert('Please confirm you have permission to test this endpoint.'); return null; }
+  try { new URL(url); } catch { alert('Please enter a valid URL, including https://'); return null; }
+  return url;
+}
+
+async function startManual() {
+  const url = validateCommon();
+  if (!url) return;
+
+  let concurrency = Math.min(parseInt(document.getElementById('concurrency').value, 10) || 1, MAX_CONCURRENCY);
+  let duration = Math.min(parseInt(document.getElementById('duration').value, 10) || 1, MAX_DURATION);
+  const delay = Math.max(parseInt(document.getElementById('delay').value, 10) || 0, 0);
+
+  resetUI();
+  running = true;
+  testStart = Date.now();
+  toggleControls(true);
+  log(`Manual test: ${url} | concurrency=${concurrency} | duration=${duration}s`, 'i');
+
+  const endTime = testStart + duration * 1000;
+  while (running && Date.now() < endTime) {
+    await runWave(url, concurrency);
+    if (delay > 0) await new Promise(r => setTimeout(r, delay));
+  }
+  finishTest();
+}
+
+async function startRamp() {
+  const url = validateCommon();
+  if (!url) return;
+
+  let start = Math.min(parseInt(document.getElementById('rampStart').value, 10) || 1, MAX_CONCURRENCY);
+  const step = parseInt(document.getElementById('rampStep').value, 10) || 10;
+  const max = Math.min(parseInt(document.getElementById('rampMax').value, 10) || MAX_CONCURRENCY, MAX_CONCURRENCY);
+  const perStage = parseInt(document.getElementById('rampStageRequests').value, 10) || 20;
+  const errThreshold = parseInt(document.getElementById('rampErrorThreshold').value, 10) || 20;
+  const maxDuration = Math.min(parseInt(document.getElementById('rampMaxDuration').value, 10) || 180, MAX_DURATION);
+
+  resetUI();
+  stageTable.style.display = 'table';
+  running = true;
+  testStart = Date.now();
+  toggleControls(true);
+  log(`Step-ramp test: ${url} | start=${start} step=${step} max=${max} perStage=${perStage} errThreshold=${errThreshold}%`, 'i');
+
+  let concurrency = start;
+  let stageNum = 1;
+
+  while (running && concurrency <= max && (Date.now() - testStart) / 1000 < maxDuration) {
+    currentStageEl.textContent = `#${stageNum} (c=${concurrency})`;
+    log(`--- Stage ${stageNum}: concurrency ${concurrency} ---`, 'i');
+
+    const stageStats = { sent: 0, success: 0, failed: 0, latencies: [] };
+    let remaining = perStage;
+    while (running && remaining > 0) {
+      const batch = Math.min(concurrency, remaining);
+      const results = await runWave(url, batch);
+      results.forEach(ok => {
+        stageStats.sent++;
+        if (ok) stageStats.success++; else stageStats.failed++;
+      });
+      remaining -= batch;
+    }
+
+    const errorRate = stageStats.sent ? (stageStats.failed / stageStats.sent) * 100 : 0;
+    const avgLat = stats.latencies.length
+      ? Math.round(stats.latencies.slice(-stageStats.sent).reduce((a, b) => a + b, 0) / stageStats.sent)
+      : 0;
+
+    addStageRow(stageNum, concurrency, stageStats.sent, stageStats.success, stageStats.failed, errorRate, avgLat);
+
+    if (errorRate >= errThreshold) {
+      log(`Stopping: stage ${stageNum} hit ${errorRate.toFixed(1)}% errors (threshold ${errThreshold}%). This is your failing point.`, 'e');
+      break;
+    }
+
+    concurrency += step;
+    stageNum++;
+    if (!running) break;
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  finishTest();
+}
+
+function addStageRow(stageNum, concurrency, sent, ok, failed, errorRate, avgLat) {
+  const tr = document.createElement('tr');
+  if (errorRate > 0) tr.classList.add(errorRate >= 20 ? 'fail-row' : '');
+  tr.innerHTML = `<td>${stageNum}</td><td>${concurrency}</td><td>${sent}</td><td>${ok}</td><td>${failed}</td><td>${errorRate.toFixed(1)}%</td><td>${avgLat}ms</td>`;
+  stageBody.appendChild(tr);
+}
+
+function toggleControls(isRunning) {
+  startBtn.disabled = isRunning;
+  stopBtn.disabled = !isRunning;
+  urlInput.disabled = isRunning;
+}
+
+function finishTest() {
+  running = false;
+  toggleControls(false);
+  log('Test finished.', 'i');
+}
+
+startBtn.addEventListener('click', () => {
+  if (mode === 'manual') startManual();
+  else startRamp();
+});
+stopBtn.addEventListener('click', () => { running = false; log('Stopping…', 'i'); });
+</script>
+</body>
+</html>

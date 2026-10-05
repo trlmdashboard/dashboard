@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TRLM – SHG Member e-KYC Progress Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root{color-scheme:dark;--bg:#0e1420;--card:#171f30;--line:#26314a;--tx:#e6ebf5;--mut:#8a97b3;--ac:#4ea1ff;--ok:#34d399;--bad:#f87171;--warn:#fbbf24;--row:#ffffff0d}
+[data-theme=light]{color-scheme:light;--bg:#f3f5f9;--card:#ffffff;--line:#dbe1ec;--tx:#1b2438;--mut:#5b6882;--ac:#2563eb;--ok:#059669;--bad:#dc2626;--warn:#d97706;--row:#0000000a}
+[data-theme=black]{color-scheme:dark;--bg:#000000;--card:#0d0d0d;--line:#262626;--tx:#f2f2f2;--mut:#9a9a9a;--ac:#38bdf8;--ok:#4ade80;--bad:#fb7185;--warn:#facc15;--row:#ffffff0d}
+[data-theme=forest]{color-scheme:dark;--bg:#0d1a14;--card:#14271d;--line:#234232;--tx:#e4f2ea;--mut:#86a896;--ac:#34d399;--ok:#86efac;--bad:#f87171;--warn:#fcd34d;--row:#ffffff0d}
+[data-theme=purple]{color-scheme:dark;--bg:#14102b;--card:#1e1840;--line:#342c66;--tx:#ece9ff;--mut:#9d95cf;--ac:#a78bfa;--ok:#6ee7b7;--bad:#fb7185;--warn:#fbbf24;--row:#ffffff0d}
+[data-theme=ocean]{color-scheme:dark;--bg:#08202e;--card:#0e2f42;--line:#1b4a64;--tx:#e3f4fc;--mut:#86b4c9;--ac:#22d3ee;--ok:#4ade80;--bad:#fb7185;--warn:#fbbf24;--row:#ffffff0d}
+[data-theme=saffron]{color-scheme:light;--bg:#fff7ed;--card:#ffffff;--line:#f3d9bd;--tx:#3b2412;--mut:#8a6a4f;--ac:#ea580c;--ok:#15803d;--bad:#b91c1c;--warn:#b45309;--row:#0000000a}
+[data-theme=nord]{color-scheme:dark;--bg:#2e3440;--card:#3b4252;--line:#4c566a;--tx:#eceff4;--mut:#a3adc2;--ac:#88c0d0;--ok:#a3be8c;--bad:#bf616a;--warn:#ebcb8b;--row:#ffffff0d}
+[data-theme=dracula]{color-scheme:dark;--bg:#282a36;--card:#343746;--line:#44475a;--tx:#f8f8f2;--mut:#a9aed0;--ac:#bd93f9;--ok:#50fa7b;--bad:#ff5555;--warn:#f1fa8c;--row:#ffffff0d}
+[data-theme=sunset]{color-scheme:dark;--bg:#1f1410;--card:#2d1d16;--line:#4a3126;--tx:#fbeee6;--mut:#c2a090;--ac:#fb923c;--ok:#a3e635;--bad:#f43f5e;--warn:#fcd34d;--row:#ffffff0d}
+[data-theme=rose]{color-scheme:dark;--bg:#1f1017;--card:#2c1822;--line:#4a2a3b;--tx:#fdecf2;--mut:#c79ab0;--ac:#f472b6;--ok:#6ee7b7;--bad:#fb7185;--warn:#fde047;--row:#ffffff0d}
+[data-theme=graphite]{color-scheme:dark;--bg:#18181b;--card:#27272a;--line:#3f3f46;--tx:#fafafa;--mut:#a1a1aa;--ac:#f59e0b;--ok:#4ade80;--bad:#f87171;--warn:#fbbf24;--row:#ffffff0d}
+[data-theme=mint]{color-scheme:light;--bg:#effaf4;--card:#ffffff;--line:#cfe9da;--tx:#12301f;--mut:#5a7d69;--ac:#059669;--ok:#16a34a;--bad:#dc2626;--warn:#ca8a04;--row:#0000000a}
+[data-theme=sky]{color-scheme:light;--bg:#eef6ff;--card:#ffffff;--line:#cfe0f5;--tx:#12263f;--mut:#5b7392;--ac:#0284c7;--ok:#059669;--bad:#dc2626;--warn:#d97706;--row:#0000000a}
+[data-theme=lavender]{color-scheme:light;--bg:#f5f3ff;--card:#ffffff;--line:#ddd6fe;--tx:#2e1f5e;--mut:#7a6aa8;--ac:#7c3aed;--ok:#059669;--bad:#e11d48;--warn:#d97706;--row:#0000000a}
+[data-theme=solar]{color-scheme:light;--bg:#fdf6e3;--card:#fffaf0;--line:#e6dcc0;--tx:#073642;--mut:#657b83;--ac:#268bd2;--ok:#859900;--bad:#dc322f;--warn:#b58900;--row:#0000000a}
+.cp{float:right;margin-left:8px;padding:4px 9px;font-size:12px;text-transform:none;letter-spacing:0;font-weight:500}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ac);color:#fff;padding:10px 16px;border-radius:10px;font-weight:600;display:none;z-index:9;box-shadow:0 6px 20px #0006}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 system-ui,Segoe UI,Roboto,sans-serif}
+header{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+h1{font-size:18px;margin:0}h1 small{display:block;color:var(--mut);font-weight:400;font-size:12px}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+select,input,button{background:var(--card);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font:inherit}
+button{cursor:pointer}button:hover{border-color:var(--ac)}
+main{padding:16px 24px;max-width:none;width:100%;margin:0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:14px}
+.kpi,.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.kpi b{display:block;font-size:24px;margin-top:4px}.kpi span{color:var(--mut);font-size:12px}.kpi i{font-style:normal;font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:14px;margin-bottom:14px}
+.card h2{font-size:14px;margin:0 0 10px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+table{font-size:15px}
+.g2{grid-template-columns:minmax(0,1fr)}
+@media(min-width:1100px){.g2{grid-template-columns:repeat(2,minmax(0,1fr))}table{font-size:clamp(13.5px,.95vw,18px)}}
+@media(max-width:700px){table{font-size:12.5px}}
+.g2>.card{min-width:0}
+.chart{position:relative;height:280px}
+.tw{overflow:visible}
+table{border-collapse:collapse;width:100%}th,td{padding:.6em .45em;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--row)}
+.rb{display:inline-block;background:#0b1220;color:#f8fafc;border:1px solid var(--line);padding:2px 10px;border-radius:6px;margin-right:9px;font-weight:700;letter-spacing:.03em;text-transform:none}
+.rdate{float:right;margin-left:12px;color:var(--tx);font-weight:600;text-transform:none;letter-spacing:0}
+#tAll table{width:auto}
+#tAll th,#tAll td{padding:1px .45em}
+#tAll .trk{display:inline-block;width:60px;margin:0 0 0 8px;vertical-align:middle}
+.dt{overflow:visible!important;max-height:none!important}
+#tCAll table{width:auto}
+#tCAll th,#tCAll td{padding:1px .45em}
+#tCAll .trk{display:inline-block;width:60px;margin:0 0 0 8px;vertical-align:middle}
+.hm td,.hm th{text-align:center}.hm td:first-child,.hm th:first-child{text-align:left}
+.cins{margin:6px 0 0;padding-left:18px;line-height:1.7}.cins li{margin:0}
+.chd{font-size:16px;margin:0 0 10px}
+th.l,td.l{text-align:left}
+td.l{white-space:normal;overflow-wrap:anywhere}
+th{overflow-wrap:anywhere}
+th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+th{color:var(--mut);font-weight:600;background:var(--card);cursor:pointer;white-space:normal;line-height:1.25}
+.trk{display:block;width:100%;max-width:70px;height:9px;border-radius:5px;margin:5px 0 0 auto}
+.lg{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:2px 0 12px;color:var(--mut);font-size:13px}.lg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-2px}
+.up{color:var(--ok)}.dn{color:var(--bad)}.mu{color:var(--mut)}
+#msg{margin:16px 20px;padding:14px;border:1px solid var(--bad);border-radius:10px;color:var(--bad);display:none;white-space:pre-wrap}
+#load{padding:30px;text-align:center;color:var(--mut)}
+</style>
+</head>
+<body>
+<header>
+  <h1>e-KYC Progress Dashboard<small>SHG members with e-KYC Aadhaar ÷ total members (P02 ⨝ S01) · <span id="meta">loading…</span></small></h1>
+  <div class="ctl">
+    <label>Date <input type="date" id="selDate"></label><span id="dnote" class="mu" style="font-size:12px"></span>
+    <label>District <select id="selDist"></select></label>
+    <label>Trend window <select id="selWin"><option value="1">1 day</option><option value="3">3 days</option><option value="7" selected>7 days</option><option value="15">15 days</option><option value="30">30 days</option></select></label>
+    <label>Target % <input type="number" id="selTgt" value="90" min="1" max="100" step="1" style="width:72px"></label>
+    <label>Theme <select id="selTheme"><optgroup label="Dark"><option value="dark">Dark Navy</option><option value="black">Black (AMOLED)</option><option value="forest">Forest</option><option value="purple">Royal Purple</option><option value="ocean">Ocean</option><option value="nord">Nord</option><option value="dracula">Dracula</option><option value="sunset">Sunset</option><option value="rose">Rose</option><option value="graphite">Graphite Amber</option></optgroup><optgroup label="Light"><option value="light">Light</option><option value="saffron">Saffron</option><option value="mint">Mint</option><option value="sky">Sky Blue</option><option value="lavender">Lavender</option><option value="solar">Solarized Light</option></optgroup></select></label>
+    <button id="btnRef">↻ Refresh</button>
+  </div>
+</header>
+<div id="msg"></div>
+<div id="toast"></div>
+<div id="load">Loading data from Supabase…</div>
+<main id="app" style="display:none">
+  <div class="kpis" id="kpis"></div>
+  <div class="grid">
+    <div class="card"><h2>Cumulative progress (% e-KYC of members)</h2><div class="chart"><canvas id="cCum"></canvas></div></div>
+    <div class="card"><h2>Daily e-KYC added</h2><div class="chart"><canvas id="cDaily"></canvas></div></div>
+    <div class="card"><h2>Cumulative e-KYC vs total members</h2><div class="chart"><canvas id="cAbs"></canvas></div></div>
+    <div class="card"><h2>District-wise progress (selected date)</h2><div class="chart"><canvas id="cDist"></canvas></div></div>
+    <div class="card"><h2>Block % distribution</h2><div class="chart"><canvas id="cHist"></canvas></div></div>
+    <div class="card"><h2>Pending members by district</h2><div class="chart"><canvas id="cPend"></canvas></div></div>
+  </div>
+  <div class="lg"><b>Progress colour:</b><span><i style="background:var(--bad)"></i>up to 74%</span><span><i style="background:var(--warn)"></i>75% to below 90%</span><span><i style="background:var(--ok)"></i>90% to 100%</span></div>
+  <div class="grid g2">
+    <div class="card"><h2>🏆 Top 10 blocks</h2><div class="tw" id="tTop"></div></div>
+    <div class="card"><h2>⚠️ Lowest 10 blocks</h2><div class="tw" id="tLow"></div></div>
+    <div class="card"><h2>🚀 Fastest movers (last <span class="w"></span> days, e-KYC added)</h2><div class="tw" id="tFast"></div></div>
+    <div class="card"><h2>🛑 Stalled blocks (no gain in last <span class="w"></span> days)</h2><div class="tw" id="tStall"></div></div>
+    <div class="card"><h2>Last days summary</h2><div class="tw" id="tDays"></div></div>
+    <div class="card"><h2>District summary</h2><div class="tw" id="tDist"></div></div>
+  </div>
+  <div class="card" id="impSum" style="margin-bottom:14px"></div>
+  <div class="grid g2">
+    <div class="card"><h2>🧲 Blocks hampering overall progress (below overall average)</h2><div class="tw" id="tHamp"></div></div>
+    <div class="card"><h2>🐢 Slowest-moving blocks (last <span class="w"></span> days, target <span class="tg"></span>%)</h2><div class="tw" id="tSlow"></div></div>
+    <div class="card"><h2>🎯 Biggest impact on missing the <span class="tg"></span>% target (shortfall)</h2><div class="tw" id="tImp"></div></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <h2>District-wise block tables <input id="q" placeholder="search district / block…" style="float:right;text-transform:none;letter-spacing:0"> <button id="btnCsv" style="float:right;margin-right:8px;text-transform:none;letter-spacing:0">⬇ CSV</button></h2>
+  </div>
+  <div class="grid g2" id="distTables"></div>
+  <div class="card" style="margin-bottom:14px;width:fit-content;max-width:100%">
+    <h2>All blocks – click a column heading to sort <input id="qAll" placeholder="search district / block…" style="float:right;text-transform:none;letter-spacing:0"></h2>
+    <div class="tw dt" id="tAll"></div>
+  </div>
+  <section id="cadreSec" style="margin-top:26px">
+    <div class="card" style="margin-bottom:14px">
+      <h2 class="chd">👥 Cadre Profile Analysis <span class="mu" id="cMeta" style="font-size:12px;text-transform:none;letter-spacing:0;font-weight:400"></span>
+        <button id="cCsv" style="float:right;margin-left:8px;text-transform:none;letter-spacing:0">⬇ CSV</button>
+        <label style="float:right;margin-left:8px;text-transform:none;letter-spacing:0;font-weight:400">Min cadres for ranking <input type="number" id="cMin" value="10" min="0" step="5" style="width:70px"></label>
+        <label style="float:right;margin-left:8px;text-transform:none;letter-spacing:0;font-weight:400">Vertical <select id="cVert"></select></label>
+      </h2>
+      <div class="mu" style="font-size:12px">Source: cadre.lokos.in Cadre Profile Summary (Supabase table cadre_report). Uses the Date, District and Trend-window controls above. A cadre can belong to more than one vertical, so totals across verticals count each vertical assignment separately; "Unique cadres" is the unfiltered block total.</div>
+      <div id="cMsg" class="mu" style="margin-top:8px"></div>
+      <ul class="cins" id="cIns"></ul>
+    </div>
+    <div class="kpis" id="cKpis"></div>
+    <div class="grid">
+      <div class="card"><h2>Profile status by vertical</h2><div class="chart"><canvas id="cVS"></canvas></div></div>
+      <div class="card"><h2>District-wise profile filled / approved (% of cadres)</h2><div class="chart"><canvas id="cDF"></canvas></div></div>
+      <div class="card"><h2>Share of cadres by vertical</h2><div class="chart"><canvas id="cSh"></canvas></div></div>
+      <div class="card"><h2>Pending review by district</h2><div class="chart"><canvas id="cCP"></canvas></div></div>
+      <div class="card"><h2>Block profile-filled % distribution</h2><div class="chart"><canvas id="cCH"></canvas></div></div>
+      <div class="card"><h2>Trend (% of cadres)</h2><div class="chart"><canvas id="cTr"></canvas></div></div>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h2>Vertical summary</h2><div class="tw" id="tCVert"></div></div>
+      <div class="card"><h2>District summary</h2><div class="tw" id="tCDist"></div></div>
+      <div class="card"><h2>District × vertical: profile filled %</h2><div class="tw hm" id="tCHeat"></div></div>
+      <div class="card"><h2>Last days summary</h2><div class="tw" id="tCDays"></div></div>
+      <div class="card"><h2>🏆 Top 10 blocks (profile filled %)</h2><div class="tw" id="tCTop"></div></div>
+      <div class="card"><h2>⚠️ Lowest 10 blocks (profile filled %)</h2><div class="tw" id="tCLow"></div></div>
+      <div class="card"><h2>⏳ Review backlog: most pending with BPM</h2><div class="tw" id="tCPend"></div></div>
+      <div class="card"><h2>🎯 Biggest gap: profiles not yet filled</h2><div class="tw" id="tCGap"></div></div>
+      <div class="card"><h2>🚫 Blocks with rejected profiles</h2><div class="tw" id="tCRej"></div></div>
+    </div>
+    <div class="card" style="margin:14px 0;width:fit-content;max-width:100%">
+      <h2>Cadre – all blocks, click a column heading to sort <input id="qC" placeholder="search district / block…" style="float:right;text-transform:none;letter-spacing:0"></h2>
+      <div class="tw dt" id="tCAll"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ---- Supabase connection (publishable/anon key – safe for browser, needs a SELECT RLS policy) ---- */
+const CFG = {
+  url: 'https://jgmwkcvxdhjilrtuqgza.supabase.co',
+  key: 'sb_publishable_G9WJ3Oi1s0Gj0clYZuTnoQ_MLb5R7H5',
+  p02: 'P02', s01: 'S01', cad: 'cadre_report'
+};
+
+const $ = id => document.getElementById(id);
+const today = () => { const d=new Date(), z=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`; };
+// date actually used: latest available report date on/before the picked calendar date (or the first one)
+const effDate = () => { const v=$('selDate').value; if(!v) return DATES[DATES.length-1]; const ok=DATES.filter(d=>d<=v); return ok.length?ok[ok.length-1]:DATES[0]; };
+const nf = n => Number(n||0).toLocaleString('en-IN');
+const pf = n => (isFinite(n)?n:0).toFixed(2)+'%';
+const norm = s => String(s||'').trim().toUpperCase().replace(/\s+/g,' ');
+const pct = (a,b) => b>0 ? a/b*100 : 0;
+const sgn = (n,f=nf) => n>0?`<span class="up">▲ ${f(n)}</span>`:n<0?`<span class="dn">▼ ${f(Math.abs(n))}</span>`:`<span class="mu">–</span>`;
+
+let ROWS=[], DATES=[], charts={}, sortKey='d', sortDir=1;
+let CROWS=[], CDATES=[], CERR='', cKey='d', cDir=1;
+
+async function fetchAll(table, cols){
+  let out=[], from=0, step=1000;
+  while(true){
+    const url=`${CFG.url}/rest/v1/${encodeURIComponent(table)}?select=${cols}&order=report_date.asc,district_name.asc,block_name.asc&limit=${step}&offset=${from}`;
+    const r=await fetch(url,{headers:{apikey:CFG.key,Authorization:'Bearer '+CFG.key}});
+    if(!r.ok) throw new Error(`${table}: HTTP ${r.status}\n${await r.text()}`);
+    const d=await r.json(); out=out.concat(d);
+    if(d.length<step) break; from+=step;
+  }
+  return out;
+}
+
+async function load(){
+  $('msg').style.display='none'; $('load').style.display='block'; $('app').style.display='none';
+  try{
+    const [p,s]=await Promise.all([
+      fetchAll(CFG.p02,'report_date,district_name,block_name,total_shgs,total_members'),
+      fetchAll(CFG.s01,'report_date,district_name,block_name,with_ekyc_aadhaar')
+    ]);
+    // JOIN: district_name + block_name (+ report_date, since both tables are date-wise)
+    const sm=new Map();
+    s.forEach(r=>sm.set([r.report_date,norm(r.district_name),norm(r.block_name)].join('|'),+r.with_ekyc_aadhaar||0));
+    ROWS=[];
+    p.forEach(r=>{
+      const k=[r.report_date,norm(r.district_name),norm(r.block_name)].join('|');
+      if(!sm.has(k)) return;
+      const mem=+r.total_members||0, ek=sm.get(k);
+      ROWS.push({date:r.report_date,d:norm(r.district_name),b:norm(r.block_name),shg:+r.total_shgs||0,mem,ek,pct:pct(ek,mem)});
+    });
+    if(!ROWS.length) throw new Error(`No matching rows. P02 rows: ${p.length}, S01 rows: ${s.length}.\nCheck that both tables have data for the same report_date + district_name + block_name, and that RLS allows SELECT for the anon role.`);
+    CROWS=[]; CDATES=[]; CERR='';
+    try{
+      const c=await fetchAll(CFG.cad,'report_date,district_name,block_name,total_unique_cadres,thematic_total_unique_cadres,profile_filled,approved,pending,rejected,vertical_name');
+      CROWS=c.map(r=>({date:r.report_date,d:norm(r.district_name),b:norm(r.block_name),v:String(r.vertical_name||'').trim(),base:+r.total_unique_cadres||0,th:+r.thematic_total_unique_cadres||0,f:+r.profile_filled||0,a:+r.approved||0,p:+r.pending||0,r:+r.rejected||0}));
+      CDATES=[...new Set(CROWS.map(r=>r.date))].sort();
+      const vs=[...new Set(CROWS.map(r=>r.v))].sort(), cur=$('cVert').value;
+      $('cVert').innerHTML='<option value="">All verticals</option>'+vs.map(v=>`<option>${v}</option>`).join('');
+      if(vs.includes(cur)) $('cVert').value=cur;
+    }catch(e){CERR=e.message;}
+    DATES=[...new Set(ROWS.map(r=>r.date))].sort();
+    const ds=[...new Set(ROWS.map(r=>r.d))].sort();
+    $('selDate').min=DATES[0]; if(!$('selDate').value) $('selDate').value=today();
+    $('selDist').innerHTML='<option value="">All districts</option>'+ds.map(d=>`<option>${d}</option>`).join('');
+    $('meta').textContent=`${ROWS.length} joined rows · ${DATES.length} dates · ${DATES[0]} → ${DATES[DATES.length-1]}`;
+    $('load').style.display='none'; $('app').style.display='block';
+    render();
+  }catch(e){
+    $('load').style.display='none';
+    $('msg').style.display='block';
+    $('msg').textContent='Could not load data.\n\n'+e.message;
+  }
+}
+
+const filt = () => { const d=$('selDist').value; return d?ROWS.filter(r=>r.d===d):ROWS; };
+const agg = rows => { const m=rows.reduce((a,r)=>(a.mem+=r.mem,a.ek+=r.ek,a.shg+=r.shg,a),{mem:0,ek:0,shg:0}); m.pct=pct(m.ek,m.mem); return m; };
+
+function mk(id,cfg){
+  if(charts[id]) charts[id].destroy();
+  Chart.defaults.color=col('--mut'); Chart.defaults.borderColor=col('--line');
+  charts[id]=new Chart($(id),cfg);
+}
+const opt=(extra={})=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{boxWidth:10}}},...extra});
+
+function table(cols,rows){
+  return `<table><thead><tr>${cols.map(c=>`<th${c.l?' class="l"':''}>${c.h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${cols.map(c=>`<td${c.l?' class="l"':''}>${c.f(r)}</td>`).join('')}</tr>`).join('')||'<tr><td colspan="9" class="mu">No data</td></tr>'}</tbody></table>`;
+}
+const pcol = p => col(p<75?'--bad':p<90?'--warn':'--ok');
+const pbar = p => {const c=pcol(p),w=Math.max(2,Math.min(100,p)).toFixed(1),l=col('--line');return `<span style="color:${c};font-weight:600">${pf(p)}</span><span class="trk" style="background:linear-gradient(to right,${c} ${w}%,${l} ${w}%)"></span>`;};
+
+function render(){
+  const date=effDate(), W=+$('selWin').value;
+  const picked=$('selDate').value;
+  $('dnote').textContent=picked&&picked!==date?`No data for ${picked} – showing latest available: ${date}`:'';
+  document.querySelectorAll('.w').forEach(e=>e.textContent=W);
+  document.querySelectorAll('.rdate').forEach(e=>e.textContent=e.closest('#cadreSec')?cDateLabel():dateLabel());
+  const rows=filt();
+  const dates=DATES.filter(d=>d<=date);
+  const i=dates.length-1;
+  const prevDate=dates[Math.max(0,i-1)], winDate=dates[Math.max(0,i-W)];
+
+  // per-date totals for the (district-filtered) selection
+  const perDate=dates.map(d=>({date:d,...agg(rows.filter(r=>r.date===d))}));
+  perDate.forEach((t,k)=>{t.gain=k?t.ek-perDate[k-1].ek:0; t.pp=k?t.pct-perDate[k-1].pct:0;});
+  const cur=perDate[i], prev=perDate[Math.max(0,i-1)], win=perDate[Math.max(0,i-W)];
+  const avgRate=(cur.ek-win.ek)/Math.max(1,(new Date(cur.date)-new Date(win.date))/864e5);
+  const pending=cur.mem-cur.ek, eta=avgRate>0?Math.ceil(pending/avgRate):null;
+
+  // block-level snapshot at selected date with change vs window start
+  const now=rows.filter(r=>r.date===date);
+  const old=new Map(rows.filter(r=>r.date===winDate).map(r=>[r.d+'|'+r.b,r]));
+  const bl=now.map(r=>{const o=old.get(r.d+'|'+r.b);return{...r,gain:o?r.ek-o.ek:0,ppGain:o?r.pct-o.pct:0,pending:r.mem-r.ek};});
+
+  $('kpis').innerHTML=[
+    ['Blocks',nf(now.length),`${new Set(now.map(r=>r.d)).size} districts`],
+    ['Total SHGs',nf(cur.shg),''],
+    ['Total members',nf(cur.mem),''],
+    ['With e-KYC',nf(cur.ek),`Pending ${nf(pending)}`],
+    ['Overall progress',pf(cur.pct),sgn(cur.pct-prev.pct,pf)+' vs prev. date'],
+    ['Added (latest day)',nf(cur.gain),'vs prev. date '+prevDate],
+    [`Added (last ${W}d)`,nf(cur.ek-win.ek),`≈ ${nf(Math.round(avgRate))}/day`],
+    ['Est. days to 100%',eta===null?'—':nf(eta),'at current '+W+'d pace']
+  ].map(k=>`<div class="kpi"><span>${k[0]}</span><b>${k[1]}</b><i class="mu">${k[2]}</i></div>`).join('');
+
+  const labels=perDate.map(t=>t.date);
+  mk('cCum',{type:'line',data:{labels,datasets:[{label:'% e-KYC',data:perDate.map(t=>+t.pct.toFixed(2)),borderColor:col('--ac'),backgroundColor:col('--ac')+'33',fill:true,tension:.25}]},options:opt()});
+  mk('cDaily',{type:'bar',data:{labels,datasets:[{label:'Added that day',data:perDate.map(t=>t.gain),backgroundColor:col('--ok')}]},options:opt()});
+  mk('cAbs',{type:'line',data:{labels,datasets:[{label:'Total members',data:perDate.map(t=>t.mem),borderColor:col('--warn'),tension:.25},{label:'With e-KYC',data:perDate.map(t=>t.ek),borderColor:col('--ok'),tension:.25}]},options:opt()});
+
+  // district aggregates at date (ignores district filter so comparison is always visible)
+  const allNow=ROWS.filter(r=>r.date===date);
+  const dm={}; allNow.forEach(r=>{(dm[r.d]??={d:r.d,mem:0,ek:0,blocks:0}); dm[r.d].mem+=r.mem; dm[r.d].ek+=r.ek; dm[r.d].blocks++;});
+  const dOld={}; ROWS.filter(r=>r.date===winDate).forEach(r=>{dOld[r.d]=(dOld[r.d]||0)+r.ek;});
+  const dl=Object.values(dm).map(x=>({...x,pct:pct(x.ek,x.mem),pending:x.mem-x.ek,gain:x.ek-(dOld[x.d]||0)})).sort((a,b)=>b.pct-a.pct);
+  mk('cDist',{type:'bar',data:{labels:dl.map(x=>x.d),datasets:[{label:'% e-KYC',data:dl.map(x=>+x.pct.toFixed(2)),backgroundColor:col('--ac')}]},options:opt({indexAxis:'y'})});
+  const dp=[...dl].sort((a,b)=>b.pending-a.pending);
+  mk('cPend',{type:'bar',data:{labels:dp.map(x=>x.d),datasets:[{label:'Pending members',data:dp.map(x=>x.pending),backgroundColor:col('--bad')}]},options:opt({indexAxis:'y'})});
+
+  // histogram
+  const bins=Array(10).fill(0); bl.forEach(r=>bins[Math.min(9,Math.floor(r.pct/10))]++);
+  mk('cHist',{type:'bar',data:{labels:bins.map((_,k)=>`${k*10}-${k*10+10}%`),datasets:[{label:'Blocks',data:bins,backgroundColor:col('--warn')}]},options:opt()});
+
+  const base=[{h:'#',f:r=>r._i},{h:'District',f:r=>r.d,l:1},{h:'Block',f:r=>`<b>${r.b}</b>`,l:1},{h:'Members',f:r=>nf(r.mem)},{h:'e-KYC',f:r=>nf(r.ek)},{h:'Progress',f:r=>pbar(r.pct)}];
+  const num=a=>a.map((r,k)=>({...r,_i:k+1}));
+  const valid=bl.filter(r=>r.mem>0);
+  const byPct=[...valid].sort((a,b)=>b.pct-a.pct);
+  $('tTop').innerHTML=table(base,num(byPct.slice(0,10)));
+  $('tLow').innerHTML=table(base,num(byPct.slice(-10).reverse()));
+  const gc={h:`Added ${W}d`,f:r=>sgn(r.gain)};
+  $('tFast').innerHTML=table([...base,gc,{h:'Δ pp',f:r=>sgn(+r.ppGain.toFixed(2),n=>n.toFixed(2))}],num([...bl].sort((a,b)=>b.gain-a.gain).slice(0,10)));
+  $('tStall').innerHTML=table([...base,{h:'Pending',f:r=>nf(r.pending)}],num(valid.filter(r=>r.gain<=0&&r.pct<100).sort((a,b)=>b.pending-a.pending).slice(0,15)));
+
+  $('tDays').innerHTML=table([
+    {h:'Date',f:r=>r.date},{h:'Members',f:r=>nf(r.mem)},{h:'e-KYC',f:r=>nf(r.ek)},{h:'%',f:r=>pf(r.pct)},
+    {h:'Added',f:r=>sgn(r.gain)},{h:'Δ pp',f:r=>sgn(+r.pp.toFixed(2),n=>n.toFixed(2))}
+  ],[...perDate].reverse().slice(0,15));
+  $('tDist').innerHTML=table([
+    {h:'#',f:r=>r._i},{h:'District',f:r=>r.d},{h:'Blocks',f:r=>r.blocks},{h:'Members',f:r=>nf(r.mem)},{h:'e-KYC',f:r=>nf(r.ek)},
+    {h:'%',f:r=>pbar(r.pct)},{h:'Pending',f:r=>nf(r.pending)},{h:`Added ${W}d`,f:r=>sgn(r.gain)}
+  ],num(dl));
+
+  /* ---- impact analysis ---- */
+  const T=Math.min(100,Math.max(1,+$('selTgt').value||90));
+  document.querySelectorAll('.tg').forEach(e=>e.textContent=T);
+  const ov=cur.pct, daysSpan=Math.max(0,Math.round((new Date(date)-new Date(winDate))/864e5));
+  const an=valid.map(r=>{
+    const need=Math.max(0,Math.ceil(r.mem*T/100-r.ek));
+    const perDay=daysSpan>0?r.gain/daysSpan:0, speed=daysSpan>0?r.ppGain/daysSpan:0;
+    const eta=need===0?0:(perDay>0?Math.ceil(need/perDay):null);
+    const dragMem=Math.max(0,Math.round(r.mem*(ov-r.pct)/100));
+    return {...r,need,perDay,speed,eta,dragMem,uplift:cur.mem?dragMem/cur.mem*100:0};
+  });
+  const totNeed=an.reduce((x,r)=>x+r.need,0), below=an.filter(r=>r.need>0);
+  const impAll=[...below].sort((x,y)=>y.need-x.need), imp=impAll.slice(0,10);
+  let cum=0; imp.forEach(r=>{cum+=r.need; r.share=totNeed?r.need/totNeed*100:0; r.cum=totNeed?cum/totNeed*100:0;});
+  const noGain=below.filter(r=>r.gain<=0).length;
+  $('impSum').innerHTML=`<b>Target ${T}%</b> · overall <b>${pf(ov)}</b> · shortfall <b>${nf(totNeed)}</b> members across <b>${below.length}</b> of ${an.length} blocks below target · top 10 blocks hold <b>${pf(imp.length?imp[imp.length-1].cum:0)}</b> of the shortfall · <b>${noGain}</b> below-target blocks added nothing in the last ${W} day(s)`;
+  const ids=[{h:'#',f:r=>r._i},{h:'District',f:r=>r.d,l:1},{h:'Block',f:r=>`<b>${r.b}</b>`,l:1},{h:'Members',f:r=>nf(r.mem)}];
+  $('tHamp').innerHTML=table([...ids,{h:'Progress',f:r=>pbar(r.pct)},{h:'vs overall',f:r=>sgn(+(r.pct-ov).toFixed(2),n=>n.toFixed(2)+' pp')},{h:'Members short',f:r=>nf(r.dragMem)},{h:'Lifts overall by',f:r=>'+'+r.uplift.toFixed(2)+' pp'}],num([...an].filter(r=>r.dragMem>0).sort((x,y)=>y.dragMem-x.dragMem).slice(0,10)));
+  $('tSlow').innerHTML=table([...ids,{h:'Progress',f:r=>pbar(r.pct)},{h:`Added ${W}d`,f:r=>sgn(r.gain)},{h:'Speed (pp/day)',f:r=>r.speed.toFixed(3)},{h:'ETA to target',f:r=>r.eta===null?'<span class="dn">no progress</span>':nf(r.eta)+' days'}],num([...below].sort((x,y)=>x.speed-y.speed||y.need-x.need).slice(0,10)));
+  $('tImp').innerHTML=table([...ids,{h:'e-KYC',f:r=>nf(r.ek)},{h:'Progress',f:r=>pbar(r.pct)},{h:`Shortfall to ${T}%`,f:r=>nf(r.need)},{h:'Share of gap',f:r=>pf(r.share)},{h:'Cumulative',f:r=>pf(r.cum)}],num(imp));
+  bl.forEach(r=>{r.need=Math.max(0,Math.ceil(r.mem*T/100-r.ek)); r.needShare=totNeed?r.need/totNeed*100:0;});
+  window._bl=bl; renderAll(); renderAllBlocks(); renderCadre();
+}
+
+function renderAllBlocks(){
+  const q=$('qAll').value.trim().toUpperCase(), W=$('selWin').value;
+  const a=(window._bl||[]).filter(r=>!q||(r.d+' '+r.b).includes(q));
+  a.sort((x,y)=>{const A=x[sortKey],B=y[sortKey];return (typeof A==='string'?A.localeCompare(B):A-B)*sortDir||x.d.localeCompare(y.d)||x.b.localeCompare(y.b);});
+  const cols=[['d','District',1],['b','Block',1],['shg','SHGs'],['mem','Members'],['ek','e-KYC'],['pending','Pending'],['pct','Progress'],['gain',`Added ${W}d`]];
+  $('tAll').innerHTML=`<table><thead><tr><th>#</th>${cols.map(c=>`<th data-k="${c[0]}"${c[2]?' class="l"':''}>${c[1]}${sortKey===c[0]?(sortDir>0?' ▲':' ▼'):' ↕'}</th>`).join('')}</tr></thead><tbody>${a.map((r,i)=>`<tr><td>${i+1}</td><td class="l">${r.d}</td><td class="l"><b>${r.b}</b></td><td>${nf(r.shg)}</td><td>${nf(r.mem)}</td><td>${nf(r.ek)}</td><td>${nf(r.pending)}</td><td>${pbar(r.pct)}</td><td>${sgn(r.gain)}</td></tr>`).join('')||'<tr><td colspan="9" class="mu">No blocks match</td></tr>'}</tbody></table>`;
+  $('tAll').querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{const k=th.dataset.k;sortDir=sortKey===k?-sortDir:(k==='d'||k==='b'?1:-1);sortKey=k;renderAllBlocks();});
+}
+
+function renderAll(){
+  const q=$('q').value.trim().toUpperCase(), W=$('selWin').value;
+  const a=(window._bl||[]).filter(r=>!q||(r.d+' '+r.b).includes(q));
+  const by={}; a.forEach(r=>(by[r.d]??=[]).push(r));
+  const cols=[
+    {h:'#',f:r=>r._i},{h:'District',f:r=>r.d,l:1},{h:'Block',f:r=>`<b>${r.b}</b>`,l:1},
+    {h:'Members',f:r=>nf(r.mem)},{h:'e-KYC',f:r=>nf(r.ek)},{h:'Progress',f:r=>pbar(r.pct)},
+    {h:`Added ${W}d`,f:r=>sgn(r.gain)},{h:'Δ pp',f:r=>sgn(+r.ppGain.toFixed(2),n=>n.toFixed(2))}
+  ];
+  const box=$('distTables'); box.innerHTML='';
+  const names=Object.keys(by).sort();
+  if(!names.length){box.innerHTML='<div class="card mu">No blocks match</div>';return;}
+  names.forEach(d=>{
+    const rows=by[d].sort((x,y)=>y.pct-x.pct).map((r,i)=>({...r,_i:i+1}));
+    const t=agg(rows);
+    const card=document.createElement('div'); card.className='card'; card.dataset.d=d;
+    card.innerHTML=`<h2>${d} · ${rows.length} blocks · ${pf(t.pct)} overall</h2><div class="tw dt">${table(cols,rows)}</div>`;
+    box.appendChild(card); decorateTitle(card); addCopyBtn(card); addLegend(card.querySelector('.tw'));
+  });
+}
+
+$('btnCsv').onclick=()=>{
+  const h=['report_date','district_name','block_name','total_shgs','total_members','with_ekyc_aadhaar','percentage_progress'];
+  const csv=[h.join(',')].concat((window._bl||[]).map(r=>[r.date,r.d,r.b,r.shg,r.mem,r.ek,r.pct.toFixed(2)].map(v=>`"${v}"`).join(','))).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`ekyc_progress_${effDate()}.csv`;a.click();
+};
+['selDate','selDist','selWin','selTgt'].forEach(id=>$(id).onchange=render);
+$('q').oninput=renderAll; $('qAll').oninput=renderAllBlocks; $('btnRef').onclick=load;
+
+/* ================= Cadre Profile Analysis ================= */
+const effC = () => { const v=$('selDate').value; if(!CDATES.length) return ''; if(!v) return CDATES[CDATES.length-1]; const ok=CDATES.filter(d=>d<=v); return ok.length?ok[ok.length-1]:CDATES[0]; };
+const cDateLabel = () => { const d=effC(); return d?'Date: '+d.split('-').reverse().join('-'):''; };
+const cs = (rows) => rows.reduce((a,r)=>(a.th+=r.th,a.f+=r.f,a.a+=r.a,a.p+=r.p,a.r+=r.r,a),{th:0,f:0,a:0,p:0,r:0});
+const cuniq = (rows) => { const m=new Map(); rows.forEach(r=>m.set(r.d+'|'+r.b,r.base)); return [...m.values()].reduce((x,y)=>x+(y||0),0); };
+const cfin = (t) => ({...t, nf:Math.max(0,t.th-t.f), fp:pct(t.f,t.th), ap:pct(t.a,t.th), apf:pct(t.a,t.f), pp:pct(t.p,t.f)});
+function cgroup(rows,keyFn,mk){
+  const m=new Map();
+  rows.forEach(r=>{const k=keyFn(r); if(!m.has(k)) m.set(k,[]); m.get(k).push(r);});
+  return [...m.entries()].map(([k,rs])=>({k,rows:rs,...cfin(cs(rs)),uniq:cuniq(rs),...(mk?mk(rs,k):{})}));
+}
+
+function renderCadre(){
+  const msg=$('cMsg'), ins=$('cIns');
+  const empties=['cKpis','tCVert','tCDist','tCHeat','tCDays','tCTop','tCLow','tCPend','tCGap','tCRej','tCAll'];
+  if(CERR||!CROWS.length){
+    msg.textContent=CERR?('Could not load cadre_report: '+CERR):'No cadre data yet. Run "Copy Cadre Report to Server" in the LokOS Toolkit extension.';
+    ins.innerHTML=''; $('cMeta').textContent=''; empties.forEach(id=>$(id).innerHTML='');
+    ['cVS','cDF','cSh','cCP','cCH','cTr'].forEach(id=>{if(charts[id]){charts[id].destroy();delete charts[id];}});
+    return;
+  }
+  msg.textContent='';
+  const date=effC(), W=+$('selWin').value, dsel=$('selDist').value, vsel=$('cVert').value, minC=Math.max(0,+$('cMin').value||0);
+  const dates=CDATES.filter(d=>d<=date), i=dates.length-1, winDate=dates[Math.max(0,i-W)];
+  $('cMeta').textContent=`${CROWS.length} rows · ${CDATES.length} date${CDATES.length>1?'s':''} · ${CDATES[0]}${CDATES.length>1?' → '+CDATES[CDATES.length-1]:''}${effC()!==$('selDate').value&&$('selDate').value?' · showing '+date:''}`;
+
+  const atD = (d) => CROWS.filter(r=>r.date===d);
+  const fD  = (rs) => dsel?rs.filter(r=>r.d===dsel):rs;
+  const fV  = (rs) => vsel?rs.filter(r=>r.v===vsel):rs;
+  const all = atD(date);
+  const selRows = fV(fD(all));              // district + vertical filters
+  const noV     = fD(all);                  // district only
+  const noD     = fV(all);                  // vertical only (district comparison)
+  const T = cfin(cs(selRows)), UQ = cuniq(fD(all));
+
+  /* previous / window totals */
+  const totAt = (d) => cfin(cs(fV(fD(atD(d)))));
+  const W0 = totAt(winDate), P0 = totAt(dates[Math.max(0,i-1)]);
+  const gainW = T.f-W0.f;
+
+  /* KPIs */
+  const lab = vsel?`Cadres in ${vsel}`:'Vertical assignments';
+  $('cKpis').innerHTML=[
+    ['Unique cadres',nf(UQ),`${new Set(fD(all).map(r=>r.d+'|'+r.b)).size} blocks`],
+    [lab,nf(T.th),vsel?'':`${UQ?(T.th/UQ).toFixed(2):'0'} per unique cadre`],
+    ['Profile filled',nf(T.f),pf(T.fp)+' of cadres'],
+    ['Not filled yet',nf(T.nf),pf(100-T.fp)+' of cadres'],
+    ['Approved',nf(T.a),pf(T.apf)+' of filled'],
+    ['Pending with BPM',nf(T.p),pf(T.pp)+' of filled'],
+    ['Rejected',nf(T.r),pf(pct(T.r,T.f))+' of filled'],
+    [`Filled added (last ${W}d)`,i>0?nf(gainW):'—',i>0?sgn(+(T.fp-P0.fp).toFixed(2),n=>n.toFixed(2)+' pp')+' vs prev. date':'needs 2+ dates']
+  ].map(k=>`<div class="kpi"><span>${k[0]}</span><b>${k[1]}</b><i class="mu">${k[2]}</i></div>`).join('');
+
+  /* groups */
+  const byV = cgroup(noV,r=>r.v).sort((a,b)=>b.th-a.th);
+  const byD = cgroup(noD,r=>r.d).sort((a,b)=>b.fp-a.fp);
+  const blocks = cgroup(selRows,r=>r.d+'|'+r.b,rs=>({d:rs[0].d,b:rs[0].b}));
+  blocks.forEach(b=>{b.cadres=b.uniq;});
+  const num=a=>a.map((r,k)=>({...r,_i:k+1}));
+
+  /* insights */
+  const L=[];
+  L.push(`Overall <b>${pf(T.fp)}</b> of ${nf(T.th)} ${vsel?vsel+' cadres':'vertical assignments'} have a filled profile; <b>${pf(T.apf)}</b> of those are approved, <b>${nf(T.p)}</b> are waiting for BPM review and <b>${nf(T.r)}</b> were rejected.`);
+  const dRank=byD.filter(x=>x.th>0);
+  if(dRank.length>1){const lo=dRank[dRank.length-1],hi=dRank[0]; L.push(`Best district: <b>${hi.k}</b> (${pf(hi.fp)} filled). Lowest: <b>${lo.k}</b> (${pf(lo.fp)} filled, ${nf(lo.nf)} not filled).`);}
+  const dBack=[...byD].sort((a,b)=>b.p-a.p)[0];
+  if(dBack&&dBack.p>0) L.push(`Largest review backlog: <b>${dBack.k}</b> with ${nf(dBack.p)} pending (${pf(T.p?dBack.p/T.p*100:0)} of all pending).`);
+  if(!vsel&&byV.length>1){const vv=byV.filter(x=>x.th>0).sort((a,b)=>a.fp-b.fp)[0]; if(vv) L.push(`Vertical with the lowest fill rate: <b>${vv.k}</b> (${pf(vv.fp)}).`);}
+  const zero=blocks.filter(b=>b.th>=minC&&b.th>0&&b.f===0).length, low50=blocks.filter(b=>b.th>=minC&&b.th>0&&b.fp<50).length;
+  L.push(`${nf(low50)} of ${nf(blocks.filter(b=>b.th>=minC&&b.th>0).length)} blocks (with at least ${minC} cadres) are below 50% profile filled; ${nf(zero)} have no profile filled at all.`);
+  const gapTotal=blocks.reduce((x,b)=>x+b.nf,0), top5=[...blocks].sort((a,b)=>b.nf-a.nf).slice(0,5).reduce((x,b)=>x+b.nf,0);
+  if(gapTotal>0) L.push(`The 5 blocks with the most unfilled profiles hold <b>${pf(top5/gapTotal*100)}</b> of the ${nf(gapTotal)} profiles still to be filled.`);
+  ins.innerHTML=L.map(x=>`<li>${x}</li>`).join('');
+
+  /* charts */
+  mk('cVS',{type:'bar',data:{labels:byV.map(x=>x.k),datasets:[
+    {label:'Approved',data:byV.map(x=>x.a),backgroundColor:col('--ok')},
+    {label:'Pending',data:byV.map(x=>x.p),backgroundColor:col('--warn')},
+    {label:'Rejected',data:byV.map(x=>x.r),backgroundColor:col('--bad')},
+    {label:'Not filled',data:byV.map(x=>x.nf),backgroundColor:col('--mut')}]},
+    options:opt({indexAxis:'y',scales:{x:{stacked:true},y:{stacked:true}}})});
+  mk('cDF',{type:'bar',data:{labels:byD.map(x=>x.k),datasets:[
+    {label:'Profile filled %',data:byD.map(x=>+x.fp.toFixed(2)),backgroundColor:col('--ac')},
+    {label:'Approved %',data:byD.map(x=>+x.ap.toFixed(2)),backgroundColor:col('--ok')}]},
+    options:opt({indexAxis:'y'})});
+  const vsAll=cgroup(noV,r=>r.v).sort((a,b)=>b.th-a.th), pal=[col('--ac'),col('--ok'),col('--warn'),col('--bad'),col('--mut'),'#a78bfa','#f472b6','#22d3ee'];
+  mk('cSh',{type:'doughnut',data:{labels:vsAll.map(x=>x.k),datasets:[{data:vsAll.map(x=>x.th),backgroundColor:vsAll.map((_,k)=>pal[k%pal.length]),borderColor:col('--card')}]},options:opt({plugins:{legend:{position:'right',labels:{boxWidth:10}}}})});
+  const dp=[...byD].sort((a,b)=>b.p-a.p);
+  mk('cCP',{type:'bar',data:{labels:dp.map(x=>x.k),datasets:[{label:'Pending with BPM',data:dp.map(x=>x.p),backgroundColor:col('--warn')}]},options:opt({indexAxis:'y'})});
+  const bins=Array(10).fill(0); blocks.filter(b=>b.th>0).forEach(b=>bins[Math.min(9,Math.floor(b.fp/10))]++);
+  mk('cCH',{type:'bar',data:{labels:bins.map((_,k)=>`${k*10}-${k*10+10}%`),datasets:[{label:'Blocks',data:bins,backgroundColor:col('--warn')}]},options:opt()});
+  const trend=dates.map(d=>({date:d,...totAt(d)}));
+  mk('cTr',{type:'line',data:{labels:trend.map(t=>t.date),datasets:[
+    {label:'Profile filled %',data:trend.map(t=>+t.fp.toFixed(2)),borderColor:col('--ac'),tension:.25,pointRadius:4},
+    {label:'Approved %',data:trend.map(t=>+t.ap.toFixed(2)),borderColor:col('--ok'),tension:.25,pointRadius:4}]},options:opt()});
+
+  /* tables */
+  const fb=r=>pbar(r.fp);
+  $('tCVert').innerHTML=table([
+    {h:'#',f:r=>r._i},{h:'Vertical',f:r=>`<b>${r.k}</b>`,l:1},{h:'Cadres',f:r=>nf(r.th)},{h:'Filled',f:r=>nf(r.f)},{h:'Filled %',f:fb},
+    {h:'Approved',f:r=>nf(r.a)},{h:'Pending',f:r=>nf(r.p)},{h:'Rejected',f:r=>nf(r.r)},{h:'Not filled',f:r=>nf(r.nf)}],num(vsAll));
+  $('tCDist').innerHTML=table([
+    {h:'#',f:r=>r._i},{h:'District',f:r=>`<b>${r.k}</b>`,l:1},{h:'Unique',f:r=>nf(r.uniq)},{h:'Cadres',f:r=>nf(r.th)},{h:'Filled %',f:fb},
+    {h:'Approved',f:r=>nf(r.a)},{h:'Pending',f:r=>nf(r.p)},{h:'Rejected',f:r=>nf(r.r)},{h:'Not filled',f:r=>nf(r.nf)}],num(byD));
+  /* heatmap: district x vertical (ignores vertical + district filters so the whole picture is visible) */
+  const vNames=[...new Set(all.map(r=>r.v))].sort(), dNames=[...new Set(all.map(r=>r.d))].sort();
+  const hm=new Map(); all.forEach(r=>{const k=r.d+'|'+r.v; const o=hm.get(k)||{th:0,f:0}; o.th+=r.th; o.f+=r.f; hm.set(k,o);});
+  const cell=(o)=>{ if(!o||!o.th) return '<span class="mu">–</span>'; const p=pct(o.f,o.th),c=pcol(p); return `<span style="color:${c};font-weight:600">${p.toFixed(1)}%</span>`; };
+  const rowT = (dd) => { const o={th:0,f:0}; all.filter(r=>r.d===dd).forEach(r=>{o.th+=r.th;o.f+=r.f;}); return o; };
+  const colT = (vv) => { const o={th:0,f:0}; all.filter(r=>r.v===vv).forEach(r=>{o.th+=r.th;o.f+=r.f;}); return o; };
+  const allT = {th:0,f:0}; all.forEach(r=>{allT.th+=r.th;allT.f+=r.f;});
+  $('tCHeat').innerHTML=`<table><thead><tr><th>District</th>${vNames.map(v=>`<th>${v}</th>`).join('')}<th>All</th></tr></thead><tbody>${
+    dNames.map(dd=>`<tr><td><b>${dd}</b></td>${vNames.map(v=>`<td>${cell(hm.get(dd+'|'+v))}</td>`).join('')}<td>${cell(rowT(dd))}</td></tr>`).join('')
+  }<tr><td><b>All</b></td>${vNames.map(v=>`<td>${cell(colT(v))}</td>`).join('')}<td>${cell(allT)}</td></tr></tbody></table>`;
+  $('tCDays').innerHTML=table([
+    {h:'Date',f:r=>r.date},{h:'Cadres',f:r=>nf(r.th)},{h:'Filled',f:r=>nf(r.f)},{h:'%',f:r=>pf(r.fp)},{h:'Added',f:r=>sgn(r.gain)},
+    {h:'Approved',f:r=>nf(r.a)},{h:'Pending',f:r=>nf(r.p)},{h:'Rejected',f:r=>nf(r.r)}],
+    trend.map((t,k)=>({...t,gain:k?t.f-trend[k-1].f:0})).reverse().slice(0,15));
+
+  const ids=[{h:'#',f:r=>r._i},{h:'District',f:r=>r.d,l:1},{h:'Block',f:r=>`<b>${r.b}</b>`,l:1},{h:'Cadres',f:r=>nf(r.th)}];
+  const ranked=blocks.filter(b=>b.th>=Math.max(1,minC));
+  const byFp=[...ranked].sort((a,b)=>b.fp-a.fp||b.th-a.th);
+  $('tCTop').innerHTML=table([...ids,{h:'Filled',f:r=>nf(r.f)},{h:'Filled %',f:fb},{h:'Approved',f:r=>nf(r.a)}],num(byFp.slice(0,10)));
+  $('tCLow').innerHTML=table([...ids,{h:'Filled',f:r=>nf(r.f)},{h:'Filled %',f:fb},{h:'Not filled',f:r=>nf(r.nf)}],num([...byFp].reverse().slice(0,10)));
+  $('tCPend').innerHTML=table([...ids,{h:'Filled',f:r=>nf(r.f)},{h:'Pending',f:r=>`<b>${nf(r.p)}</b>`},{h:'% of filled',f:r=>pf(r.pp)}],num([...blocks].filter(b=>b.p>0).sort((a,b)=>b.p-a.p).slice(0,10)));
+  const gapAll=[...blocks].filter(b=>b.nf>0).sort((a,b)=>b.nf-a.nf), gSum=gapAll.reduce((x,b)=>x+b.nf,0); let cum=0;
+  const gap=gapAll.slice(0,10).map(b=>{cum+=b.nf;return {...b,share:gSum?b.nf/gSum*100:0,cum:gSum?cum/gSum*100:0};});
+  $('tCGap').innerHTML=table([...ids,{h:'Filled %',f:fb},{h:'Not filled',f:r=>`<b>${nf(r.nf)}</b>`},{h:'Share of gap',f:r=>pf(r.share)},{h:'Cumulative',f:r=>pf(r.cum)}],num(gap));
+  $('tCRej').innerHTML=table([...ids,{h:'Filled',f:r=>nf(r.f)},{h:'Rejected',f:r=>`<b>${nf(r.r)}</b>`},{h:'Approved',f:r=>nf(r.a)}],num([...blocks].filter(b=>b.r>0).sort((a,b)=>b.r-a.r).slice(0,15)));
+
+  window._cbl=blocks; renderCadreAll();
+}
+
+function renderCadreAll(){
+  const q=$('qC').value.trim().toUpperCase();
+  const a=(window._cbl||[]).filter(r=>!q||(r.d+' '+r.b).includes(q));
+  a.sort((x,y)=>{const A=x[cKey],B=y[cKey];return (typeof A==='string'?A.localeCompare(B):A-B)*cDir||x.d.localeCompare(y.d)||x.b.localeCompare(y.b);});
+  const cols=[['d','District',1],['b','Block',1],['uniq','Unique'],['th','Cadres'],['f','Filled'],['fp','Filled %'],['a','Approved'],['p','Pending'],['r','Rejected'],['nf','Not filled']];
+  $('tCAll').innerHTML=`<table><thead><tr><th>#</th>${cols.map(c=>`<th data-k="${c[0]}"${c[2]?' class="l"':''}>${c[1]}${cKey===c[0]?(cDir>0?' ▲':' ▼'):' ↕'}</th>`).join('')}</tr></thead><tbody>${a.map((r,i)=>`<tr><td>${i+1}</td><td class="l">${r.d}</td><td class="l"><b>${r.b}</b></td><td>${nf(r.uniq)}</td><td>${nf(r.th)}</td><td>${nf(r.f)}</td><td>${pbar(r.fp)}</td><td>${nf(r.a)}</td><td>${nf(r.p)}</td><td>${nf(r.r)}</td><td>${nf(r.nf)}</td></tr>`).join('')||'<tr><td colspan="11" class="mu">No blocks match</td></tr>'}</tbody></table>`;
+  $('tCAll').querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{const k=th.dataset.k;cDir=cKey===k?-cDir:(k==='d'||k==='b'?1:-1);cKey=k;renderCadreAll();});
+}
+
+$('cVert').onchange=renderCadre; $('cMin').onchange=renderCadre; $('qC').oninput=renderCadreAll;
+$('cCsv').onclick=()=>{
+  const d=effC(); const h=['report_date','district_name','block_name','vertical_name','total_unique_cadres','thematic_total_unique_cadres','profile_filled','approved','pending','rejected'];
+  const csv=[h.join(',')].concat(CROWS.filter(r=>r.date===d).map(r=>[r.date,r.d,r.b,r.v,r.base,r.th,r.f,r.a,r.p,r.r].map(v=>`"${v}"`).join(','))).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`cadre_report_${d}.csv`;a.click();
+};
+
+/* ---- themes ---- */
+const col = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function applyTheme(t){ document.documentElement.dataset.theme=t; $('selTheme').value=t; try{localStorage.setItem('ekyc_theme',t)}catch(e){} }
+let _t='dark'; try{_t=localStorage.getItem('ekyc_theme')||'dark'}catch(e){}
+$('selTheme').onchange=e=>{applyTheme(e.target.value); if(ROWS.length) render();};
+
+/* ---- copy table as image (paste straight into WhatsApp) ---- */
+function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(toast._h);toast._h=setTimeout(()=>t.style.display='none',3200);}
+async function copyImg(card,btn){
+  const h=card.querySelector('h2').cloneNode(true);
+  h.querySelectorAll('.nocap,input,button,.rdate,.rb').forEach(e=>e.remove());
+  const title=h.textContent.replace(/\s+/g,' ').trim();
+  const inC=!!card.closest('#cadreSec');
+  const foot=inC?`TRLM · Cadre profile · ${effC()} · ${card.dataset.d||$('selDist').value||'All districts'} · ${$('cVert').value||'All verticals'}`:`TRLM · e-KYC progress · ${effDate()} · ${card.dataset.d||$('selDist').value||'All districts'}`;
+  const old=btn.textContent; btn.textContent='⏳'; btn.disabled=true;
+  try{
+    const canvas=await html2canvas(card,{backgroundColor:col('--card'),scale:2,onclone:(doc,el)=>{
+      el.querySelectorAll('.nocap,input,button').forEach(e=>e.remove());
+      el.querySelectorAll('.tw').forEach(t=>{t.style.maxHeight='none';t.style.overflow='visible';});
+      el.querySelectorAll('th').forEach(t=>t.style.position='static');
+      el.style.padding='16px';
+      const f=doc.createElement('div');f.style.cssText='margin-top:10px;font-size:11px;color:'+col('--mut');f.textContent=foot;el.appendChild(f);
+      if(el.querySelector('.trk')){const g=doc.createElement('div');g.style.cssText='margin-top:6px;font-size:11px;color:'+col('--mut');
+        g.innerHTML='Progress colour: '+[['--bad','Red: up to 74%'],['--warn','Amber: 75% to below 90%'],['--ok','Green: 90% to 100%']].map(([v,t])=>`<span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${col(v)};vertical-align:-1px;margin:0 5px 0 8px"></span>${t}`).join('');
+        el.appendChild(g);}
+    }});
+    const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
+    const fname=title.replace(/[^\w]+/g,'_').slice(0,50)+'_'+(inC?effC():effDate())+'.png';
+    try{
+      await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+      toast('Image copied – paste it into WhatsApp (Ctrl+V)');
+    }catch(err){
+      const file=new File([blob],fname,{type:'image/png'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        try{await navigator.share({files:[file],title});}catch(_){}
+      }else{
+        const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;a.click();
+        toast('Copy not supported here – image downloaded instead');
+      }
+    }
+  }catch(e){toast('Could not create image: '+e.message);}
+  btn.textContent=old; btn.disabled=false;
+}
+function addCopyBtn(c){
+  if(!c.querySelector('.tw')||c.querySelector('.cp')) return;
+  const b=document.createElement('button'); b.className='cp nocap'; b.textContent='📋 Copy image';
+  b.onclick=()=>copyImg(c,b); const h=c.querySelector('h2'), d=h.querySelector('.rdate'); d?d.after(b):h.insertBefore(b,h.firstChild);
+}
+const dateLabel = () => { const d=DATES.length?effDate():''; return d?'Date: '+d.split('-').reverse().join('-'):''; };
+function decorateTitle(c){
+  if(!c.querySelector('.tw')||c.querySelector('.rb')) return;
+  const h=c.querySelector('h2');
+  const rb=document.createElement('span'); rb.className='rb'; rb.textContent=c.closest('#cadreSec')?'Cadre Report':'E-KYC Report'; h.insertBefore(rb,h.firstChild);
+  const dt=document.createElement('span'); dt.className='rdate'; dt.textContent=c.closest('#cadreSec')?cDateLabel():dateLabel(); h.insertBefore(dt,h.firstChild);
+}
+function addLegend(el){
+  const d=document.createElement('div'); d.className='lg nocap'; d.style.margin='12px 0 0';
+  d.innerHTML='<b>Progress colour:</b><span><i style="background:var(--bad)"></i>Red: up to 74%</span><span><i style="background:var(--warn)"></i>Amber: 75% to below 90%</span><span><i style="background:var(--ok)"></i>Green: 90% to 100%</span>';
+  el.after(d);
+}
+document.querySelectorAll('.card').forEach(c=>{decorateTitle(c);addCopyBtn(c);});
+['tTop','tLow','tFast','tStall','tDist','tHamp','tSlow','tImp','tAll','tCVert','tCDist','tCTop','tCLow','tCPend','tCGap','tCRej','tCAll'].forEach(id=>addLegend($(id)));
+applyTheme(_t);
+
+load();
+</script>
+</body>
+</html>

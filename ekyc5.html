@@ -6,6 +6,7 @@
 <title>TRLM – SHG Member e-KYC Progress Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{color-scheme:dark;--bg:#0e1420;--card:#171f30;--line:#26314a;--tx:#e6ebf5;--mut:#8a97b3;--ac:#4ea1ff;--ok:#34d399;--bad:#f87171;--warn:#fbbf24;--row:#ffffff0d}
 [data-theme=light]{color-scheme:light;--bg:#f3f5f9;--card:#ffffff;--line:#dbe1ec;--tx:#1b2438;--mut:#5b6882;--ac:#2563eb;--ok:#059669;--bad:#dc2626;--warn:#d97706;--row:#0000000a}
@@ -772,9 +773,7 @@ $('selTheme').onchange=e=>{applyTheme(e.target.value); if(ROWS.length) render();
 /* ---- copy table as image (paste straight into WhatsApp) ---- */
 function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(toast._h);toast._h=setTimeout(()=>t.style.display='none',3200);}
 async function copyImg(card,btn){
-  const h=card.querySelector('h2').cloneNode(true);
-  h.querySelectorAll('.nocap,input,button,.rdate,.rb').forEach(e=>e.remove());
-  const title=h.textContent.replace(/\s+/g,' ').trim();
+  const title=cardTitle(card);
   const sec=secOf(card), inC=sec==='cadre';
   const foot=sec==='shg'?`TRLM · SHG approval · ${effS()} · ${card.dataset.d||$('selDist').value||'All districts'}`:inC?`TRLM · Cadre profile · ${effC()} · ${card.dataset.d||$('selDist').value||'All districts'} · ${$('cVert').value||'All verticals'}`:`TRLM · e-KYC progress · ${effDate()} · ${card.dataset.d||$('selDist').value||'All districts'}`;
   const old=btn.textContent; btn.textContent='⏳'; btn.disabled=true;
@@ -806,10 +805,64 @@ async function copyImg(card,btn){
   }catch(e){toast('Could not create image: '+e.message);}
   btn.textContent=old; btn.disabled=false;
 }
+function cardTitle(card){
+  const h=card.querySelector('h2').cloneNode(true);
+  h.querySelectorAll('.nocap,input,button,.rdate,.rb').forEach(e=>e.remove());
+  return h.textContent.replace(/\s+/g,' ').trim();
+}
+/* ---- Excel export: reads the rendered table (incl. merged headers) and saves an .xlsx ---- */
+function xlCell(td){
+  let t=td.textContent.replace(/\s+/g,' ').trim();
+  if(td.tagName==='TH') return t.replace(/\s*[▲▼↕]\s*$/,'');
+  if(t===''||t==='–') return '';
+  let sign=1, body=t; const m=t.match(/^([▲▼])\s*(.+)$/);
+  if(m){sign=m[1]==='▼'?-1:1; body=m[2];}
+  const u=body.replace(/\s*pp$/,'').replace(/%$/,'').replace(/,/g,'');
+  if(/^[+-]?\d*\.?\d+$/.test(u)) return sign*parseFloat(u);
+  return t;
+}
+function tableToAoa(t){
+  const aoa=[], occ=[], merges=[];
+  [...t.rows].forEach((tr,ri)=>{
+    aoa[ri]=aoa[ri]||[]; occ[ri]=occ[ri]||[];
+    let ci=0;
+    [...tr.cells].forEach(td=>{
+      while(occ[ri][ci]) ci++;
+      const rs=td.rowSpan||1, cs=td.colSpan||1;
+      aoa[ri][ci]=xlCell(td);
+      for(let r=0;r<rs;r++) for(let c=0;c<cs;c++) (occ[ri+r]=occ[ri+r]||[])[ci+c]=true;
+      if(rs>1||cs>1) merges.push({s:{r:ri,c:ci},e:{r:ri+rs-1,c:ci+cs-1}});
+      ci+=cs;
+    });
+  });
+  const w=Math.max(0,...aoa.map(r=>r?r.length:0));
+  const rows=[...t.rows].map((_,ri)=>Array.from({length:w},(_,k)=>(aoa[ri]&&aoa[ri][k]!==undefined)?aoa[ri][k]:''));
+  return {rows,merges};
+}
+function downloadXlsx(card,btn){
+  if(typeof XLSX==='undefined'){toast('Excel library could not be loaded (check internet connection)');return;}
+  const tbl=card.querySelector('.tw table');
+  if(!tbl){toast('No table to export');return;}
+  const {rows,merges}=tableToAoa(tbl);
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!merges']=merges;
+  ws['!cols']=rows[0].map((_,k)=>({wch:Math.min(40,Math.max(8,...rows.map(r=>String(r[k]).length)))}));
+  const title=cardTitle(card), sec=secOf(card);
+  const date=sec==='shg'?effS():sec==='cadre'?effC():effDate();
+  const sheet=(title.replace(/[\[\]:*?\/\\]/g,' ').replace(/\s+/g,' ').trim().slice(0,31))||'Data';
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,sheet);
+  const fname=(title.replace(/[^\w]+/g,'_').replace(/^_+|_+$/g,'').slice(0,50)||'table')+'_'+date+'.xlsx';
+  XLSX.writeFile(wb,fname);
+  toast('Excel downloaded: '+fname);
+}
 function addCopyBtn(c){
   if(!c.querySelector('.tw')||c.querySelector('.cp')) return;
   const b=document.createElement('button'); b.className='cp nocap'; b.textContent='📋 Copy image';
-  b.onclick=()=>copyImg(c,b); const h=c.querySelector('h2'), d=h.querySelector('.rdate'); d?d.after(b):h.insertBefore(b,h.firstChild);
+  b.onclick=()=>copyImg(c,b);
+  const x=document.createElement('button'); x.className='cp nocap'; x.textContent='📊 Excel';
+  x.onclick=()=>downloadXlsx(c,x);
+  const h=c.querySelector('h2'), d=h.querySelector('.rdate'); d?d.after(b):h.insertBefore(b,h.firstChild);
+  b.after(x);
 }
 const dateLabel = () => { const d=DATES.length?effDate():''; return d?'Date: '+d.split('-').reverse().join('-'):''; };
 function decorateTitle(c){

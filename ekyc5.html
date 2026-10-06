@@ -57,6 +57,7 @@ tbody tr:nth-child(even){background:var(--row)}
 #tCAll .gs{border-left:2px solid var(--line)}
 #tCAll thead th{text-align:right}#tCAll thead th.l{text-align:left}#tCAll thead th.gh{text-align:center;border-bottom:1px solid var(--line)}
 #tCAll{overflow-x:auto}
+#tShAll table{width:auto}#tShAll th,#tShAll td{padding:1px .45em}#tShAll .trk{display:inline-block;width:60px;margin:0 0 0 8px;vertical-align:middle}
 #tCAll .trk{display:inline-block;width:60px;margin:0 0 0 8px;vertical-align:middle}
 .hm .gs{border-left:2px solid var(--line)}.hm thead th.gh{border-bottom:1px solid var(--line)}.hm td,.hm th{text-align:center}.hm thead tr+tr th{text-align:center}.hm td:first-child,.hm th:first-child{text-align:left}
 .cins{margin:6px 0 0;padding-left:18px;line-height:1.7}.cins li{margin:0}
@@ -162,6 +163,40 @@ th{color:var(--mut);font-weight:600;background:var(--card);cursor:pointer;white-
       <div class="tw hm" id="tCHeat"></div>
     </div>
   </section>
+  <section id="shgSec" style="margin-top:26px">
+    <div class="card" style="margin-bottom:14px">
+      <h2 class="chd">🏘️ SHG Approval Analysis <span class="mu" id="sMeta" style="font-size:12px;text-transform:none;letter-spacing:0;font-weight:400"></span>
+        <button id="sCsv" style="float:right;margin-left:8px;text-transform:none;letter-spacing:0">⬇ CSV</button>
+      </h2>
+      <div class="mu" style="font-size:12px">Source: Supabase table P02 (total, approved, pending, rejected and balance SHGs per block). Uses the Date, District and Trend-window controls above.</div>
+      <div id="sMsg" class="mu" style="margin-top:8px"></div>
+      <ul class="cins" id="sIns"></ul>
+    </div>
+    <div class="kpis" id="sKpis"></div>
+    <div class="grid">
+      <div class="card"><h2>SHG status by district</h2><div class="chart"><canvas id="sSt"></canvas></div></div>
+      <div class="card"><h2>District-wise SHGs approved (% of total SHGs)</h2><div class="chart"><canvas id="sDA"></canvas></div></div>
+      <div class="card"><h2>Overall SHG status split</h2><div class="chart"><canvas id="sSh"></canvas></div></div>
+      <div class="card"><h2>Pending SHGs by district</h2><div class="chart"><canvas id="sPD"></canvas></div></div>
+      <div class="card"><h2>Block approved % distribution</h2><div class="chart"><canvas id="sBH"></canvas></div></div>
+      <div class="card"><h2>Trend (% of total SHGs)</h2><div class="chart"><canvas id="sTr"></canvas></div></div>
+      <div class="card"><h2>Daily SHGs approved</h2><div class="chart"><canvas id="sDy"></canvas></div></div>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h2>District summary</h2><div class="tw" id="tShDist"></div></div>
+      <div class="card"><h2>Last days summary</h2><div class="tw" id="tShDays"></div></div>
+      <div class="card"><h2>🏆 Top 10 blocks (approved %)</h2><div class="tw" id="tShTop"></div></div>
+      <div class="card"><h2>⚠️ Lowest 10 blocks (approved %)</h2><div class="tw" id="tShLow"></div></div>
+      <div class="card"><h2>🚀 Fastest movers (last <span class="w"></span> days, SHGs approved)</h2><div class="tw" id="tShFast"></div></div>
+      <div class="card"><h2>⏳ Pending backlog: most pending SHGs</h2><div class="tw" id="tShPend"></div></div>
+      <div class="card"><h2>🎯 Biggest gap: SHGs not yet approved</h2><div class="tw" id="tShGap"></div></div>
+      <div class="card"><h2>🚫 Blocks with rejected SHGs</h2><div class="tw" id="tShRej"></div></div>
+    </div>
+    <div class="card" style="margin:14px 0;width:fit-content;max-width:100%">
+      <h2>All blocks – SHG status, click a column heading to sort <input id="qS" placeholder="search district / block…" style="float:right;text-transform:none;letter-spacing:0"></h2>
+      <div class="tw dt" id="tShAll"></div>
+    </div>
+  </section>
 </main>
 
 <script>
@@ -183,6 +218,7 @@ const pct = (a,b) => b>0 ? a/b*100 : 0;
 const sgn = (n,f=nf) => n>0?`<span class="up">▲ ${f(n)}</span>`:n<0?`<span class="dn">▼ ${f(Math.abs(n))}</span>`:`<span class="mu">–</span>`;
 
 let ROWS=[], DATES=[], charts={}, sortKey='d', sortDir=1;
+let SROWS=[], SDATES=[], SERR='', sKey='d', sDir=1;
 let CROWS=[], CDATES=[], CERR='', cKey='d', cDir=1, cShowAll=true, cShowV={}, cSelSig='';
 
 async function fetchAll(table, cols){
@@ -224,6 +260,12 @@ async function load(){
       $('cVert').innerHTML='<option value="">All verticals</option>'+vs.map(v=>`<option>${v}</option>`).join('');
       if(vs.includes(cur)) $('cVert').value=cur;
     }catch(e){CERR=e.message;}
+    SROWS=[]; SDATES=[]; SERR='';
+    try{
+      const q=await fetchAll(CFG.p02,'report_date,district_name,block_name,total_shgs,approved_shgs,pending_shgs,rejected_shgs,balance_shgs');
+      SROWS=q.map(r=>({date:r.report_date,d:norm(r.district_name),b:norm(r.block_name),tot:+r.total_shgs||0,ap:+r.approved_shgs||0,pe:+r.pending_shgs||0,re:+r.rejected_shgs||0,ba:+r.balance_shgs||0}));
+      SDATES=[...new Set(SROWS.map(r=>r.date))].sort();
+    }catch(e){SERR=e.message;}
     DATES=[...new Set(ROWS.map(r=>r.date))].sort();
     const ds=[...new Set(ROWS.map(r=>r.d))].sort();
     $('selDate').min=DATES[0]; if(!$('selDate').value) $('selDate').value=today();
@@ -259,7 +301,7 @@ function render(){
   const picked=$('selDate').value;
   $('dnote').textContent=picked&&picked!==date?`No data for ${picked} – showing latest available: ${date}`:'';
   document.querySelectorAll('.w').forEach(e=>e.textContent=W);
-  document.querySelectorAll('.rdate').forEach(e=>e.textContent=e.closest('#cadreSec')?cDateLabel():dateLabel());
+  document.querySelectorAll('.rdate').forEach(e=>e.textContent=secDate(secOf(e)));
   const rows=filt();
   const dates=DATES.filter(d=>d<=date);
   const i=dates.length-1;
@@ -346,7 +388,7 @@ function render(){
   $('tSlow').innerHTML=table([...ids,{h:'Progress',f:r=>pbar(r.pct)},{h:`Added ${W}d`,f:r=>sgn(r.gain)},{h:'Speed (pp/day)',f:r=>r.speed.toFixed(3)},{h:'ETA to target',f:r=>r.eta===null?'<span class="dn">no progress</span>':nf(r.eta)+' days'}],num([...below].sort((x,y)=>x.speed-y.speed||y.need-x.need).slice(0,10)));
   $('tImp').innerHTML=table([...ids,{h:'e-KYC',f:r=>nf(r.ek)},{h:'Progress',f:r=>pbar(r.pct)},{h:`Shortfall to ${T}%`,f:r=>nf(r.need)},{h:'Share of gap',f:r=>pf(r.share)},{h:'Cumulative',f:r=>pf(r.cum)}],num(imp));
   bl.forEach(r=>{r.need=Math.max(0,Math.ceil(r.mem*T/100-r.ek)); r.needShare=totNeed?r.need/totNeed*100:0;});
-  window._bl=bl; renderAll(); renderAllBlocks(); renderCadre();
+  window._bl=bl; renderAll(); renderAllBlocks(); renderCadre(); renderShg();
 }
 
 function renderAllBlocks(){
@@ -573,6 +615,8 @@ function renderHeat(){
   const vNames=vNames0.filter(v=>hShowV[v]!==false);
   const hm=new Map(); all.forEach(r=>{const k=r.d+'|'+r.v; const o=hm.get(k)||{th:0,f:0,a:0}; o.th+=r.th; o.f+=r.f; o.a+=r.a; hm.set(k,o);});
   const sumBy=(fn)=>{const o={th:0,f:0,a:0}; all.filter(fn).forEach(r=>{o.th+=r.th;o.f+=r.f;o.a+=r.a;}); return o;};
+  // "All verticals" = unique cadres per block (block_unique_* columns, counted once per block), not a sum of verticals
+  const uniqBy=(fn)=>{const m=new Map(); all.filter(fn).forEach(r=>{const k=r.d+'|'+r.b; if(!m.has(k)) m.set(k,r);}); const o={th:0,f:0,a:0}; m.forEach(r=>{o.th+=r.base;o.f+=r.bf;o.a+=r.ba;}); return o;};
   const dash='<span class="mu">–</span>';
   const pcs=(p)=>`<span style="color:${pcol(p)};font-weight:600">${p.toFixed(1)}%</span>`;
   const cells=(o)=>{ if(!o||!o.th) return `<td class="gs">${dash}</td><td>${dash}</td><td>${dash}</td>`;
@@ -581,8 +625,8 @@ function renderHeat(){
   const groups=[...vNames,...(hShowAll?['All']:[])];
   $('tCHeat').innerHTML=`<table><thead><tr><th rowspan="2">District</th>${groups.map(v=>`<th class="gh gs" colspan="3">${v==='All'?'All verticals':v}</th>`).join('')}</tr>`
     +`<tr>${groups.map(()=>sub.map((h,i)=>`<th${i===0?' class="gs"':''}>${h}</th>`).join('')).join('')}</tr></thead><tbody>${
-    dNames.map(dd=>`<tr><td><b>${dd}</b></td>${vNames.map(v=>cells(hm.get(dd+'|'+v))).join('')}${hShowAll?cells(sumBy(r=>r.d===dd)):''}</tr>`).join('')
-  }<tr><td><b>All districts</b></td>${vNames.map(v=>cells(sumBy(r=>r.v===v))).join('')}${hShowAll?cells(sumBy(()=>true)):''}</tr></tbody></table>`;
+    dNames.map(dd=>`<tr><td><b>${dd}</b></td>${vNames.map(v=>cells(hm.get(dd+'|'+v))).join('')}${hShowAll?cells(uniqBy(r=>r.d===dd)):''}</tr>`).join('')
+  }<tr><td><b>All districts</b></td>${vNames.map(v=>cells(sumBy(r=>r.v===v))).join('')}${hShowAll?cells(uniqBy(()=>true)):''}</tr></tbody></table>`;
 }
 
 $('cVert').onchange=renderCadre; $('cMin').onchange=renderCadre; $('qC').oninput=renderCadreAll;
@@ -590,6 +634,133 @@ $('cCsv').onclick=()=>{
   const d=effC(); const h=['report_date','district_name','block_name','vertical_name','block_unique_total_unique_cadres','block_unique_profile_filled','block_unique_approved','block_unique_pending','block_unique_rejected','thematic_total_unique_cadres','profile_filled','approved','pending','rejected'];
   const csv=[h.join(',')].concat(CROWS.filter(r=>r.date===d).map(r=>[r.date,r.d,r.b,r.v,r.base,r.bf,r.ba,r.bp,r.br,r.th,r.f,r.a,r.p,r.r].map(v=>`"${v}"`).join(','))).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`cadre_report_${d}.csv`;a.click();
+};
+
+/* ================= SHG Approval Analysis (P02) ================= */
+const effS = () => { const v=$('selDate').value; if(!SDATES.length) return ''; if(!v) return SDATES[SDATES.length-1]; const ok=SDATES.filter(d=>d<=v); return ok.length?ok[ok.length-1]:SDATES[0]; };
+const sDateLabel = () => { const d=effS(); return d?'Date: '+d.split('-').reverse().join('-'):''; };
+const secOf = el => el.closest('#shgSec')?'shg':el.closest('#cadreSec')?'cadre':'ekyc';
+const secDate = sec => sec==='shg'?sDateLabel():sec==='cadre'?cDateLabel():dateLabel();
+const ssum = rows => rows.reduce((a,r)=>(a.tot+=r.tot,a.ap+=r.ap,a.pe+=r.pe,a.re+=r.re,a.ba+=r.ba,a),{tot:0,ap:0,pe:0,re:0,ba:0});
+const sfin = t => ({...t, ap_p:pct(t.ap,t.tot), pe_p:pct(t.pe,t.tot), re_p:pct(t.re,t.tot), ba_p:pct(t.ba,t.tot)});
+function sgrp(rows,keyFn,ex){
+  const m=new Map();
+  rows.forEach(r=>{const k=keyFn(r); if(!m.has(k)) m.set(k,[]); m.get(k).push(r);});
+  return [...m.entries()].map(([k,rs])=>({k,...sfin(ssum(rs)),...(ex?ex(rs):{})}));
+}
+
+function renderShg(){
+  const msg=$('sMsg'), ins=$('sIns');
+  const empties=['sKpis','tShDist','tShDays','tShTop','tShLow','tShPend','tShRej','tShGap','tShFast','tShAll'];
+  if(SERR||!SROWS.length){
+    msg.textContent=SERR?('Could not load SHG data from P02: '+SERR):'No SHG data found in P02.';
+    ins.innerHTML=''; $('sMeta').textContent=''; window._sbl=[]; empties.forEach(id=>$(id).innerHTML='');
+    ['sSt','sDA','sSh','sPD','sBH','sTr','sDy'].forEach(id=>{if(charts[id]){charts[id].destroy();delete charts[id];}});
+    return;
+  }
+  msg.textContent='';
+  const date=effS(), W=+$('selWin').value, dsel=$('selDist').value;
+  const dates=SDATES.filter(d=>d<=date), i=dates.length-1, winDate=dates[Math.max(0,i-W)], prevDate=dates[Math.max(0,i-1)];
+  $('sMeta').textContent=`${SROWS.length} rows · ${SDATES.length} date${SDATES.length>1?'s':''} · ${SDATES[0]}${SDATES.length>1?' → '+SDATES[SDATES.length-1]:''}${date!==$('selDate').value&&$('selDate').value?' · showing '+date:''}`;
+
+  const byDate=new Map(); SROWS.forEach(r=>{if(!byDate.has(r.date)) byDate.set(r.date,[]); byDate.get(r.date).push(r);});
+  const atD=d=>byDate.get(d)||[], fD=rs=>dsel?rs.filter(r=>r.d===dsel):rs;
+  const allNow=atD(date), rowsNow=fD(allNow);
+  const totAt=d=>sfin(ssum(fD(atD(d))));
+  const T=totAt(date), W0=totAt(winDate), P0=totAt(prevDate);
+  const gainW=T.ap-W0.ap, gainP=T.ap-P0.ap;
+  const days=Math.max(1,Math.round((new Date(date)-new Date(winDate))/864e5));
+  const rate=gainW/days, remaining=T.tot-T.ap, eta=rate>0?Math.ceil(remaining/rate):null;
+
+  $('sKpis').innerHTML=[
+    ['Blocks',nf(rowsNow.length),`${new Set(rowsNow.map(r=>r.d)).size} districts`],
+    ['Total SHGs',nf(T.tot),''],
+    ['Approved',nf(T.ap),pf(T.ap_p)+' of SHGs'],
+    ['Pending',nf(T.pe),pf(T.pe_p)+' of SHGs'],
+    ['Rejected',nf(T.re),pf(T.re_p)+' of SHGs'],
+    ['Balance',nf(T.ba),pf(T.ba_p)+' of SHGs'],
+    ['Approved (latest day)',i>0?nf(gainP):'—',i>0?sgn(+(T.ap_p-P0.ap_p).toFixed(2),n=>n.toFixed(2)+' pp')+' vs prev. date':'needs 2+ dates'],
+    [`Approved (last ${W}d)`,i>0?nf(gainW):'—',i>0?`≈ ${nf(Math.round(rate))}/day`:'needs 2+ dates'],
+    ['Est. days to approve all',eta===null?'—':nf(eta),`at current ${W}d pace`]
+  ].map(k=>`<div class="kpi"><span>${k[0]}</span><b>${k[1]}</b><i class="mu">${k[2]}</i></div>`).join('');
+
+  /* groups */
+  const winRows=atD(winDate);
+  const dOld=new Map(sgrp(winRows,r=>r.d).map(x=>[x.k,x.ap]));
+  const byD=sgrp(allNow,r=>r.d,rs=>({blocks:rs.length})).map(x=>({...x,gain:x.ap-(dOld.get(x.k)||0),rem:x.tot-x.ap})).sort((a,b)=>b.ap_p-a.ap_p);
+  const bOld=new Map(fD(winRows).map(r=>[r.d+'|'+r.b,r.ap]));
+  const blocks=sgrp(rowsNow,r=>r.d+'|'+r.b,rs=>({d:rs[0].d,b:rs[0].b})).map(x=>{const o=bOld.get(x.k); return {...x,gain:o===undefined?0:x.ap-o,rem:x.tot-x.ap};});
+  const valid=blocks.filter(b=>b.tot>0);
+  const num=a=>a.map((r,k)=>({...r,_i:k+1}));
+
+  /* insights */
+  const L=[];
+  L.push(`Overall <b>${pf(T.ap_p)}</b> of ${nf(T.tot)} SHGs are approved; <b>${nf(T.pe)}</b> (${pf(T.pe_p)}) are pending, <b>${nf(T.re)}</b> (${pf(T.re_p)}) rejected and <b>${nf(T.ba)}</b> (${pf(T.ba_p)}) in balance.`);
+  const dR=byD.filter(x=>x.tot>0);
+  if(dR.length>1){const hi=dR[0], lo=dR[dR.length-1]; L.push(`Best district: <b>${hi.k}</b> (${pf(hi.ap_p)} approved). Lowest: <b>${lo.k}</b> (${pf(lo.ap_p)} approved, ${nf(lo.rem)} SHGs not approved).`);}
+  const dBack=[...byD].sort((a,b)=>b.pe-a.pe)[0], pAll=byD.reduce((x,d)=>x+d.pe,0);
+  if(dBack&&dBack.pe>0) L.push(`Largest pending backlog: <b>${dBack.k}</b> with ${nf(dBack.pe)} pending SHGs (${pf(pAll?dBack.pe/pAll*100:0)} of all pending).`);
+  const low50=valid.filter(b=>b.ap_p<50).length, zero=valid.filter(b=>b.ap===0).length;
+  L.push(`${nf(low50)} of ${nf(valid.length)} blocks are below 50% approved; ${nf(zero)} have no approved SHG at all.`);
+  const gapTot=valid.reduce((x,b)=>x+b.rem,0), top5=[...valid].sort((a,b)=>b.rem-a.rem).slice(0,5).reduce((x,b)=>x+b.rem,0);
+  if(gapTot>0) L.push(`The 5 blocks with the most unapproved SHGs hold <b>${pf(top5/gapTot*100)}</b> of the ${nf(gapTot)} SHGs still to be approved.`);
+  ins.innerHTML=L.map(x=>`<li>${x}</li>`).join('');
+
+  /* charts */
+  mk('sSt',{type:'bar',data:{labels:byD.map(x=>x.k),datasets:[
+    {label:'Approved',data:byD.map(x=>x.ap),backgroundColor:col('--ok')},
+    {label:'Pending',data:byD.map(x=>x.pe),backgroundColor:col('--warn')},
+    {label:'Rejected',data:byD.map(x=>x.re),backgroundColor:col('--bad')},
+    {label:'Balance',data:byD.map(x=>x.ba),backgroundColor:col('--mut')}]},
+    options:opt({indexAxis:'y',scales:{x:{stacked:true},y:{stacked:true}}})});
+  mk('sDA',{type:'bar',data:{labels:byD.map(x=>x.k),datasets:[{label:'Approved %',data:byD.map(x=>+x.ap_p.toFixed(2)),backgroundColor:col('--ac')}]},options:opt({indexAxis:'y'})});
+  mk('sSh',{type:'doughnut',data:{labels:['Approved','Pending','Rejected','Balance'],datasets:[{data:[T.ap,T.pe,T.re,T.ba],backgroundColor:[col('--ok'),col('--warn'),col('--bad'),col('--mut')],borderColor:col('--card')}]},options:opt({plugins:{legend:{position:'right',labels:{boxWidth:10}}}})});
+  const dp=[...byD].sort((a,b)=>b.pe-a.pe);
+  mk('sPD',{type:'bar',data:{labels:dp.map(x=>x.k),datasets:[{label:'Pending SHGs',data:dp.map(x=>x.pe),backgroundColor:col('--warn')}]},options:opt({indexAxis:'y'})});
+  const bins=Array(10).fill(0); valid.forEach(b=>bins[Math.min(9,Math.floor(b.ap_p/10))]++);
+  mk('sBH',{type:'bar',data:{labels:bins.map((_,k)=>`${k*10}-${k*10+10}%`),datasets:[{label:'Blocks',data:bins,backgroundColor:col('--warn')}]},options:opt()});
+  const trend=dates.map(d=>({date:d,...totAt(d)})); trend.forEach((t,k)=>{t.gain=k?t.ap-trend[k-1].ap:0;});
+  mk('sTr',{type:'line',data:{labels:trend.map(t=>t.date),datasets:[
+    {label:'Approved %',data:trend.map(t=>+t.ap_p.toFixed(2)),borderColor:col('--ok'),tension:.25,pointRadius:3},
+    {label:'Pending %',data:trend.map(t=>+t.pe_p.toFixed(2)),borderColor:col('--warn'),tension:.25,pointRadius:3},
+    {label:'Rejected %',data:trend.map(t=>+t.re_p.toFixed(2)),borderColor:col('--bad'),tension:.25,pointRadius:3}]},options:opt()});
+  mk('sDy',{type:'bar',data:{labels:trend.map(t=>t.date),datasets:[{label:'Approved that day',data:trend.map(t=>t.gain),backgroundColor:col('--ok')}]},options:opt()});
+
+  /* tables */
+  const ap=r=>pbar(r.ap_p);
+  $('tShDist').innerHTML=table([
+    {h:'#',f:r=>r._i},{h:'District',f:r=>`<b>${r.k}</b>`,l:1},{h:'Blocks',f:r=>r.blocks},{h:'SHGs',f:r=>nf(r.tot)},{h:'Approved',f:r=>nf(r.ap)},
+    {h:'Approved %',f:ap},{h:'Pending',f:r=>nf(r.pe)},{h:'Rejected',f:r=>nf(r.re)},{h:'Balance',f:r=>nf(r.ba)},{h:`Added ${W}d`,f:r=>sgn(r.gain)}],num(byD));
+  $('tShDays').innerHTML=table([
+    {h:'Date',f:r=>r.date},{h:'SHGs',f:r=>nf(r.tot)},{h:'Approved',f:r=>nf(r.ap)},{h:'%',f:r=>pf(r.ap_p)},{h:'Added',f:r=>sgn(r.gain)},
+    {h:'Pending',f:r=>nf(r.pe)},{h:'Rejected',f:r=>nf(r.re)},{h:'Balance',f:r=>nf(r.ba)}],[...trend].reverse().slice(0,15));
+  const ids=[{h:'#',f:r=>r._i},{h:'District',f:r=>r.d,l:1},{h:'Block',f:r=>`<b>${r.b}</b>`,l:1},{h:'SHGs',f:r=>nf(r.tot)}];
+  const byAp=[...valid].sort((a,b)=>b.ap_p-a.ap_p||b.tot-a.tot);
+  $('tShTop').innerHTML=table([...ids,{h:'Approved',f:r=>nf(r.ap)},{h:'Approved %',f:ap},{h:'Pending',f:r=>nf(r.pe)}],num(byAp.slice(0,10)));
+  $('tShLow').innerHTML=table([...ids,{h:'Approved',f:r=>nf(r.ap)},{h:'Approved %',f:ap},{h:'Not approved',f:r=>nf(r.rem)}],num([...byAp].reverse().slice(0,10)));
+  $('tShFast').innerHTML=table([...ids,{h:'Approved %',f:ap},{h:`Added ${W}d`,f:r=>sgn(r.gain)}],num([...blocks].sort((a,b)=>b.gain-a.gain).slice(0,10)));
+  $('tShPend').innerHTML=table([...ids,{h:'Approved',f:r=>nf(r.ap)},{h:'Pending',f:r=>`<b>${nf(r.pe)}</b>`},{h:'% of SHGs',f:r=>pf(r.pe_p)}],num(blocks.filter(b=>b.pe>0).sort((a,b)=>b.pe-a.pe).slice(0,10)));
+  const gapAll=valid.filter(b=>b.rem>0).sort((a,b)=>b.rem-a.rem); let cum=0;
+  const gap=gapAll.slice(0,10).map(b=>{cum+=b.rem; return {...b,share:gapTot?b.rem/gapTot*100:0,cum:gapTot?cum/gapTot*100:0};});
+  $('tShGap').innerHTML=table([...ids,{h:'Approved %',f:ap},{h:'Not approved',f:r=>`<b>${nf(r.rem)}</b>`},{h:'Share of gap',f:r=>pf(r.share)},{h:'Cumulative',f:r=>pf(r.cum)}],num(gap));
+  $('tShRej').innerHTML=table([...ids,{h:'Approved',f:r=>nf(r.ap)},{h:'Rejected',f:r=>`<b>${nf(r.re)}</b>`},{h:'% of SHGs',f:r=>pf(r.re_p)}],num(blocks.filter(b=>b.re>0).sort((a,b)=>b.re-a.re).slice(0,15)));
+
+  window._sbl=blocks; renderShgAll();
+}
+
+function renderShgAll(){
+  const q=$('qS').value.trim().toUpperCase(), W=$('selWin').value;
+  const a=(window._sbl||[]).filter(r=>!q||(r.d+' '+r.b).includes(q));
+  a.sort((x,y)=>{const A=x[sKey],B=y[sKey];return (typeof A==='string'?A.localeCompare(B):A-B)*sDir||x.d.localeCompare(y.d)||x.b.localeCompare(y.b);});
+  const cols=[['d','District',1],['b','Block',1],['tot','SHGs'],['ap','Approved'],['ap_p','Approved %'],['pe','Pending'],['re','Rejected'],['ba','Balance'],['gain',`Added ${W}d`]];
+  $('tShAll').innerHTML=`<table><thead><tr><th>#</th>${cols.map(c=>`<th data-k="${c[0]}"${c[2]?' class="l"':''}>${c[1]}${sKey===c[0]?(sDir>0?' ▲':' ▼'):' ↕'}</th>`).join('')}</tr></thead><tbody>${a.map((r,i)=>`<tr><td>${i+1}</td><td class="l">${r.d}</td><td class="l"><b>${r.b}</b></td><td>${nf(r.tot)}</td><td>${nf(r.ap)}</td><td>${pbar(r.ap_p)}</td><td>${nf(r.pe)}</td><td>${nf(r.re)}</td><td>${nf(r.ba)}</td><td>${sgn(r.gain)}</td></tr>`).join('')||'<tr><td colspan="10" class="mu">No blocks match</td></tr>'}</tbody></table>`;
+  $('tShAll').querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{const k=th.dataset.k;sDir=sKey===k?-sDir:(k==='d'||k==='b'?1:-1);sKey=k;renderShgAll();});
+}
+$('qS').oninput=renderShgAll;
+$('sCsv').onclick=()=>{
+  const h=['report_date','district_name','block_name','total_shgs','approved_shgs','pending_shgs','rejected_shgs','balance_shgs','approved_pct'];
+  const d=effS(), csv=[h.join(',')].concat((window._sbl||[]).map(r=>[d,r.d,r.b,r.tot,r.ap,r.pe,r.re,r.ba,r.ap_p.toFixed(2)].map(v=>`"${v}"`).join(','))).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`shg_status_${d}.csv`;a.click();
 };
 
 /* ---- themes ---- */
@@ -604,8 +775,8 @@ async function copyImg(card,btn){
   const h=card.querySelector('h2').cloneNode(true);
   h.querySelectorAll('.nocap,input,button,.rdate,.rb').forEach(e=>e.remove());
   const title=h.textContent.replace(/\s+/g,' ').trim();
-  const inC=!!card.closest('#cadreSec');
-  const foot=inC?`TRLM · Cadre profile · ${effC()} · ${card.dataset.d||$('selDist').value||'All districts'} · ${$('cVert').value||'All verticals'}`:`TRLM · e-KYC progress · ${effDate()} · ${card.dataset.d||$('selDist').value||'All districts'}`;
+  const sec=secOf(card), inC=sec==='cadre';
+  const foot=sec==='shg'?`TRLM · SHG approval · ${effS()} · ${card.dataset.d||$('selDist').value||'All districts'}`:inC?`TRLM · Cadre profile · ${effC()} · ${card.dataset.d||$('selDist').value||'All districts'} · ${$('cVert').value||'All verticals'}`:`TRLM · e-KYC progress · ${effDate()} · ${card.dataset.d||$('selDist').value||'All districts'}`;
   const old=btn.textContent; btn.textContent='⏳'; btn.disabled=true;
   try{
     const canvas=await html2canvas(card,{backgroundColor:col('--card'),scale:2,onclone:(doc,el)=>{
@@ -619,7 +790,7 @@ async function copyImg(card,btn){
         el.appendChild(g);}
     }});
     const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
-    const fname=title.replace(/[^\w]+/g,'_').slice(0,50)+'_'+(inC?effC():effDate())+'.png';
+    const fname=title.replace(/[^\w]+/g,'_').slice(0,50)+'_'+(sec==='shg'?effS():inC?effC():effDate())+'.png';
     try{
       await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
       toast('Image copied – paste it into WhatsApp (Ctrl+V)');
@@ -644,8 +815,8 @@ const dateLabel = () => { const d=DATES.length?effDate():''; return d?'Date: '+d
 function decorateTitle(c){
   if(!c.querySelector('.tw')||c.querySelector('.rb')) return;
   const h=c.querySelector('h2');
-  const rb=document.createElement('span'); rb.className='rb'; rb.textContent=c.closest('#cadreSec')?'Cadre Report':'E-KYC Report'; h.insertBefore(rb,h.firstChild);
-  const dt=document.createElement('span'); dt.className='rdate'; dt.textContent=c.closest('#cadreSec')?cDateLabel():dateLabel(); h.insertBefore(dt,h.firstChild);
+  const rb=document.createElement('span'); rb.className='rb'; rb.textContent={shg:'SHG Report',cadre:'Cadre Report',ekyc:'E-KYC Report'}[secOf(c)]; h.insertBefore(rb,h.firstChild);
+  const dt=document.createElement('span'); dt.className='rdate'; dt.textContent=secDate(secOf(c)); h.insertBefore(dt,h.firstChild);
 }
 function addLegend(el){
   const d=document.createElement('div'); d.className='lg nocap'; d.style.margin='12px 0 0';
@@ -653,7 +824,7 @@ function addLegend(el){
   el.after(d);
 }
 document.querySelectorAll('.card').forEach(c=>{decorateTitle(c);addCopyBtn(c);});
-['tTop','tLow','tFast','tStall','tDist','tHamp','tSlow','tImp','tAll','tCVert','tCDist','tCTop','tCLow','tCPend','tCGap','tCRej','tCAll'].forEach(id=>addLegend($(id)));
+['tTop','tLow','tFast','tStall','tDist','tHamp','tSlow','tImp','tAll','tShDist','tShTop','tShLow','tShFast','tShAll','tCVert','tCDist','tCTop','tCLow','tCPend','tCGap','tCRej','tCAll'].forEach(id=>addLegend($(id)));
 applyTheme(_t);
 
 load();

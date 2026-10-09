@@ -262,6 +262,9 @@
           <div class="tgrid" id="tgrid"></div>
         </div>
       </div>
+      <button class="btn glass" id="bXlsx" type="button" title="Download the grid as an Excel file (respects the current filters)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg><span>Excel</span>
+      </button>
       <button class="btn glass" id="bCsv" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 20h16"/></svg>CSV
       </button>
@@ -367,7 +370,8 @@ async function load(date) {
     DATA = await res.json();
   } catch (e) {
     DATA = null;
-    $('msg').innerHTML = `<div class="banner err"><div><b>Could not load the data.</b> ${esc(e.message || e)}</div></div>`;
+    const net = e instanceof TypeError;
+    $('msg').innerHTML = `<div class="banner err"><div><b>Could not load the data.</b> ${esc(e.message || e)}` + (net ? `<br>The browser could not reach the database server (${esc(SUPABASE_URL)}). Check that you are online and that no VPN, firewall, ad-blocker or school/office network is blocking it. If it still fails everywhere, the Supabase project may be paused — open the Supabase dashboard and restore it.` : '') + `<br><button class="mini" type="button" onclick="load($('fDate').value)" style="margin-top:8px;color:inherit">Try again</button></div></div>`;
     $('kpis').innerHTML = ''; $('hm').innerHTML = ''; $('grid').innerHTML = ''; $('foot').textContent = '';
     return;
   }
@@ -577,6 +581,125 @@ function downloadCsv() {
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
 }
 
+
+// ---------- Excel ----------
+const EXCELJS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';
+function loadExcelJs() {
+  return new Promise((resolve, reject) => {
+    if (window.ExcelJS) return resolve();
+    const el = document.createElement('script');
+    el.src = EXCELJS_URL;
+    el.onload = () => resolve();
+    el.onerror = () => reject(new Error('Could not load the Excel library. Check your internet connection and try again.'));
+    document.head.appendChild(el);
+  });
+}
+async function downloadXlsx() {
+  if (!DATA) return;
+  const btn = $('bXlsx'), label = btn.querySelector('span');
+  btn.disabled = true; label.textContent = 'Preparing…';
+  try {
+    await loadExcelJs();
+    const { months, all } = model();
+    const list = sorted(filtered(all, months));
+    const n = months.length;
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'CLF Transaction Capture';
+    wb.created = new Date();
+
+    const thin = { style: 'thin', color: { argb: 'FFE4E8F0' } };
+    const border = { top: thin, left: thin, bottom: thin, right: thin };
+    const ST = {
+      yes: { text: 'YES', fill: 'FFDCF5E5', font: 'FF0B6B30' },
+      no:  { text: 'NO',  fill: 'FFFDE4EA', font: 'FFA3123A' },
+      na:  { text: '–',   fill: 'FFEEF1F6', font: 'FF97A1B3' }
+    };
+    const head = (row) => {
+      row.height = 30;
+      row.eachCell((c) => {
+        c.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2557D6' } };
+        c.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+        c.border = border;
+      });
+    };
+
+    // ----- sheet 1: the grid (current filters) -----
+    const ws = wb.addWorksheet('CLF month grid', { views: [{ state: 'frozen', xSplit: 3, ySplit: 1 }] });
+    const cols = ['District', 'Block', 'CLF Name', 'eBK Name', 'Start date', ...months.map((m) => `${m.name.slice(0, 3)} ${m.year}\n${m.q}`), 'Months YES', 'Latest'];
+    ws.addRow(cols);
+    head(ws.getRow(1));
+    ws.getRow(1).getCell(3).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+    for (const o of list) {
+      const r = ws.addRow([o.district, o.block, o.clf, o.ebk, o.start || '', ...months.map((m) => ST[o.m[m.name] || 'na'].text), `${o.yes}/${n}`,
+        o.latest === 'yes' ? 'Active' : o.latest === 'no' ? 'Not captured' : '–']);
+      r.eachCell((c, i) => {
+        c.border = border;
+        c.alignment = { vertical: 'middle', horizontal: i <= 4 ? 'left' : 'center' };
+      });
+      months.forEach((m, i) => {
+        const st = ST[o.m[m.name] || 'na'], c = r.getCell(6 + i);
+        c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: st.fill } };
+        c.font = { bold: true, color: { argb: st.font } };
+      });
+      const lc = r.getCell(6 + n + 1);
+      const ls = ST[o.latest || 'na'];
+      lc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ls.fill } };
+      lc.font = { bold: true, color: { argb: ls.font } };
+    }
+    // totals row
+    const tot = ws.addRow(['YES in CLFs shown', '', '', '', '', ...months.map((m) => {
+      const y = list.filter((o) => o.m[m.name] === 'yes').length, t = list.filter((o) => o.m[m.name] === 'yes' || o.m[m.name] === 'no').length;
+      return t ? `${y} (${pct(y, t)}%)` : '–';
+    }), '', '']);
+    tot.eachCell({ includeEmpty: true }, (c, i) => {
+      c.font = { bold: true }; c.border = border;
+      c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF7F9FC' } };
+      c.alignment = { vertical: 'middle', horizontal: i <= 4 ? 'left' : 'center' };
+    });
+    ws.columns.forEach((c, i) => { c.width = [16, 16, 34, 24, 12][i] || 11; });
+    if (list.length) ws.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1 + list.length, column: cols.length } };
+
+    // ----- sheet 2: district summary (all CLFs in the financial year) -----
+    const ds = wb.addWorksheet('District summary', { views: [{ state: 'frozen', xSplit: 1, ySplit: 1 }] });
+    ds.addRow(['District', 'CLFs', ...months.map((m) => `${m.name.slice(0, 3)} ${m.year}`)]);
+    head(ds.getRow(1));
+    const pctRow = (label, set) => {
+      const r = ds.addRow([label, set.length, ...months.map((m) => {
+        const y = set.filter((o) => o.m[m.name] === 'yes').length, t = set.filter((o) => o.m[m.name] === 'yes' || o.m[m.name] === 'no').length;
+        return t ? y / t : '–';
+      })]);
+      r.eachCell((c, i) => {
+        c.border = border;
+        c.alignment = { vertical: 'middle', horizontal: i === 1 ? 'left' : 'center' };
+        if (i > 2 && typeof c.value === 'number') {
+          c.numFmt = '0%';
+          const v = c.value;
+          c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: v >= 0.8 ? 'FFDCF5E5' : v >= 0.5 ? 'FFFFF3D1' : 'FFFDE4EA' } };
+        }
+      });
+      return r;
+    };
+    pctRow('All districts', all).font = { bold: true };
+    for (const d of [...new Set(all.map((o) => o.district))].sort()) pctRow(d, all.filter((o) => o.district === d));
+    ds.columns.forEach((c, i) => { c.width = i === 0 ? 20 : 11; });
+    ds.addRow([]);
+    ds.addRow([`% of CLFs with YES, all CLFs in ${$('fFy').value} (filters not applied). Report date ${DATA.report_date || '–'}.`]).font = { italic: true, color: { argb: 'FF8A94A7' } };
+
+    const buf = await wb.xlsx.writeBuffer();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+    a.download = `clf_transaction_grid_${DATA.report_date || 'data'}.xlsx`;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  } catch (e) {
+    $('msg').innerHTML = `<div class="banner err"><div><b>Could not create the Excel file.</b> ${esc(e.message || e)}</div></div>`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } finally {
+    btn.disabled = false; label.textContent = 'Excel';
+  }
+}
+
 // ---------- wiring ----------
 function setSeg(id, val) { document.querySelectorAll(`#${id} button`).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === val))); }
 $('fDate').addEventListener('change', () => load($('fDate').value));
@@ -588,6 +711,7 @@ $('fSort').addEventListener('change', () => { V.sort = $('fSort').value; render(
 $('segStatus').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; V.status = b.dataset.v; setSeg('segStatus', V.status); render(); });
 $('segView').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; document.body.classList.toggle('icons', b.dataset.v === 'icons'); setSeg('segView', b.dataset.v); });
 $('bCsv').addEventListener('click', downloadCsv);
+$('bXlsx').addEventListener('click', downloadXlsx);
 $('bReload').addEventListener('click', () => load($('fDate').value));
 $('bFold').addEventListener('click', () => {
   V.allClosed = !V.allClosed; V.closed.clear();

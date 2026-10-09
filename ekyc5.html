@@ -60,7 +60,7 @@ tbody tr:nth-child(even){background:var(--row)}
 #tCAll{overflow-x:auto}
 #tShAll table{width:auto}#tShAll th,#tShAll td{padding:1px .45em}#tShAll .trk{display:inline-block;width:60px;margin:0 0 0 8px;vertical-align:middle}
 #tCAll .trk{display:inline-block;width:60px;margin:0 0 0 8px;vertical-align:middle}
-.hm .gs{border-left:2px solid var(--line)}.hm thead th.gh{border-bottom:1px solid var(--line)}.hm td,.hm th{text-align:center}.hm thead tr+tr th{text-align:center}.hm td:first-child,.hm th:first-child{text-align:left}
+#otAll .dl{display:block;font-size:12px;line-height:1.2;font-weight:600;margin-top:1px;white-space:nowrap}.hm .gs{border-left:2px solid var(--line)}.hm .dl{display:block;font-size:12px;line-height:1.2;font-weight:600;margin-top:1px;white-space:nowrap}.hm thead th.gh{border-bottom:1px solid var(--line)}.hm td,.hm th{text-align:center}.hm thead tr+tr th{text-align:center}.hm td:first-child,.hm th:first-child{text-align:left}
 .cins{margin:6px 0 0;padding-left:18px;line-height:1.7}.cins li{margin:0}
 .chd{font-size:16px;margin:0 0 10px}
 th.l,td.l{text-align:left}
@@ -73,6 +73,7 @@ th{color:var(--mut);font-weight:600;background:var(--card);cursor:pointer;white-
 .up{color:var(--ok)}.dn{color:var(--bad)}.mu{color:var(--mut)}
 #msg{margin:16px 20px;padding:14px;border:1px solid var(--bad);border-radius:10px;color:var(--bad);display:none;white-space:pre-wrap}
 #load{padding:30px;text-align:center;color:var(--mut)}
+.xh th:nth-child(2),.xh td:nth-child(2){text-align:center}
 </style>
 </head>
 <body>
@@ -161,6 +162,7 @@ th{color:var(--mut);font-weight:600;background:var(--card);cursor:pointer;white-
     <div class="card" style="margin:14px 0;width:fit-content;max-width:100%;overflow-x:auto">
       <h2>District × vertical: cadres and approval</h2>
       <div id="hSel" class="lg nocap" style="margin:0 0 10px"></div>
+      <div id="hNote" class="mu" style="font-size:11px;margin:-4px 0 8px"></div>
       <div class="tw hm" id="tCHeat"></div>
     </div>
   </section>
@@ -198,6 +200,53 @@ th{color:var(--mut);font-weight:600;background:var(--card);cursor:pointer;white-
       <div class="tw dt" id="tShAll"></div>
     </div>
   </section>
+  <section id="txnSec" style="margin-top:26px">
+    <div class="card" style="margin-bottom:14px">
+      <h2 class="chd">💳 Transaction Monitoring Analysis <span class="mu" id="xMeta" style="font-size:12px;text-transform:none;letter-spacing:0;font-weight:400"></span>
+        <button id="xCsv" style="float:right;margin-left:8px;text-transform:none;letter-spacing:0">⬇ CSV</button>
+        <label style="float:right;margin-left:8px;text-transform:none;letter-spacing:0;font-weight:400">Month <select id="xMo"></select></label>
+        <label style="float:right;margin-left:8px;text-transform:none;letter-spacing:0;font-weight:400">Quarter <select id="xQtr"></select></label>
+        <label style="float:right;margin-left:8px;text-transform:none;letter-spacing:0;font-weight:400">Financial year <select id="xFy"></select></label>
+      </h2>
+      <div class="mu" style="font-size:12px">Source: Supabase table transaction_monitoring_blockwise, rows with cbo_type = 'CLF' only (total CLFs, CLFs that started transactions and transactions captured, per block, by financial year, quarter and month). Captured % = transactions captured ÷ total CLFs. Uses the Date and District controls above; the month-wise charts and tables ignore the Month filter. When several months are in view, totals are CLF-months (each month counts the CLFs again).</div>
+      <div id="xMsg" class="mu" style="margin-top:8px"></div>
+      <ul class="cins" id="xIns"></ul>
+    </div>
+    <div class="kpis" id="xKpis"></div>
+    <div class="grid">
+      <div class="card"><h2>Month-wise started and captured % of CLFs</h2><div class="chart"><canvas id="xcMo"></canvas></div></div>
+      <div class="card"><h2>Blocks with zero capture, by month</h2><div class="chart"><canvas id="xcZ"></canvas></div></div>
+      <div class="card"><h2>District-wise captured %</h2><div class="chart"><canvas id="xcDs"></canvas></div></div>
+      <div class="card"><h2>Quarter-wise started vs captured %</h2><div class="chart"><canvas id="xcQ"></canvas></div></div>
+      <div class="card"><h2>Block captured % distribution</h2><div class="chart"><canvas id="xcH"></canvas></div></div>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h2>Month summary</h2><div class="tw" id="xtMon"></div></div>
+      <div class="card"><h2>Quarter summary</h2><div class="tw" id="xtQ"></div></div>
+      <div class="card"><h2>District summary</h2><div class="tw" id="xtDist"></div></div>
+      <div class="card"><h2>⚠️ Lowest 10 blocks (captured %)</h2><div class="tw" id="xtLow"></div></div>
+      <div class="card"><h2>🎯 Biggest gap: CLFs not yet captured</h2><div class="tw" id="xtGap"></div></div>
+    </div>
+    <div class="card" style="margin:14px 0;width:fit-content;max-width:100%;overflow-x:auto">
+      <h2>District × month: captured % of CLFs</h2>
+      <div class="tw hm xh" id="xtHeat"></div>
+    </div>
+    <div class="card" style="margin:14px 0;width:fit-content;max-width:100%;overflow-x:auto">
+      <h2>All blocks – month-wise status (one row per block), click a column heading to sort <input id="qX" placeholder="search district / block…" style="float:right;text-transform:none;letter-spacing:0"> <select id="xD" class="nocap" style="float:right;margin-right:8px;text-transform:none;letter-spacing:0"></select></h2>
+      <div class="tw dt" id="xtAll"></div>
+    </div>
+    <div class="card" id="oCard" style="margin:14px 0;width:fit-content;max-width:100%;overflow-x:auto">
+      <h2>SHG &amp; VO onboarding – one row per block <span class="mu" id="oMeta" style="font-size:12px;text-transform:none;letter-spacing:0;font-weight:400"></span>
+        <button id="oCsv" style="float:right;margin-left:8px;text-transform:none;letter-spacing:0">⬇ CSV</button>
+        <input id="qO" placeholder="search district / block…" style="float:right;margin-left:8px;text-transform:none;letter-spacing:0">
+        <label style="float:right;margin-left:8px;text-transform:none;letter-spacing:0;font-weight:400">Month <select id="oMo"></select></label>
+      </h2>
+      <div class="mu" style="font-size:12px">Source: transaction_monitoring_blockwise, cbo_type = 'SHG' (No. of SHG = total_clfs, onboarded = clfs_started_transactions) and cbo_type = 'VO' (same two columns). % of onboarding = onboarded ÷ total. Uses the Date, District and Trend window controls above; click a column heading to sort.</div>
+      <div id="oNote" class="mu" style="font-size:11px;margin-top:4px"></div>
+      <div id="oMsg" class="mu" style="margin:6px 0;white-space:pre-wrap"></div>
+      <div class="tw dt" id="otAll"></div>
+    </div>
+  </section>
 </main>
 
 <script>
@@ -205,7 +254,7 @@ th{color:var(--mut);font-weight:600;background:var(--card);cursor:pointer;white-
 const CFG = {
   url: 'https://jgmwkcvxdhjilrtuqgza.supabase.co',
   key: 'sb_publishable_G9WJ3Oi1s0Gj0clYZuTnoQ_MLb5R7H5',
-  p02: 'P02', s01: 'S01', cad: 'cadre_report'
+  p02: 'P02', s01: 'S01', cad: 'cadre_report', txn: 'transaction_monitoring_blockwise'
 };
 
 const $ = id => document.getElementById(id);
@@ -222,10 +271,10 @@ let ROWS=[], DATES=[], charts={}, sortKey='d', sortDir=1;
 let SROWS=[], SDATES=[], SERR='', sKey='d', sDir=1;
 let CROWS=[], CDATES=[], CERR='', cKey='d', cDir=1, cShowAll=true, cShowV={}, cSelSig='';
 
-async function fetchAll(table, cols){
+async function fetchAll(table, cols, ord='report_date.asc,district_name.asc,block_name.asc'){
   let out=[], from=0, step=1000;
   while(true){
-    const url=`${CFG.url}/rest/v1/${encodeURIComponent(table)}?select=${cols}&order=report_date.asc,district_name.asc,block_name.asc&limit=${step}&offset=${from}`;
+    const url=`${CFG.url}/rest/v1/${encodeURIComponent(table)}?select=${cols}&order=${ord}&limit=${step}&offset=${from}`;
     const r=await fetch(url,{headers:{apikey:CFG.key,Authorization:'Bearer '+CFG.key}});
     if(!r.ok) throw new Error(`${table}: HTTP ${r.status}\n${await r.text()}`);
     const d=await r.json(); out=out.concat(d);
@@ -267,6 +316,16 @@ async function load(){
       SROWS=q.map(r=>({date:r.report_date,d:norm(r.district_name),b:norm(r.block_name),tot:+r.total_shgs||0,ap:+r.approved_shgs||0,pe:+r.pending_shgs||0,re:+r.rejected_shgs||0,ba:+r.balance_shgs||0}));
       SDATES=[...new Set(SROWS.map(r=>r.date))].sort();
     }catch(e){SERR=e.message;}
+    TROWS=[]; TDATES=[]; TERR=''; OROWS=[]; ODATES=[];
+    try{
+      const t=await fetchAll(CFG.txn,'report_date,cbo_type,financial_year,quarter,month_name,district,block,total_clfs,clfs_started_transactions,transaction_captured','report_date.asc,district.asc,block.asc,id.asc');
+      const tAll=t.map(r=>({cbo:String(r.cbo_type||'').trim().toUpperCase(),rt:r.total_clfs==null?null:+r.total_clfs,rs:r.clfs_started_transactions==null?null:+r.clfs_started_transactions,date:r.report_date,fy:String(r.financial_year||'').trim(),q:String(r.quarter||'').trim(),m:String(r.month_name||'').trim(),d:norm(r.district),b:norm(r.block),clf:+r.total_clfs||0,st:+r.clfs_started_transactions||0,cap:+r.transaction_captured||0}));
+      TROWS=tAll.filter(r=>r.cbo==='CLF'); OROWS=tAll.filter(r=>r.cbo==='SHG'||r.cbo==='VO'); ODATES=[...new Set(OROWS.map(r=>r.date))].sort();
+      TDATES=[...new Set(TROWS.map(r=>r.date))].sort();
+      fillX('xFy',[...new Set(TROWS.map(r=>r.fy))].sort(),'All financial years');
+      fillX('xQtr',[...new Set(TROWS.map(r=>r.q))].sort(),'All quarters');
+      fillX('xMo',[...new Set(TROWS.map(r=>r.m))].sort((a,b)=>mi(a)-mi(b)),'All months');
+    }catch(e){TERR=e.message;}
     DATES=[...new Set(ROWS.map(r=>r.date))].sort();
     const ds=[...new Set(ROWS.map(r=>r.d))].sort();
     $('selDate').min=DATES[0]; if(!$('selDate').value) $('selDate').value=today();
@@ -389,7 +448,7 @@ function render(){
   $('tSlow').innerHTML=table([...ids,{h:'Progress',f:r=>pbar(r.pct)},{h:`Added ${W}d`,f:r=>sgn(r.gain)},{h:'Speed (pp/day)',f:r=>r.speed.toFixed(3)},{h:'ETA to target',f:r=>r.eta===null?'<span class="dn">no progress</span>':nf(r.eta)+' days'}],num([...below].sort((x,y)=>x.speed-y.speed||y.need-x.need).slice(0,10)));
   $('tImp').innerHTML=table([...ids,{h:'e-KYC',f:r=>nf(r.ek)},{h:'Progress',f:r=>pbar(r.pct)},{h:`Shortfall to ${T}%`,f:r=>nf(r.need)},{h:'Share of gap',f:r=>pf(r.share)},{h:'Cumulative',f:r=>pf(r.cum)}],num(imp));
   bl.forEach(r=>{r.need=Math.max(0,Math.ceil(r.mem*T/100-r.ek)); r.needShare=totNeed?r.need/totNeed*100:0;});
-  window._bl=bl; renderAll(); renderAllBlocks(); renderCadre(); renderShg();
+  window._bl=bl; renderAll(); renderAllBlocks(); renderCadre(); renderShg(); renderTxn(); renderCbo();
 }
 
 function renderAllBlocks(){
@@ -536,7 +595,7 @@ function renderCadre(){
     {h:'Approved',f:r=>nf(r.a)},{h:'Pending',f:r=>nf(r.p)},{h:'Rejected',f:r=>nf(r.r)},{h:'Not filled',f:r=>nf(r.nf)}],num(byD));
   /* heatmap: district x vertical (ignores vertical + district filters so the whole picture is visible) */
   const vNames=[...new Set(all.map(r=>r.v))].sort(), dNames=[...new Set(all.map(r=>r.d))].sort();
-  window._hall=all; renderHeat();
+  window._hall=all; window._hprev=(winDate&&winDate!==date)?atD(winDate):[]; window._hwin=winDate||''; window._hdate=date; renderHeat();
   $('tCDays').innerHTML=table([
     {h:'Date',f:r=>r.date},{h:'Cadres',f:r=>nf(r.th)},{h:'Filled',f:r=>nf(r.f)},{h:'%',f:r=>pf(r.fp)},{h:'Added',f:r=>sgn(r.gain)},
     {h:'Approved',f:r=>nf(r.a)},{h:'Pending',f:r=>nf(r.p)},{h:'Rejected',f:r=>nf(r.r)}],
@@ -599,7 +658,7 @@ function renderCadreAll(){
 let hShowAll=true, hShowV={}, hSig='';
 function renderHeat(){
   const all=window._hall||[], box=$('hSel');
-  if(!all.length){$('tCHeat').innerHTML='';box.innerHTML='';hSig='';return;}
+  if(!all.length){$('tCHeat').innerHTML='';box.innerHTML='';$('hNote').textContent='';hSig='';return;}
   const vNames0=[...new Set(all.map(r=>r.v))].sort(), dNames=[...new Set(all.map(r=>r.d))].sort();
   const sig=vNames0.join('|');
   if(sig!==hSig){
@@ -614,20 +673,30 @@ function renderHeat(){
     $('hSelNone').onclick=()=>{box.querySelectorAll('input[data-hv]').forEach(i=>i.checked=false);sync();renderHeat();};
   }
   const vNames=vNames0.filter(v=>hShowV[v]!==false);
-  const hm=new Map(); all.forEach(r=>{const k=r.d+'|'+r.v; const o=hm.get(k)||{th:0,f:0,a:0}; o.th+=r.th; o.f+=r.f; o.a+=r.a; hm.set(k,o);});
-  const sumBy=(fn)=>{const o={th:0,f:0,a:0}; all.filter(fn).forEach(r=>{o.th+=r.th;o.f+=r.f;o.a+=r.a;}); return o;};
+  const prev=window._hprev||[], hasPrev=prev.length>0;
+  const aggMap=(src)=>{const m=new Map(); src.forEach(r=>{const k=r.d+'|'+r.v; const o=m.get(k)||{th:0,f:0,a:0}; o.th+=r.th; o.f+=r.f; o.a+=r.a; m.set(k,o);}); return m;};
+  const hm=aggMap(all), hmP=aggMap(prev);
+  const sumBy=(fn,src=all)=>{const o={th:0,f:0,a:0}; src.filter(fn).forEach(r=>{o.th+=r.th;o.f+=r.f;o.a+=r.a;}); return o;};
   // "All verticals" = unique cadres per block (block_unique_* columns, counted once per block), not a sum of verticals
-  const uniqBy=(fn)=>{const m=new Map(); all.filter(fn).forEach(r=>{const k=r.d+'|'+r.b; if(!m.has(k)) m.set(k,r);}); const o={th:0,f:0,a:0}; m.forEach(r=>{o.th+=r.base;o.f+=r.bf;o.a+=r.ba;}); return o;};
+  const uniqBy=(fn,src=all)=>{const m=new Map(); src.filter(fn).forEach(r=>{const k=r.d+'|'+r.b; if(!m.has(k)) m.set(k,r);}); const o={th:0,f:0,a:0}; m.forEach(r=>{o.th+=r.base;o.f+=r.bf;o.a+=r.ba;}); return o;};
   const dash='<span class="mu">–</span>';
   const pcs=(p)=>`<span style="color:${pcol(p)};font-weight:600">${p.toFixed(1)}%</span>`;
-  const cells=(o)=>{ if(!o||!o.th) return `<td class="gs">${dash}</td><td>${dash}</td><td>${dash}</td>`;
-    return `<td class="gs">${nf(o.th)}</td><td>${nf(o.a)}</td><td>${pcs(pct(o.a,o.f))}</td>`; };
-  const sub=['Cadres','Approved cadres','Approval % (of filled)'];
+  const wl=(window._hwin||'').split('-').reverse().join('-');
+  // small change indicator vs the start of the trend window (inside the same cell)
+  const dl=(c,p)=>{ if(!hasPrev) return ''; const x=c-(p||0);
+    const tip=`title="Change since ${wl}"`;
+    if(x>0) return `<span class="dl up" ${tip}>▲ +${nf(x)}</span>`;
+    if(x<0) return `<span class="dl dn" ${tip}>▼ −${nf(-x)}</span>`;
+    return `<span class="dl mu" ${tip}>● 0</span>`; };
+  const cells=(o,p)=>{ if(!o||!o.th) return `<td class="gs">${dash}</td><td>${dash}</td><td>${dash}</td>`;
+    return `<td class="gs">${nf(o.th)}${dl(o.th,p&&p.th)}</td><td>${nf(o.a)}${dl(o.a,p&&p.a)}</td><td>${pcs(pct(o.a,o.th))}</td>`; };
+  $('hNote').textContent=hasPrev?`▲/▼ = change in Cadres and Approved cadres since ${wl} (trend window: ${$('selWin').value} day${+$('selWin').value>1?'s':''})`:'No earlier date available for comparison.';
+  const sub=['Cadres','Approved cadres','Approval %'];
   const groups=[...vNames,...(hShowAll?['All']:[])];
   $('tCHeat').innerHTML=`<table><thead><tr><th rowspan="2">District</th>${groups.map(v=>`<th class="gh gs" colspan="3">${v==='All'?'All verticals':v}</th>`).join('')}</tr>`
     +`<tr>${groups.map(()=>sub.map((h,i)=>`<th${i===0?' class="gs"':''}>${h}</th>`).join('')).join('')}</tr></thead><tbody>${
-    dNames.map(dd=>`<tr><td><b>${dd}</b></td>${vNames.map(v=>cells(hm.get(dd+'|'+v))).join('')}${hShowAll?cells(uniqBy(r=>r.d===dd)):''}</tr>`).join('')
-  }<tr><td><b>All districts</b></td>${vNames.map(v=>cells(sumBy(r=>r.v===v))).join('')}${hShowAll?cells(uniqBy(()=>true)):''}</tr></tbody></table>`;
+    dNames.map(dd=>`<tr><td><b>${dd}</b></td>${vNames.map(v=>cells(hm.get(dd+'|'+v),hmP.get(dd+'|'+v))).join('')}${hShowAll?cells(uniqBy(r=>r.d===dd),uniqBy(r=>r.d===dd,prev)):''}</tr>`).join('')
+  }<tr><td><b>All districts</b></td>${vNames.map(v=>cells(sumBy(r=>r.v===v),sumBy(r=>r.v===v,prev))).join('')}${hShowAll?cells(uniqBy(()=>true),uniqBy(()=>true,prev)):''}</tr></tbody></table>`;
 }
 
 $('cVert').onchange=renderCadre; $('cMin').onchange=renderCadre; $('qC').oninput=renderCadreAll;
@@ -640,8 +709,8 @@ $('cCsv').onclick=()=>{
 /* ================= SHG Approval Analysis (P02) ================= */
 const effS = () => { const v=$('selDate').value; if(!SDATES.length) return ''; if(!v) return SDATES[SDATES.length-1]; const ok=SDATES.filter(d=>d<=v); return ok.length?ok[ok.length-1]:SDATES[0]; };
 const sDateLabel = () => { const d=effS(); return d?'Date: '+d.split('-').reverse().join('-'):''; };
-const secOf = el => el.closest('#shgSec')?'shg':el.closest('#cadreSec')?'cadre':'ekyc';
-const secDate = sec => sec==='shg'?sDateLabel():sec==='cadre'?cDateLabel():dateLabel();
+const secOf = el => el.closest('#txnSec')?'txn':el.closest('#shgSec')?'shg':el.closest('#cadreSec')?'cadre':'ekyc';
+const secDate = sec => sec==='txn'?xDateLabel():sec==='shg'?sDateLabel():sec==='cadre'?cDateLabel():dateLabel();
 const ssum = rows => rows.reduce((a,r)=>(a.tot+=r.tot,a.ap+=r.ap,a.pe+=r.pe,a.re+=r.re,a.ba+=r.ba,a),{tot:0,ap:0,pe:0,re:0,ba:0});
 const sfin = t => ({...t, ap_p:pct(t.ap,t.tot), pe_p:pct(t.pe,t.tot), re_p:pct(t.re,t.tot), ba_p:pct(t.ba,t.tot)});
 function sgrp(rows,keyFn,ex){
@@ -764,6 +833,178 @@ $('sCsv').onclick=()=>{
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`shg_status_${d}.csv`;a.click();
 };
 
+/* ---- Transaction monitoring (Supabase table transaction_monitoring_blockwise) ---- */
+const MORD=['April','May','June','July','August','September','October','November','December','January','February','March'];
+const mi=m=>{const k=MORD.indexOf(m);return k<0?99:k;};
+let TROWS=[],TDATES=[],TERR='',xKey='d',xDir=1;
+const effX=()=>{const v=$('selDate').value;if(!TDATES.length)return '';if(!v)return TDATES[TDATES.length-1];const ok=TDATES.filter(d=>d<=v);return ok.length?ok[ok.length-1]:TDATES[0];};
+const xDateLabel=()=>{const d=effX();return d?'Date: '+d.split('-').reverse().join('-'):'';};
+const RLS_SQL='create policy "anon can read transaction_monitoring_blockwise" on public.transaction_monitoring_blockwise for select to anon using (true);';
+const fillX=(id,vals,all)=>{const s=$(id),cur=s.value;s.innerHTML=`<option value="">${all}</option>`+vals.map(v=>`<option>${v}</option>`).join('');if(vals.includes(cur))s.value=cur;};
+const xAgg=rows=>{const a=rows.reduce((t,r)=>(t.clf+=r.clf,t.st+=r.st,t.cap+=r.cap,t.zero+=(r.clf>0&&r.cap===0?1:0),t.n++,t),{clf:0,st:0,cap:0,zero:0,n:0});a.p=pct(a.cap,a.clf);a.sp=pct(a.st,a.clf);a.cv=pct(a.cap,a.st);return a;};
+const xGroup=(rows,kf)=>{const m=new Map();rows.forEach(r=>{const k=kf(r);if(!m.has(k))m.set(k,[]);m.get(k).push(r);});return m;};
+const xBase=()=>{const dt=effX(),fy=$('xFy').value,q=$('xQtr').value,d=$('selDist').value;return TROWS.filter(r=>r.date===dt&&(!fy||r.fy===fy)&&(!q||r.q===q)&&(!d||r.d===d));};
+function xClear(text){
+  $('xMsg').textContent=text; $('xIns').innerHTML='';
+  ['xKpis','xtMon','xtQ','xtDist','xtHeat','xtLow','xtGap','xtAll'].forEach(i=>$(i).innerHTML='');
+  Object.keys(charts).filter(k=>k.startsWith('xc')).forEach(k=>{charts[k].destroy();delete charts[k];});
+  window._xr=[];
+}
+function renderTxn(){
+  $('xMsg').style.whiteSpace='pre-wrap';
+  $('xMeta').textContent=TROWS.length?`· ${nf(TROWS.length)} rows · report date ${effX().split('-').reverse().join('-')}`:'';
+  if(TERR||!TROWS.length){xClear(TERR?'Could not load transaction_monitoring_blockwise:\n'+TERR:'No rows returned from transaction_monitoring_blockwise. If the table has data, row-level security is blocking the anon key – run this once in the Supabase SQL editor:\n\n'+RLS_SQL);return;}
+  const base=xBase();
+  if(!base.length){xClear('No rows for this selection.');return;}
+  $('xMsg').textContent='';
+  const mo=$('xMo').value, rows=mo?base.filter(r=>r.m===mo):base;
+  const multiFy=new Set(base.map(r=>r.fy)).size>1, key=r=>r.fy+'|'+r.m;
+  const byM=[...xGroup(base,key)].map(([k,a])=>({lbl:multiFy?`${a[0].m} ${a[0].fy}`:a[0].m,m:a[0].m,fy:a[0].fy,q:a[0].q,...xAgg(a)})).sort((a,b)=>a.fy.localeCompare(b.fy)||mi(a.m)-mi(b.m));
+  byM.forEach((t,k)=>t.pp=k?t.p-byM[k-1].p:null);
+  const byQ=[...xGroup(base,r=>r.fy+'|'+r.q)].map(([k,a])=>({q:a[0].q,fy:a[0].fy,months:new Set(a.map(r=>r.m)).size,...xAgg(a)})).sort((a,b)=>a.fy.localeCompare(b.fy)||a.q.localeCompare(b.q));
+  const byD=[...xGroup(rows,r=>r.d)].map(([d,a])=>({d,blocks:new Set(a.map(r=>r.b)).size,...xAgg(a)})).sort((a,b)=>b.p-a.p);
+  const byB=[...xGroup(rows,r=>r.d+'|'+r.b)].map(([k,a])=>({d:a[0].d,b:a[0].b,...xAgg(a)}));
+  const A=xAgg(rows), nM=new Set(rows.map(key)).size, U=nM>1?'CLF-months':'CLFs';
+  const lastK=[...new Set(rows.map(key))].sort((a,b)=>{const[x,y]=[a.split('|'),b.split('|')];return x[0].localeCompare(y[0])||mi(x[1])-mi(y[1]);}).pop();
+  const clfNow=rows.filter(r=>key(r)===lastK).reduce((x,r)=>x+r.clf,0);
+  const cur=byM[byM.length-1], done=byM.length>1?byM.slice(0,-1):byM;
+  const best=[...done].sort((a,b)=>b.p-a.p)[0], weak=[...done].sort((a,b)=>a.p-b.p)[0];
+  const vb=byB.filter(b=>b.clf>0);
+  const gapTot=vb.reduce((x,b)=>x+Math.max(0,b.clf-b.cap),0); let cum=0;
+  const gl=vb.map(b=>({...b,gap:b.clf-b.cap})).filter(b=>b.gap>0).sort((a,b)=>b.gap-a.gap).slice(0,10).map(b=>{cum+=b.gap;return{...b,share:gapTot?b.gap/gapTot*100:0,cum:gapTot?cum/gapTot*100:0};});
+
+  /* insights */
+  const I=[];
+  I.push(`Overall <b>${pf(A.p)}</b> captured and <b>${pf(A.sp)}</b> started (${nf(A.cap)} captured, ${nf(A.st)} started, of ${nf(A.clf)} ${U}); ${nf(A.st-A.cap)} ${U} started but not yet captured.`);
+  if(done.length>1){const f=done[0],l=done[done.length-1];I.push(`Captured % moved from <b>${pf(f.p)}</b> in ${f.lbl} to <b>${pf(l.p)}</b> in ${l.lbl} (${sgn(+(l.p-f.p).toFixed(2),n=>n.toFixed(2)+' pp')}).`);}
+  I.push(`Best month: <b>${best.lbl}</b> (${pf(best.p)}); weakest ${byM.length>1?'completed ':''}month: <b>${weak.lbl}</b> (${pf(weak.p)}, ${weak.zero} blocks with zero capture).`);
+  if(byM.length>1) I.push(`Latest month in the data: <b>${cur.lbl}</b> – ${nf(cur.cap)} of ${nf(cur.clf)} CLFs captured so far (${cur.zero} of ${cur.n} blocks still at zero).`);
+  if(byD.length>1) I.push(`Highest district: <b>${byD[0].d}</b> (${pf(byD[0].p)}); lowest: <b>${byD[byD.length-1].d}</b> (${pf(byD[byD.length-1].p)}).`);
+  if(gapTot>0&&gl.length) I.push(`The ${Math.min(5,gl.length)} blocks with the most uncaptured CLFs hold <b>${pf(gl[Math.min(5,gl.length)-1].cum)}</b> of the ${nf(gapTot)} ${U} still to be captured.`);
+  $('xIns').innerHTML=I.map(x=>`<li>${x}</li>`).join('');
+
+  /* KPIs */
+  $('xKpis').innerHTML=[
+    ['Blocks',nf(byB.length),`${byD.length} districts`],
+    ['Total CLFs',nf(clfNow),`${nM} month${nM>1?'s':''} in view`],
+    ['Started transactions',pf(A.sp),`${nf(A.st)} of ${nf(A.clf)} ${U}`],
+    ['Transactions captured',pf(A.p),`${nf(A.cap)} of ${nf(A.clf)} ${U}`],
+    ['Captured ÷ started',pf(A.cv),`${nf(A.st-A.cap)} started, not captured`],
+    ['Zero-capture block-months',nf(A.zero),`of ${nf(A.n)} block-months`],
+    ['Best month',best.lbl,pf(best.p)],
+    [byM.length>1?'Weakest completed month':'Weakest month',weak.lbl,pf(weak.p)]
+  ].map(k=>`<div class="kpi"><span>${k[0]}</span><b>${k[1]}</b><i class="mu">${k[2]}</i></div>`).join('');
+
+  /* charts */
+  const L=byM.map(t=>t.lbl), y100={scales:{y:{min:0,max:100}}};
+  mk('xcMo',{type:'line',data:{labels:L,datasets:[{label:'Captured % of CLFs',data:byM.map(t=>+t.p.toFixed(2)),borderColor:col('--ok'),backgroundColor:col('--ok')+'33',fill:true,tension:.25,pointRadius:4},{label:'Started %',data:byM.map(t=>+t.sp.toFixed(2)),borderColor:col('--ac'),tension:.25,pointRadius:3}]},options:opt(y100)});
+  mk('xcZ',{type:'bar',data:{labels:L,datasets:[{label:'Blocks with zero capture',data:byM.map(t=>t.zero),backgroundColor:col('--bad')}]},options:opt()});
+  mk('xcDs',{type:'bar',data:{labels:byD.map(x=>x.d),datasets:[{label:'Captured %',data:byD.map(x=>+x.p.toFixed(2)),backgroundColor:col('--ac')}]},options:opt({indexAxis:'y'})});
+  mk('xcQ',{type:'bar',data:{labels:byQ.map(x=>x.q),datasets:[{label:'Started %',data:byQ.map(x=>+x.sp.toFixed(2)),backgroundColor:col('--ac')},{label:'Captured %',data:byQ.map(x=>+x.p.toFixed(2)),backgroundColor:col('--ok')}]},options:opt(y100)});
+  const bins=Array(10).fill(0); vb.forEach(b=>bins[Math.min(9,Math.floor(b.p/10))]++);
+  mk('xcH',{type:'bar',data:{labels:bins.map((_,k)=>`${k*10}-${k*10+10}%`),datasets:[{label:'Blocks',data:bins,backgroundColor:col('--warn')}]},options:opt()});
+
+  /* tables */
+  const num=a=>a.map((r,k)=>({...r,_i:k+1}));
+  const ids=[{h:'#',f:r=>r._i},{h:'District',f:r=>r.d,l:1},{h:'Block',f:r=>`<b>${r.b}</b>`,l:1}];
+  const zc=r=>r.zero?`<span class="dn">${nf(r.zero)}</span>`:'0';
+  $('xtMon').innerHTML=table([{h:'Month',f:r=>`<b>${r.lbl}</b>`,l:1},{h:'Quarter',f:r=>r.q,l:1},{h:'CLFs',f:r=>nf(r.clf)},{h:'Started',f:r=>nf(r.st)},{h:'Captured',f:r=>nf(r.cap)},{h:'Captured %',f:r=>pbar(r.p)},{h:'Zero-capture blocks',f:zc},{h:'Δ pp',f:r=>r.pp===null?'<span class="mu">–</span>':sgn(+r.pp.toFixed(2),n=>n.toFixed(2))}],byM);
+  $('xtQ').innerHTML=table([{h:'Quarter',f:r=>`<b>${r.q}</b>`,l:1},{h:'FY',f:r=>r.fy,l:1},{h:'Months',f:r=>r.months},{h:'Started %',f:r=>pf(r.sp)},{h:'Captured',f:r=>nf(r.cap)},{h:'Captured %',f:r=>pbar(r.p)},{h:'Zero-capture block-months',f:zc}],byQ);
+  $('xtDist').innerHTML=table([{h:'#',f:r=>r._i},{h:'District',f:r=>`<b>${r.d}</b>`,l:1},{h:'Blocks',f:r=>r.blocks},{h:U,f:r=>nf(r.clf)},{h:'Started',f:r=>nf(r.st)},{h:'Captured',f:r=>nf(r.cap)},{h:'Captured %',f:r=>pbar(r.p)},{h:'Zero-capture block-months',f:zc}],num(byD));
+  $('xtLow').innerHTML=table([...ids,{h:U,f:r=>nf(r.clf)},{h:'Captured',f:r=>nf(r.cap)},{h:'Captured %',f:r=>pbar(r.p)},{h:'Zero-capture months',f:zc}],num([...vb].sort((a,b)=>a.p-b.p||b.clf-a.clf).slice(0,10)));
+  $('xtGap').innerHTML=table([...ids,{h:U,f:r=>nf(r.clf)},{h:'Captured %',f:r=>pbar(r.p)},{h:'Not captured',f:r=>`<b>${nf(r.gap)}</b>`},{h:'Share of gap',f:r=>pf(r.share)},{h:'Cumulative',f:r=>pf(r.cum)}],num(gl));
+  const hc=a=>{if(!a.clf)return '<td class="mu">–</td>';const c=pcol(a.p);return `<td style="background:${c}2e;color:${c};font-weight:600">${a.p.toFixed(1)}%</td>`;};
+  const hd=[...new Set(base.map(r=>r.d))].sort().concat(['ALL']);
+  $('xtHeat').innerHTML=`<table><thead><tr><th>District</th>${byM.map(t=>`<th>${t.lbl}</th>`).join('')}<th>Overall</th></tr></thead><tbody>${hd.map(d=>{const s=d==='ALL'?base:base.filter(r=>r.d===d);return `<tr><td${d==='ALL'?' style="font-weight:700"':''}>${d==='ALL'?'All districts':d}</td>${byM.map(t=>hc(xAgg(s.filter(r=>key(r)===t.fy+'|'+t.m)))).join('')}${hc(xAgg(s))}</tr>`;}).join('')}</tbody></table>`;
+  window._xr=rows.map(r=>({...r,p:pct(r.cap,r.clf),mo:mi(r.m)})); renderTxnAll();
+}
+function renderTxnAll(){
+  const q=$('qX').value.trim().toUpperCase(), R=window._xr||[], key=r=>r.fy+'|'+r.m;
+  const dsel=$('xD'),dcur=dsel.value,dl=[...new Set(R.map(r=>r.d))].sort();
+  dsel.innerHTML='<option value="">All districts</option>'+dl.map(d=>`<option>${d}</option>`).join(''); if(dl.includes(dcur)) dsel.value=dcur;
+  const ms=[...new Map(R.map(r=>[key(r),{k:key(r),m:r.m,q:r.q,fy:r.fy}])).values()].sort((a,b)=>a.fy.localeCompare(b.fy)||mi(a.m)-mi(b.m));
+  const multiFy=new Set(ms.map(t=>t.fy)).size>1, lastK=ms.length?ms[ms.length-1].k:'';
+  const gs=[]; ms.forEach(t=>{const g=gs[gs.length-1];if(g&&g.fy===t.fy&&g.q===t.q)g.n++;else gs.push({fy:t.fy,q:t.q,n:1});});
+  const bm=new Map(); R.forEach(r=>{const k=r.d+'|'+r.b;if(!bm.has(k))bm.set(k,{d:r.d,b:r.b,c:{}});bm.get(k).c[key(r)]=r;});
+  const a=[...bm.values()].map(x=>{const t=xAgg(Object.values(x.c));return{...x,tot:t.p,cl:x.c[lastK]?x.c[lastK].clf:t.clf};}).filter(x=>(!dsel.value||x.d===dsel.value)&&(!q||(x.d+' '+x.b).includes(q)));
+  const v=(x,k)=>k==='d'?x.d:k==='b'?x.b:k==='tot'?x.tot:k==='cl'?x.cl:(x.c[k.slice(2)]?x.c[k.slice(2)].p:-1);
+  a.sort((x,y)=>{const A=v(x,xKey),B=v(y,xKey);return (typeof A==='string'?A.localeCompare(B):A-B)*xDir||x.d.localeCompare(y.d)||x.b.localeCompare(y.b);});
+  const ar=k=>xKey===k?(xDir>0?' ▲':' ▼'):' ↕', C='text-align:center';
+  const cell=r=>{if(!r)return `<td class="mu" style="${C}">–</td>`;const c=pcol(r.p);return `<td style="${C};background:${c}22" title="${r.cap} captured of ${r.clf} CLFs (${r.st} started)"><b style="color:${c}">${r.p.toFixed(1)}%</b> <span class="mu" style="font-size:.85em">${r.cap}/${r.clf}</span></td>`;};
+  $('xtAll').innerHTML=`<table><thead><tr><th rowspan="2">#</th><th rowspan="2" data-k="d" class="l">District${ar('d')}</th><th rowspan="2" data-k="b" class="l">Block${ar('b')}</th><th rowspan="2" data-k="cl">CLFs${ar('cl')}</th>${gs.map(g=>`<th colspan="${g.n}" style="${C};border-left:2px solid var(--line)">${g.q}${multiFy?' · '+g.fy:''}</th>`).join('')}</tr><tr>${ms.map((t,i)=>`<th data-k="k:${t.k}" style="${C}${i===0||ms[i-1].q!==t.q||ms[i-1].fy!==t.fy?';border-left:2px solid var(--line)':''}">${t.m}${ar('k:'+t.k)}</th>`).join('')}</tr></thead><tbody>${a.map((x,i)=>`<tr><td>${i+1}</td><td class="l">${x.d}</td><td class="l"><b>${x.b}</b></td><td>${nf(x.cl)}</td>${ms.map(t=>cell(x.c[t.k])).join('')}</tr>`).join('')||`<tr><td colspan="${4+ms.length}" class="mu">No blocks match</td></tr>`}</tbody></table>`;
+  $('xtAll').querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{const k=th.dataset.k;xDir=xKey===k?-xDir:(k==='d'||k==='b'?1:-1);xKey=k;renderTxnAll();});
+}
+$('xFy').onchange=$('xQtr').onchange=$('xMo').onchange=renderTxn; $('qX').oninput=renderTxnAll; $('xD').onchange=renderTxnAll;
+$('xCsv').onclick=()=>{
+  const h=['report_date','financial_year','quarter','month_name','district','block','total_clfs','clfs_started_transactions','transaction_captured','percentage'], d=effX();
+  const csv=[h.join(',')].concat((window._xr||[]).map(r=>[d,r.fy,r.q,r.m,r.d,r.b,r.clf,r.st,r.cap,r.p.toFixed(2)].map(v=>`"${v}"`).join(','))).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`transaction_monitoring_${d}.csv`;a.click();
+};
+
+/* ---- SHG & VO onboarding table (transaction_monitoring_blockwise, cbo_type = SHG / VO) ---- */
+let OROWS=[],ODATES=[],oKey='d',oDir=1;
+const effO=()=>{const v=$('selDate').value;if(!ODATES.length)return '';if(!v)return ODATES[ODATES.length-1];const ok=ODATES.filter(d=>d<=v);return ok.length?ok[ok.length-1]:ODATES[0];};
+function renderCbo(){
+  const msg=$('oMsg'), box=$('otAll'), msel=$('oMo'); window._or=[];
+  const clear=t=>{msg.textContent=t;box.innerHTML='';$('oMeta').textContent='';$('oNote').textContent='';msel.innerHTML='';};
+  if(TERR) return clear('Could not load transaction_monitoring_blockwise:\n'+TERR);
+  if(!OROWS.length) return clear("No SHG or VO rows yet in transaction_monitoring_blockwise (cbo_type = 'SHG' / 'VO'). Run \"Transaction Data Copy to My Server\" in the LokOS Toolkit extension to copy them.");
+  const dt=effO(), dsel=$('selDist').value, day=OROWS.filter(r=>r.date===dt);
+  const ml=[...new Map(day.map(r=>[r.fy+'|'+r.m,{k:r.fy+'|'+r.m,fy:r.fy,m:r.m}])).values()].sort((a,b)=>a.fy.localeCompare(b.fy)||mi(a.m)-mi(b.m));
+  const cur=msel.value;
+  msel.innerHTML=ml.map(t=>`<option value="${t.k}">${t.m} ${t.fy}</option>`).join('');
+  msel.value=ml.some(t=>t.k===cur)?cur:(ml.length?ml[ml.length-1].k:'');
+  const k=msel.value, q=$('qO').value.trim().toUpperCase();
+  /* one object per block for a date, for the chosen month */
+  const build=rows=>{const bm=new Map();
+    rows.filter(r=>r.fy+'|'+r.m===k&&(!dsel||r.d===dsel)).forEach(r=>{
+      const key=r.d+'|'+r.b; if(!bm.has(key)) bm.set(key,{d:r.d,b:r.b,shg:null,shgOn:null,vo:null,voOn:null});
+      const o=bm.get(key); if(r.cbo==='SHG'){o.shg=r.rt;o.shgOn=r.rs;}else{o.vo=r.rt;o.voOn=r.rs;}});
+    return bm;};
+  const pc=(on,tot)=>(on===null||tot===null||!(tot>0))?null:on/tot*100;
+  const bm=build(day);
+  /* comparison: the same month, the trend-window start date (same rule as the cadre table) */
+  const W=+$('selWin').value, od=ODATES.filter(d=>d<=dt), winDate=od[Math.max(0,od.length-1-W)];
+  const hasPrev=!!winDate&&winDate!==dt, pm=hasPrev?build(OROWS.filter(r=>r.date===winDate)):new Map();
+  const wl=hasPrev?winDate.split('-').reverse().join('-'):'';
+  const a=[...bm.entries()].filter(([,x])=>!q||(x.d+' '+x.b).includes(q)).map(([key,x])=>({...x,shgP:pc(x.shgOn,x.shg),voP:pc(x.voOn,x.vo),_p:pm.get(key)||null}));
+  const nv=v=>v===null?-1:v;
+  a.sort((x,y)=>{const A=x[oKey],B=y[oKey];return (typeof A==='string'?A.localeCompare(B):nv(A)-nv(B))*oDir||x.d.localeCompare(y.d)||x.b.localeCompare(y.b);});
+  const sum=(f,rows=a)=>{const v=rows.map(f).filter(x=>x!==null&&x!==undefined);return v.length?v.reduce((s,x)=>s+x,0):null;};
+  const n=v=>v===null?'<span class="mu">–</span>':nf(v);
+  const pcs=p=>p===null?'<span class="mu">–</span>':`<span style="color:${pcol(p)};font-weight:600">${p.toFixed(1)}%</span>`;
+  /* small change indicator inside the cell (nothing when there is no earlier value to compare with) */
+  const dl=(c,p)=>{ if(!hasPrev||c===null||p===null||p===undefined) return ''; const x=c-p, tip=`title="Change since ${wl}"`;
+    if(x>0) return `<span class="dl up" ${tip}>▲ +${nf(x)}</span>`;
+    if(x<0) return `<span class="dl dn" ${tip}>▼ −${nf(-x)}</span>`;
+    return `<span class="dl mu" ${tip}>● 0</span>`; };
+  const ar=c=>oKey===c?(oDir>0?' ▲':' ▼'):' ↕';
+  const cols=[['d','District',1],['b','Block',1],['shg','No. of SHG'],['shgOn','No. of SHG onboarded'],['shgP','% of SHG onboarding'],['vo','No. of VO'],['voOn','No. of VO onboarded'],['voP','% of VO onboarding']];
+  const cellsOf=(x,p)=>`<td>${n(x.shg)}${dl(x.shg,p&&p.shg)}</td><td>${n(x.shgOn)}${dl(x.shgOn,p&&p.shgOn)}</td><td>${pcs(x.shgP)}</td><td>${n(x.vo)}${dl(x.vo,p&&p.vo)}</td><td>${n(x.voOn)}${dl(x.voOn,p&&p.voOn)}</td><td>${pcs(x.voP)}</td>`;
+  const T={shg:sum(x=>x.shg),shgOn:sum(x=>x.shgOn),vo:sum(x=>x.vo),voOn:sum(x=>x.voOn)}; T.shgP=pc(T.shgOn,T.shg); T.voP=pc(T.voOn,T.vo);
+  const prevRows=a.map(x=>x._p).filter(Boolean);
+  const TP=hasPrev&&prevRows.length?{shg:sum(x=>x.shg,prevRows),shgOn:sum(x=>x.shgOn,prevRows),vo:sum(x=>x.vo,prevRows),voOn:sum(x=>x.voOn,prevRows)}:null;
+  box.innerHTML=`<table><thead><tr>${cols.map(c=>`<th data-k="${c[0]}"${c[2]?' class="l"':''}>${c[1]}${ar(c[0])}</th>`).join('')}</tr></thead><tbody>`+
+    (a.length?`<tr style="font-weight:700"><td class="l" colspan="2">Total (${nf(a.length)} blocks)</td>${cellsOf(T,TP)}</tr>`:'')+
+    (a.map(x=>`<tr><td class="l">${x.d}</td><td class="l"><b>${x.b}</b></td>${cellsOf(x,x._p)}</tr>`).join('')||'<tr><td colspan="8" class="mu">No data for this selection</td></tr>')+'</tbody></table>';
+  box.querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{const c=th.dataset.k;oDir=oKey===c?-oDir:(c==='d'||c==='b'?1:-1);oKey=c;renderCbo();});
+  $('oNote').textContent=hasPrev?`▲/▼ = change in the counts since ${wl} (trend window: ${W} day${W>1?'s':''}); percentages are onboarded ÷ total.`:'No earlier date available for comparison; percentages are onboarded ÷ total.';
+  const notes=[];
+  if(!day.some(r=>r.cbo==='SHG')) notes.push('No SHG rows for this date yet.');
+  if(!day.some(r=>r.cbo==='VO')) notes.push('No VO rows for this date yet.');
+  else if(a.length&&a.every(x=>x.vo===null)) notes.push('No. of VO is blank because total_clfs is empty for the VO rows.');
+  msg.textContent=notes.join('\n');
+  const ms=ml.find(t=>t.k===k);
+  $('oMeta').textContent=`· report date ${dt.split('-').reverse().join('-')} · ${ms?ms.m+' '+ms.fy:''}`;
+  window._or=a;
+}
+$('oMo').onchange=renderCbo; $('qO').oninput=renderCbo;
+$('oCsv').onclick=()=>{
+  const h=['report_date','month','district','block','no_of_shg','no_of_shg_onboarded','pct_shg_onboarding','no_of_vo','no_of_vo_onboarded','pct_vo_onboarding'], d=effO(), mo=$('oMo').value.replace('|',' ');
+  const csv=[h.join(',')].concat((window._or||[]).map(r=>[d,mo,r.d,r.b,r.shg??'',r.shgOn??'',r.shgP==null?'':r.shgP.toFixed(2),r.vo??'',r.voOn??'',r.voP==null?'':r.voP.toFixed(2)].map(v=>`"${v}"`).join(','))).join('\n');
+  const el=document.createElement('a');el.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));el.download=`shg_vo_onboarding_${d}.csv`;el.click();
+};
+
 /* ---- themes ---- */
 const col = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 function applyTheme(t){ document.documentElement.dataset.theme=t; $('selTheme').value=t; try{localStorage.setItem('ekyc_theme',t)}catch(e){} }
@@ -775,7 +1016,7 @@ function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';cle
 async function copyImg(card,btn){
   const title=cardTitle(card);
   const sec=secOf(card), inC=sec==='cadre';
-  const foot=sec==='shg'?`TRLM · SHG approval · ${effS()} · ${card.dataset.d||$('selDist').value||'All districts'}`:inC?`TRLM · Cadre profile · ${effC()} · ${card.dataset.d||$('selDist').value||'All districts'} · ${$('cVert').value||'All verticals'}`:`TRLM · e-KYC progress · ${effDate()} · ${card.dataset.d||$('selDist').value||'All districts'}`;
+  const foot=sec==='txn'?`TRLM · Transaction monitoring · ${effX()} · ${card.dataset.d||$('selDist').value||'All districts'}`:sec==='shg'?`TRLM · SHG approval · ${effS()} · ${card.dataset.d||$('selDist').value||'All districts'}`:inC?`TRLM · Cadre profile · ${effC()} · ${card.dataset.d||$('selDist').value||'All districts'} · ${$('cVert').value||'All verticals'}`:`TRLM · e-KYC progress · ${effDate()} · ${card.dataset.d||$('selDist').value||'All districts'}`;
   const old=btn.textContent; btn.textContent='⏳'; btn.disabled=true;
   try{
     const canvas=await html2canvas(card,{backgroundColor:col('--card'),scale:2,onclone:(doc,el)=>{
@@ -789,7 +1030,7 @@ async function copyImg(card,btn){
         el.appendChild(g);}
     }});
     const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
-    const fname=title.replace(/[^\w]+/g,'_').slice(0,50)+'_'+(sec==='shg'?effS():inC?effC():effDate())+'.png';
+    const fname=title.replace(/[^\w]+/g,'_').slice(0,50)+'_'+(sec==='shg'?effS():inC?effC():sec==='txn'?effX():effDate())+'.png';
     try{
       await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
       toast('Image copied – paste it into WhatsApp (Ctrl+V)');
@@ -848,7 +1089,7 @@ function downloadXlsx(card,btn){
   ws['!merges']=merges;
   ws['!cols']=rows[0].map((_,k)=>({wch:Math.min(40,Math.max(8,...rows.map(r=>String(r[k]).length)))}));
   const title=cardTitle(card), sec=secOf(card);
-  const date=sec==='shg'?effS():sec==='cadre'?effC():effDate();
+  const date=sec==='shg'?effS():sec==='cadre'?effC():sec==='txn'?effX():effDate();
   const sheet=(title.replace(/[\[\]:*?\/\\]/g,' ').replace(/\s+/g,' ').trim().slice(0,31))||'Data';
   const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,sheet);
   const fname=(title.replace(/[^\w]+/g,'_').replace(/^_+|_+$/g,'').slice(0,50)||'table')+'_'+date+'.xlsx';
@@ -868,7 +1109,7 @@ const dateLabel = () => { const d=DATES.length?effDate():''; return d?'Date: '+d
 function decorateTitle(c){
   if(!c.querySelector('.tw')||c.querySelector('.rb')) return;
   const h=c.querySelector('h2');
-  const rb=document.createElement('span'); rb.className='rb'; rb.textContent={shg:'SHG Report',cadre:'Cadre Report',ekyc:'E-KYC Report'}[secOf(c)]; h.insertBefore(rb,h.firstChild);
+  const rb=document.createElement('span'); rb.className='rb'; rb.textContent={shg:'SHG Report',cadre:'Cadre Report',ekyc:'E-KYC Report',txn:'Transaction Report'}[secOf(c)]; h.insertBefore(rb,h.firstChild);
   const dt=document.createElement('span'); dt.className='rdate'; dt.textContent=secDate(secOf(c)); h.insertBefore(dt,h.firstChild);
 }
 function addLegend(el){
@@ -877,7 +1118,7 @@ function addLegend(el){
   el.after(d);
 }
 document.querySelectorAll('.card').forEach(c=>{decorateTitle(c);addCopyBtn(c);});
-['tTop','tLow','tFast','tStall','tDist','tHamp','tSlow','tImp','tAll','tShDist','tShTop','tShLow','tShFast','tShAll','tCVert','tCDist','tCTop','tCLow','tCPend','tCGap','tCRej','tCAll'].forEach(id=>addLegend($(id)));
+['tTop','tLow','tFast','tStall','tDist','tHamp','tSlow','tImp','tAll','tShDist','tShTop','tShLow','tShFast','tShAll','tCVert','tCDist','tCTop','tCLow','tCPend','tCGap','tCRej','tCAll','xtMon','xtQ','xtDist','xtLow','xtHeat','xtAll'].forEach(id=>addLegend($(id)));
 applyTheme(_t);
 
 load();

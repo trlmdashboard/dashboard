@@ -13,6 +13,8 @@
     --no:#e11d48; --no-soft:#fde4ea; --no-ink:#a3123a;
     --na-soft:#eef1f6; --na-ink:#97a1b3;
     --warn-soft:#fff3d1; --warn-line:#f1d27a; --warn-ink:#6a4a00;
+    --chg-up-soft:#fff6cc; --chg-up-bg:#ffd43b; --chg-up-ink:#5c4200; --chg-up-line:#f0b400;
+    --chg-dn-soft:#fbc7d0; --chg-dn-bg:#be123c; --chg-dn-ink:#ffffff; --chg-dn-line:#881337;
     --hm-l:88%; --hm-s:62%;
     --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
     --radius:14px;
@@ -27,6 +29,8 @@
       --no:#ff6b88; --no-soft:#4a1b2a; --no-ink:#ffa6b8;
       --na-soft:#19223a; --na-ink:#7f8ba1;
       --warn-soft:#3b3112; --warn-line:#7d6414; --warn-ink:#f2d98c;
+      --chg-up-soft:#3d3410; --chg-up-bg:#f2c230; --chg-up-ink:#2b2000; --chg-up-line:#ffe27a;
+      --chg-dn-soft:#5a1020; --chg-dn-bg:#d4153f; --chg-dn-ink:#ffffff; --chg-dn-line:#ff8aa3;
       --hm-l:24%; --hm-s:55%; --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark;
     }
   }
@@ -39,6 +43,8 @@
       --no:#ff6b88; --no-soft:#4a1b2a; --no-ink:#ffa6b8;
       --na-soft:#19223a; --na-ink:#7f8ba1;
       --warn-soft:#3b3112; --warn-line:#7d6414; --warn-ink:#f2d98c;
+      --chg-up-soft:#3d3410; --chg-up-bg:#f2c230; --chg-up-ink:#2b2000; --chg-up-line:#ffe27a;
+      --chg-dn-soft:#5a1020; --chg-dn-bg:#d4153f; --chg-dn-ink:#ffffff; --chg-dn-line:#ff8aa3;
       --hm-l:24%; --hm-s:55%; --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark;
   }
   :root[data-theme="midnight"]{
@@ -48,6 +54,8 @@
       --no:#ff6b88; --no-soft:#4a1b2a; --no-ink:#ffa6b8;
       --na-soft:#1f1b45; --na-ink:#7f8ba1;
       --warn-soft:#3b3112; --warn-line:#7d6414; --warn-ink:#f2d98c;
+      --chg-up-soft:#3d3410; --chg-up-bg:#f2c230; --chg-up-ink:#2b2000; --chg-up-line:#ffe27a;
+      --chg-dn-soft:#5a1020; --chg-dn-bg:#d4153f; --chg-dn-ink:#ffffff; --chg-dn-line:#ff8aa3;
       --hm-l:24%; --hm-s:55%; --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark;
   }
   :root[data-theme="ocean"]{
@@ -147,8 +155,11 @@
   .dn:hover{box-shadow:inset 0 0 0 2px var(--brand)}
   .dn.on{background:var(--brand-soft);box-shadow:inset 0 0 0 2px var(--brand)}
   .dn small{color:var(--muted);font-weight:500}
-  .hc{height:42px;border-radius:9px;display:grid;place-items:center;font-weight:700;font-size:13px;line-height:1.1;background:hsl(var(--h,0) var(--hm-s) var(--hm-l));color:var(--ink)}
+  .hc{position:relative;min-height:50px;padding:4px 2px 12px;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:13px;line-height:1.1;background:hsl(var(--h,0) var(--hm-s) var(--hm-l));color:var(--ink)}
   .hc small{display:block;font-size:10.5px;font-weight:500;opacity:.75}
+  .dl{position:absolute;right:6px;bottom:3px;display:inline-flex;gap:2px;align-items:center;font-size:10px;font-weight:600;line-height:1;white-space:nowrap;opacity:.7}
+  .dl svg{width:9px;height:9px}
+  .dl.up{color:var(--yes-ink)} .dl.dn{color:var(--no-ink)} .dl.eq{color:var(--muted);font-weight:600}
   .hc.na{background:var(--na-soft);color:var(--na-ink);font-weight:500}
   .pend{font-size:10.5px;background:var(--warn-soft);color:var(--warn-ink);border:1px solid var(--warn-line);border-radius:999px;padding:0 7px;margin-left:6px;font-weight:600}
 
@@ -191,6 +202,10 @@
   .pill-s.no{background:var(--no-soft);color:var(--no-ink)}
   .pill-s.na{background:var(--na-soft);color:var(--na-ink);font-weight:500}
   .pill-s svg{width:12px;height:12px}
+  .pill-s.chg-up{background:var(--chg-up-bg);color:var(--chg-up-ink);box-shadow:0 0 0 2px var(--chg-up-line)}
+  .pill-s.chg-dn{background:var(--chg-dn-bg);color:var(--chg-dn-ink);box-shadow:0 0 0 2px var(--chg-dn-line)}
+  table.g tbody tr.r td.cell.t-up{background:var(--chg-up-soft)}
+  table.g tbody tr.r td.cell.t-dn{background:var(--chg-dn-soft)}
   body.icons .pill-s{min-width:30px;width:30px;border-radius:8px}
   body.icons .pill-s .t{display:none}
   body:not(.icons) .pill-s svg{display:none}
@@ -236,6 +251,8 @@
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 4l9 15H3z" fill="currentColor"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 20L3 5h18z" fill="currentColor"/></symbol>
   <symbol id="i-dash" viewBox="0 0 24 24"><path d="M7 12h10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></symbol>
 </svg>
 
@@ -282,7 +299,7 @@
   </section>
 
   <section class="card sec hmsec" aria-labelledby="hmT">
-    <div class="hd"><h2 id="hmT">District overview · % of CLFs with YES</h2><span class="hint">Click a district to filter the grid below</span></div>
+    <div class="hd"><h2 id="hmT">District overview · % of CLFs with YES</h2><span class="hint">▲ / ▼ = change in number of YES CLFs vs previous month with data · click a district to filter the grid below</span></div>
     <div class="hmwrap"><table class="hm" id="hm"></table></div>
   </section>
 
@@ -321,6 +338,8 @@
       <span><span class="pill-s yes"><svg><use href="#i-check"/></svg><span class="t">YES</span></span> captured</span>
       <span><span class="pill-s no"><svg><use href="#i-x"/></svg><span class="t">NO</span></span> not captured</span>
       <span><span class="pill-s na"><svg><use href="#i-dash"/></svg><span class="t">–</span></span> no value yet</span>
+      <span><span class="pill-s chg-up"><svg><use href="#i-check"/></svg><span class="t">YES</span></span> changed NO → YES</span>
+      <span><span class="pill-s chg-dn"><svg><use href="#i-x"/></svg><span class="t">NO</span></span> changed YES → NO</span>
       <span class="hint" style="color:var(--muted)">Tip: click a month heading to list CLFs with NO in that month.</span>
     </div>
     <div class="scroller"><table class="g" id="grid"></table></div>
@@ -353,7 +372,18 @@ function stateOf(v) {
 }
 const TXT = { yes: 'YES', no: 'NO', na: '–' };
 const ICON = { yes: 'i-check', no: 'i-x', na: 'i-dash' };
-const cellHtml = (st, tip) => `<span class="pill-s ${st}" title="${esc(tip)}"><svg><use href="#${ICON[st]}"/></svg><span class="t">${TXT[st]}</span></span>`;
+const TRN = { up: ' chg-up', dn: ' chg-dn' };
+// compare a CLF's month i with its most recent earlier month that has a YES/NO value
+function transOf(o, months, i) {
+  const cur = o.m[months[i].name];
+  if (cur !== 'yes' && cur !== 'no') return '';
+  for (let j = i - 1; j >= 0; j--) {
+    const pv = o.m[months[j].name];
+    if (pv === 'yes' || pv === 'no') return pv === cur ? '' : (cur === 'yes' ? 'up' : 'dn');
+  }
+  return '';
+}
+const cellHtml = (st, tip, tr) => `<span class="pill-s ${st}${TRN[tr] || ''}" title="${esc(tip)}"><svg><use href="#${ICON[st]}"/></svg><span class="t">${TXT[st]}</span></span>`;
 const yearOf = (fy, m) => { const y = parseInt(String(fy).slice(0, 4), 10); return Number.isFinite(y) ? (MONTH_ORDER.indexOf(m) >= 9 ? y + 1 : y) : ''; };
 
 // ---------- loading ----------
@@ -501,17 +531,32 @@ function render() {
 
   // ----- district heatmap (uses every CLF in the FY, ignoring the grid filters) -----
   const sel = $('fDist').value;
-  const cellOf = (set, m) => {
+  const stat = (set, m) => {
     const y = set.filter((o) => o.m[m.name] === 'yes').length, t = set.filter((o) => o.m[m.name] === 'yes' || o.m[m.name] === 'no').length;
-    const p = pct(y, t);
-    return p == null ? '<div class="hc na">–</div>' : `<div class="hc" style="--h:${Math.round(p * 1.35)}" title="${esc(m.name)}: ${y} YES of ${t} CLFs">${p}%<small>${y}/${t}</small></div>`;
+    return { y, t, p: pct(y, t) };
+  };
+  const cellOf = (set, m, i) => {
+    const { y, t, p } = stat(set, m);
+    if (p == null) return '<div class="hc na">–</div>';
+    // compare with the most recent earlier month that has data
+    let prev = null, pm = null, prevT = null;
+    for (let j = i - 1; j >= 0; j--) { const s = stat(set, months[j]); if (s.p != null) { prev = s.y; prevT = s.t; pm = months[j]; break; } }
+    let dl = '', dt = '';
+    if (prev != null) {
+      const d = y - prev, a = Math.abs(d);
+      const cls = d > 0 ? 'up' : d < 0 ? 'dn' : 'eq';
+      const ic = d > 0 ? 'i-up' : d < 0 ? 'i-down' : 'i-dash';
+      dl = `<span class="dl ${cls}"><svg><use href="#${ic}"/></svg>${d === 0 ? '0' : (d > 0 ? '+' : '−') + a}</span>`;
+      dt = d === 0 ? ` · no change vs ${pm.name}` : ` · ${d > 0 ? 'up' : 'down'} ${a} CLF${a === 1 ? '' : 's'} vs ${pm.name} (${prev}/${prevT})`;
+    }
+    return `<div class="hc" style="--h:${Math.round(p * 1.35)}" title="${esc(m.name)}: ${y} YES of ${t} CLFs${esc(dt)}">${p}%<small>${y}/${t}</small>${dl}</div>`;
   };
   let hm = '<thead><tr><th class="l">District</th>' + months.map((m) => `<th>${esc(m.name.slice(0, 3))} <span style="font-weight:400;color:var(--muted)">’${String(m.year).slice(2)}</span></th>`).join('') + '</tr></thead><tbody>';
-  hm += `<tr><td class="l"><div class="dn ${sel ? '' : 'on'}" data-dist="">All districts <small>${all.length} CLFs</small></div></td>${months.map((m) => `<td>${cellOf(all, m)}</td>`).join('')}</tr>`;
+  hm += `<tr><td class="l"><div class="dn ${sel ? '' : 'on'}" data-dist="">All districts <small>${all.length} CLFs</small></div></td>${months.map((m, i) => `<td>${cellOf(all, m, i)}</td>`).join('')}</tr>`;
   for (const d of dists) {
     const set = all.filter((o) => o.district === d);
     const isPend = !set.some((o) => o.known > 0);
-    hm += `<tr><td class="l"><div class="dn ${sel === d ? 'on' : ''}" data-dist="${esc(d)}"><span>${esc(d)}${isPend ? '<span class="pend">pending</span>' : ''}</span><small>${set.length}</small></div></td>${months.map((m) => `<td>${cellOf(set, m)}</td>`).join('')}</tr>`;
+    hm += `<tr><td class="l"><div class="dn ${sel === d ? 'on' : ''}" data-dist="${esc(d)}"><span>${esc(d)}${isPend ? '<span class="pend">pending</span>' : ''}</span><small>${set.length}</small></div></td>${months.map((m, i) => `<td>${cellOf(set, m, i)}</td>`).join('')}</tr>`;
   }
   $('hm').innerHTML = hm + '</tbody>';
 
@@ -550,7 +595,7 @@ function render() {
       for (const o of set) {
         const lb = o.latest === 'yes' ? '<span class="badge yes">Active</span>' : o.latest === 'no' ? '<span class="badge no">Not captured</span>' : '<span class="badge na">–</span>';
         body += `<tr class="r"><td class="fixed" title="${esc(o.clf)}"><div class="nm">${esc(o.clf)}</div><div class="sb">${esc(o.block)}${o.ebk ? ' · ' + esc(o.ebk) : ''}</div></td><td class="c">${esc(o.start) || '–'}</td>` +
-          months.map((m, i) => `<td class="cell${qb(i)}">${cellHtml(o.m[m.name] || 'na', `${m.name} ${m.year}: ${o.m[m.name] === 'yes' ? 'captured' : o.m[m.name] === 'no' ? 'not captured' : 'no value'}`)}</td>`).join('') +
+          months.map((m, i) => { const tr = transOf(o, months, i); return `<td class="cell${qb(i)}${tr ? ' t-' + tr : ''}">${cellHtml(o.m[m.name] || 'na', `${m.name} ${m.year}: ${o.m[m.name] === 'yes' ? 'captured' : o.m[m.name] === 'no' ? 'not captured' : 'no value'}${tr === 'up' ? ' (changed NO → YES)' : tr === 'dn' ? ' (changed YES → NO)' : ''}`, tr)}</td>`; }).join('') +
           `<td class="c">${lb}</td><td><div class="score">${o.yes}/${n}<span class="meter"><i style="width:${n ? (o.yes * 100) / n : 0}%"></i></span></div></td></tr>`;
       }
     }
@@ -638,9 +683,11 @@ async function downloadXlsx() {
         c.alignment = { vertical: 'middle', horizontal: i <= 4 ? 'left' : 'center' };
       });
       months.forEach((m, i) => {
-        const st = ST[o.m[m.name] || 'na'], c = r.getCell(6 + i);
-        c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: st.fill } };
-        c.font = { bold: true, color: { argb: st.font } };
+        const st = ST[o.m[m.name] || 'na'], c = r.getCell(6 + i), tr = transOf(o, months, i);
+        const fill = tr === 'up' ? 'FFFFD43B' : tr === 'dn' ? 'FFBE123C' : st.fill;
+        const font = tr === 'up' ? 'FF5C4200' : tr === 'dn' ? 'FFFFFFFF' : st.font;
+        c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: fill } };
+        c.font = { bold: true, color: { argb: font } };
       });
       const lc = r.getCell(6 + n + 1);
       const ls = ST[o.latest || 'na'];

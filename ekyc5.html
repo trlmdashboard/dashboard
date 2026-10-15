@@ -91,6 +91,7 @@ body.ready #navDock{display:flex}
 #navPanel a:hover{background:var(--row)}
 #navPanel a.on{background:var(--ac);color:#fff}
 @media print{#navDock,#navPanel{display:none!important}}
+#odAll td .dl,#otAll td .dl{display:inline;margin:0}
 </style>
 </head>
 <body>
@@ -271,6 +272,20 @@ body.ready #navDock{display:flex}
       </h2>
       <div class="mu" style="font-size:12px">Same data as the block table above, added up per district. It follows that table's Month and search box, and the District and Trend window controls at the top. Click a column heading to sort.</div>
       <div class="tw dt" id="odAll"></div>
+    </div>
+    <div class="card" id="dwCard" style="margin:14px 0">
+      <h2>Day-wise onboarding entries <span class="mu" id="dwMeta" style="font-size:12px;text-transform:none;letter-spacing:0;font-weight:400"></span>
+        <label class="nocap" style="float:right;margin-left:8px;text-transform:none;letter-spacing:0;font-weight:400">Block <select id="dwB"></select></label>
+        <label class="nocap" style="float:right;margin-left:8px;text-transform:none;letter-spacing:0;font-weight:400">District <select id="dwD"></select></label>
+        <label class="nocap" style="float:right;margin-left:8px;text-transform:none;letter-spacing:0;font-weight:400">Month <select id="dwMo"></select></label>
+      </h2>
+      <div class="mu" style="font-size:12px">Source: transaction_monitoring_blockwise (cbo_type = SHG / VO, started transactions = onboarded). Pick a district, then optionally a block. Bars show entries added per report date (onboarded count minus the previous saved report date; a red bar means the source count fell); the line shows the running total. Uses the Date control above.</div>
+      <div id="dwMsg" class="mu" style="margin:6px 0;white-space:pre-wrap"></div>
+      <div class="grid">
+        <div class="card"><h2>SHG onboarded – entries per day</h2><div class="chart"><canvas id="dwS"></canvas></div></div>
+        <div class="card"><h2>VO onboarded – entries per day</h2><div class="chart"><canvas id="dwV"></canvas></div></div>
+      </div>
+      <div class="tw dt" id="dwT"></div>
     </div>
   </section>
 </main>
@@ -474,7 +489,7 @@ function render(){
   $('tSlow').innerHTML=table([...ids,{h:'Progress',f:r=>pbar(r.pct)},{h:`Added ${W}d`,f:r=>sgn(r.gain)},{h:'Speed (pp/day)',f:r=>r.speed.toFixed(3)},{h:'ETA to target',f:r=>r.eta===null?'<span class="dn">no progress</span>':nf(r.eta)+' days'}],num([...below].sort((x,y)=>x.speed-y.speed||y.need-x.need).slice(0,10)));
   $('tImp').innerHTML=table([...ids,{h:'e-KYC',f:r=>nf(r.ek)},{h:'Progress',f:r=>pbar(r.pct)},{h:`Shortfall to ${T}%`,f:r=>nf(r.need)},{h:'Share of gap',f:r=>pf(r.share)},{h:'Cumulative',f:r=>pf(r.cum)}],num(imp));
   bl.forEach(r=>{r.need=Math.max(0,Math.ceil(r.mem*T/100-r.ek)); r.needShare=totNeed?r.need/totNeed*100:0;});
-  window._bl=bl; renderAll(); renderAllBlocks(); renderCadre(); renderShg(); renderTxn(); renderCbo();
+  window._bl=bl; renderAll(); renderAllBlocks(); renderCadre(); renderShg(); renderTxn(); renderCbo(); renderDaily();
 }
 
 function renderAllBlocks(){
@@ -1005,14 +1020,15 @@ function renderCbo(){
     if(x<0) return `<span class="dl dn" ${tip}>▼ −${nf(-x)}</span>`;
     return `<span class="dl mu" ${tip}>● 0</span>`; };
   const ar=c=>oKey===c?(oDir>0?' ▲':' ▼'):' ↕';
-  const cols=[['d','District',1],['b','Block',1],['shg','No. of SHG'],['shgOn','No. of SHG onboarded'],['shgP','% of SHG onboarding'],['vo','No. of VO'],['voOn','No. of VO onboarded'],['voP','% of VO onboarding']];
-  const cellsOf=(x,p)=>`<td>${n(x.shg)}${dl(x.shg,p&&p.shg)}</td><td>${n(x.shgOn)}${dl(x.shgOn,p&&p.shgOn)}</td><td>${pcs(x.shgP)}</td><td>${n(x.vo)}${dl(x.vo,p&&p.vo)}</td><td>${n(x.voOn)}${dl(x.voOn,p&&p.voOn)}</td><td>${pcs(x.voP)}</td>`;
+  const cols=[['d','District',1],['b','Block',1],['shg','No. of SHG'],['','Change'],['shgOn','No. of SHG onboarded'],['','Change'],['shgP','% of SHG onboarding'],['vo','No. of VO'],['','Change'],['voOn','No. of VO onboarded'],['','Change'],['voP','% of VO onboarding']];
+  const dd=(c,p)=>dl(c,p)||'<span class="mu">–</span>';
+  const cellsOf=(x,p)=>`<td>${n(x.shg)}</td><td>${dd(x.shg,p&&p.shg)}</td><td>${n(x.shgOn)}</td><td>${dd(x.shgOn,p&&p.shgOn)}</td><td>${pcs(x.shgP)}</td><td>${n(x.vo)}</td><td>${dd(x.vo,p&&p.vo)}</td><td>${n(x.voOn)}</td><td>${dd(x.voOn,p&&p.voOn)}</td><td>${pcs(x.voP)}</td>`;
   const T={shg:sum(x=>x.shg),shgOn:sum(x=>x.shgOn),vo:sum(x=>x.vo),voOn:sum(x=>x.voOn)}; T.shgP=pc(T.shgOn,T.shg); T.voP=pc(T.voOn,T.vo);
   const prevRows=a.map(x=>x._p).filter(Boolean);
   const TP=hasPrev&&prevRows.length?{shg:sum(x=>x.shg,prevRows),shgOn:sum(x=>x.shgOn,prevRows),vo:sum(x=>x.vo,prevRows),voOn:sum(x=>x.voOn,prevRows)}:null;
-  box.innerHTML=`<table><thead><tr>${cols.map(c=>`<th data-k="${c[0]}"${c[2]?' class="l"':''}>${c[1]}${ar(c[0])}</th>`).join('')}</tr></thead><tbody>`+
+  box.innerHTML=`<table><thead><tr>${cols.map(c=>c[0]?`<th data-k="${c[0]}"${c[2]?' class="l"':''}>${c[1]}${ar(c[0])}</th>`:`<th>${c[1]}</th>`).join('')}</tr></thead><tbody>`+
     (a.length?`<tr style="font-weight:700"><td class="l" colspan="2">Total (${nf(a.length)} blocks)</td>${cellsOf(T,TP)}</tr>`:'')+
-    (a.map(x=>`<tr><td class="l">${x.d}</td><td class="l"><b>${x.b}</b></td>${cellsOf(x,x._p)}</tr>`).join('')||'<tr><td colspan="8" class="mu">No data for this selection</td></tr>')+'</tbody></table>';
+    (a.map(x=>`<tr><td class="l">${x.d}</td><td class="l"><b>${x.b}</b></td>${cellsOf(x,x._p)}</tr>`).join('')||'<tr><td colspan="12" class="mu">No data for this selection</td></tr>')+'</tbody></table>';
   box.querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{const c=th.dataset.k;oDir=oKey===c?-oDir:(c==='d'||c==='b'?1:-1);oKey=c;renderCbo();});
   $('oNote').textContent=hasPrev?`▲/▼ = change in the counts since ${wl} (trend window: ${W} day${W>1?'s':''}); percentages are onboarded ÷ total.`:'No earlier date available for comparison; percentages are onboarded ÷ total.';
   const notes=[];
@@ -1034,10 +1050,10 @@ function renderCbo(){
     return o;});
   da.sort((x,y)=>{const A=x[odKey],B=y[odKey];return (typeof A==='string'?A.localeCompare(B):nv(A)-nv(B))*odDir||x.d.localeCompare(y.d);});
   const oar=c=>odKey===c?(odDir>0?' ▲':' ▼'):' ↕';
-  const dcols=[['d','District',1],['blocks','Blocks'],['shg','No. of SHG'],['shgOn','No. of SHG onboarded'],['shgP','% of SHG onboarding'],['vo','No. of VO'],['voOn','No. of VO onboarded'],['voP','% of VO onboarding']];
-  $('odAll').innerHTML=`<table><thead><tr>${dcols.map(c=>`<th data-k="${c[0]}"${c[2]?' class="l"':''}>${c[1]}${oar(c[0])}</th>`).join('')}</tr></thead><tbody>`+
+  const dcols=[['d','District',1],['blocks','Blocks'],['shg','No. of SHG'],['','Change'],['shgOn','No. of SHG onboarded'],['','Change'],['shgP','% of SHG onboarding'],['vo','No. of VO'],['','Change'],['voOn','No. of VO onboarded'],['','Change'],['voP','% of VO onboarding']];
+  $('odAll').innerHTML=`<table><thead><tr>${dcols.map(c=>c[0]?`<th data-k="${c[0]}"${c[2]?' class="l"':''}>${c[1]}${oar(c[0])}</th>`:`<th>${c[1]}</th>`).join('')}</tr></thead><tbody>`+
     (da.length?`<tr style="font-weight:700"><td class="l">Total (${nf(da.length)} districts)</td><td>${nf(a.length)}</td>${cellsOf(T,TP)}</tr>`:'')+
-    (da.map(x=>`<tr><td class="l"><b>${x.d}</b></td><td>${nf(x.blocks)}</td>${cellsOf(x,x._p)}</tr>`).join('')||'<tr><td colspan="8" class="mu">No data for this selection</td></tr>')+'</tbody></table>';
+    (da.map(x=>`<tr><td class="l"><b>${x.d}</b></td><td>${nf(x.blocks)}</td>${cellsOf(x,x._p)}</tr>`).join('')||'<tr><td colspan="12" class="mu">No data for this selection</td></tr>')+'</tbody></table>';
   $('odAll').querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{const c=th.dataset.k;odDir=odKey===c?-odDir:(c==='d'?1:-1);odKey=c;renderCbo();});
   $('odMeta').textContent=$('oMeta').textContent;
   window._od=da;
@@ -1053,6 +1069,43 @@ $('odCsv').onclick=()=>{
   const csv=[h.join(',')].concat((window._od||[]).map(r=>[d,mo,r.d,r.blocks,r.shg??'',r.shgOn??'',r.shgP==null?'':r.shgP.toFixed(2),r.vo??'',r.voOn??'',r.voP==null?'':r.voP.toFixed(2)].map(v=>`"${v}"`).join(','))).join('\n');
   const el=document.createElement('a');el.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));el.download=`shg_vo_onboarding_district_${d}.csv`;el.click();
 };
+
+/* ---- Day-wise onboarding entries chart (transaction_monitoring_blockwise, SHG / VO) ---- */
+function renderDaily(){
+  const msg=$('dwMsg'), S=$('dwMo'), D=$('dwD'), B=$('dwB'), T=$('dwT');
+  const wipe=t=>{msg.textContent=t;T.innerHTML='';$('dwMeta').textContent='';['dwS','dwV'].forEach(i=>{if(charts[i]){charts[i].destroy();delete charts[i];}});};
+  if(TERR) return wipe('Could not load transaction_monitoring_blockwise:\n'+TERR);
+  if(!OROWS.length) return wipe("No SHG or VO rows yet in transaction_monitoring_blockwise.");
+  const upto=effO();
+  const ml=[...new Map(OROWS.map(r=>[r.fy+'|'+r.m,{k:r.fy+'|'+r.m,fy:r.fy,m:r.m}])).values()].sort((a,b)=>a.fy.localeCompare(b.fy)||mi(a.m)-mi(b.m));
+  const cm=S.value; S.innerHTML=ml.map(t=>`<option value="${t.k}">${t.m} ${t.fy}</option>`).join('');
+  S.value=ml.some(t=>t.k===cm)?cm:ml[ml.length-1].k;
+  const inM=OROWS.filter(r=>r.fy+'|'+r.m===S.value&&r.date<=upto);
+  const cd=D.value, dls=[...new Set(inM.map(r=>r.d))].sort();
+  D.innerHTML='<option value="">All districts</option>'+dls.map(d=>`<option>${d}</option>`).join(''); D.value=dls.includes(cd)?cd:'';
+  const cb=B.value, bls=D.value?[...new Set(inM.filter(r=>r.d===D.value).map(r=>r.b))].sort():[];
+  B.innerHTML='<option value="">All blocks</option>'+bls.map(b=>`<option>${b}</option>`).join(''); B.value=bls.includes(cb)?cb:''; B.disabled=!D.value;
+  const rows=inM.filter(r=>(!D.value||r.d===D.value)&&(!B.value||r.b===B.value));
+  const dates=[...new Set(rows.map(r=>r.date))].sort();
+  if(!dates.length) return wipe('No rows for this selection.');
+  msg.textContent='';
+  const val=(date,cbo)=>{const rs=rows.filter(r=>r.date===date&&r.cbo===cbo&&r.rs!==null);return rs.length?rs.reduce((s,r)=>s+r.rs,0):null;};
+  const data=dates.map(d=>({date:d,shg:val(d,'SHG'),vo:val(d,'VO')}));
+  data.forEach((x,k)=>{const p=k?data[k-1]:null;
+    x.dS=p&&x.shg!==null&&p.shg!==null?x.shg-p.shg:null;
+    x.dV=p&&x.vo!==null&&p.vo!==null?x.vo-p.vo:null;});
+  const ms=ml.find(t=>t.k===S.value), tl=B.value?D.value+' / '+B.value:(D.value||'All districts');
+  $('dwMeta').textContent=`· ${tl} · ${ms?ms.m+' '+ms.fy:''} · ${dates.length} report dates`;
+  const L=data.map(x=>x.date.slice(5).split('-').reverse().join('-'));
+  const draw=(id,tot,del,name)=>mk(id,{type:'bar',data:{labels:L,datasets:[
+    {type:'bar',label:'Entries added that day',data:data.map(x=>x[del]),backgroundColor:data.map(x=>x[del]!==null&&x[del]<0?col('--bad'):col('--ok')),yAxisID:'y'},
+    {type:'line',label:'Total '+name+' onboarded',data:data.map(x=>x[tot]),borderColor:col('--ac'),tension:.25,pointRadius:3,yAxisID:'y1'}]},
+    options:opt({scales:{y:{title:{display:true,text:'Entries per day'}},y1:{position:'right',grid:{drawOnChartArea:false},title:{display:true,text:'Total onboarded'}}}})});
+  draw('dwS','shg','dS','SHG'); draw('dwV','vo','dV','VO');
+  const dc=n=>n===null?'<span class="mu">–</span>':sgn(n), nn=n=>n===null?'<span class="mu">–</span>':nf(n);
+  T.innerHTML=table([{h:'Date',f:r=>r.date,l:1},{h:'SHG onboarded',f:r=>nn(r.shg)},{h:'SHG entries that day',f:r=>dc(r.dS)},{h:'VO onboarded',f:r=>nn(r.vo)},{h:'VO entries that day',f:r=>dc(r.dV)}],[...data].reverse());
+}
+$('dwMo').onchange=renderDaily; $('dwD').onchange=()=>{$('dwB').value='';renderDaily();}; $('dwB').onchange=renderDaily;
 
 /* ---- themes ---- */
 const col = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -1177,7 +1230,7 @@ applyTheme(_t);
     {k:'e-KYC',g:'e-KYC progress',items:[['Summary','kpis'],['Charts','cCum','.grid'],['Top / lowest blocks','tTop','.grid'],['Impact analysis','impSum'],['District-wise block tables','q','.card'],['All blocks','qAll','.card']]},
     {k:'Cadre',g:'Cadre profile',items:[['Overview','cadreSec'],['Charts','cVS','.grid'],['Summary tables','tCVert','.grid'],['All blocks by vertical','tCAll','.card'],['District × vertical','tCHeat','.card']]},
     {k:'SHG',g:'SHG approval',items:[['Overview','shgSec'],['Charts','sSt','.grid'],['Summary tables','tShDist','.grid'],['All blocks','tShAll','.card']]},
-    {k:'Transaction',g:'Transaction monitoring',items:[['Overview','txnSec'],['Charts','xcMo','.grid'],['Summary tables','xtMon','.grid'],['District × month','xtHeat','.card'],['All blocks, month-wise','xtAll','.card'],['SHG &amp; VO onboarding · blocks','oCard'],['SHG &amp; VO onboarding · districts','odCard']]}
+    {k:'Transaction',g:'Transaction monitoring',items:[['Overview','txnSec'],['Charts','xcMo','.grid'],['Summary tables','xtMon','.grid'],['District × month','xtHeat','.card'],['All blocks, month-wise','xtAll','.card'],['SHG &amp; VO onboarding · blocks','oCard'],['SHG &amp; VO onboarding · districts','odCard'],['Day-wise entries chart','dwCard']]}
   ];
   const dock=$('navDock'), panel=$('navPanel'), links=[], btns=[];
   let openG=-1;

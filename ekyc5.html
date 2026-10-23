@@ -271,6 +271,7 @@ body.ready #navDock{display:flex}
         <button id="odCsv" style="float:right;margin-left:8px;text-transform:none;letter-spacing:0">⬇ CSV</button>
       </h2>
       <div class="mu" style="font-size:12px">Same data as the block table above, added up per district. It follows that table's Month and search box, and the District and Trend window controls at the top. Click a column heading to sort. <b>Progress</b> sparklines (left of each % column) = onboarded SHG / VO count on each saved report date of the month (green end dot = up, red = down). <b>Avg entries / day</b> = rise in the onboarded count between the first saved report date of the month and the report date, ÷ calendar days between them; the <b>/ block</b> column divides that by the number of blocks in the district.</div>
+      <div id="odColSel" class="lg nocap" style="margin:8px 0"></div>
       <div class="tw dt" id="odAll"></div>
     </div>
     <div class="card" id="dwCard" style="margin:14px 0">
@@ -667,14 +668,14 @@ function renderCadreAll(){
     const box=$('cColSel');
     box.innerHTML='<b>Show columns:</b>'
       +`<label style="cursor:pointer;display:inline-flex;gap:5px;align-items:center"><input type="checkbox" data-sv="*"${cShowAll?' checked':''}> All verticals</label>`
-      +VN0.map(v=>`<label style="cursor:pointer;display:inline-flex;gap:5px;align-items:center"><input type="checkbox" data-sv="${v.replace(/"/g,'&quot;')}"${cShowV[v]!==false?' checked':''}> ${v}</label>`).join('')
+      +VN0.map(v=>`<label style="cursor:pointer;display:inline-flex;gap:5px;align-items:center"><input type="checkbox" data-sv="${v.replace(/"/g,'&quot;')}"${cShowV[v]===true?' checked':''}> ${v}</label>`).join('')
       +'<button type="button" id="cSelAll" style="padding:3px 9px;font-size:12px">Select all</button><button type="button" id="cSelNone" style="padding:3px 9px;font-size:12px">Clear</button>';
     const sync=()=>box.querySelectorAll('input[data-sv]').forEach(i=>{const k=i.dataset.sv;if(k==='*')cShowAll=i.checked;else cShowV[k]=i.checked;});
     box.querySelectorAll('input[data-sv]').forEach(i=>i.onchange=()=>{sync();renderCadreAll();});
     $('cSelAll').onclick=()=>{box.querySelectorAll('input[data-sv]').forEach(i=>i.checked=true);sync();renderCadreAll();};
     $('cSelNone').onclick=()=>{box.querySelectorAll('input[data-sv]').forEach(i=>i.checked=false);sync();renderCadreAll();};
   }
-  const VN=VN0.filter(v=>cShowV[v]!==false);
+  const VN=VN0.filter(v=>cShowV[v]===true);
   const val=(r,k)=>{ if(k.startsWith('v|')){const [,v,m]=k.split('|'); const o=r.vs&&r.vs[v]; return o?o[m]:0;} return r[k]; };
   const a=(window._cbl||[]).filter(r=>!q||(r.d+' '+r.b).includes(q));
   a.sort((x,y)=>{const A=val(x,cKey),B=val(y,cKey);return (typeof A==='string'?A.localeCompare(B):A-B)*cDir||x.d.localeCompare(y.d)||x.b.localeCompare(y.b);});
@@ -984,6 +985,19 @@ $('xCsv').onclick=()=>{
 
 /* ---- SHG & VO onboarding table (transaction_monitoring_blockwise, cbo_type = SHG / VO) ---- */
 let OROWS=[],ODATES=[],oKey='d',oDir=1,odKey='d',odDir=1;
+/* district table: column picker (tick = shown). Order must match the cells rendered in renderCbo's district table. */
+const OD_COLS=[['d','District'],['blocks','Blocks'],['shg','No. of SHG'],['shgC','No. of SHG – Change'],['shgOn','No. of SHG onboarded'],['shgOnC','No. of SHG onboarded – Change'],['shgSp','SHG progress'],['shgP','% of SHG onboarding'],['avgS','SHG avg entries / day'],['epbS','SHG avg entries / day / block'],['vo','No. of VO'],['voC','No. of VO – Change'],['voOn','No. of VO onboarded'],['voOnC','No. of VO onboarded – Change'],['voSp','VO progress'],['voP','% of VO onboarding'],['avgV','VO avg entries / day'],['epbV','VO avg entries / day / block']];
+const odShow={};
+(function(){
+  const box=$('odColSel'); if(!box) return;
+  const lab='display:inline-flex;gap:5px;align-items:center;cursor:pointer';
+  box.innerHTML='<b>Show columns:</b>'+OD_COLS.map(c=>`<label style="${lab}"><input type="checkbox" data-oc="${c[0]}" checked${c[0]==='d'?' disabled title="District is always shown"':''}> ${c[1]}</label>`).join('')
+    +'<button type="button" id="odSelAll" style="padding:3px 9px;font-size:12px">Select all</button><button type="button" id="odSelNone" style="padding:3px 9px;font-size:12px">Clear</button>';
+  const sync=()=>box.querySelectorAll('input[data-oc]').forEach(i=>{odShow[i.dataset.oc]=i.checked;});
+  box.querySelectorAll('input[data-oc]').forEach(i=>i.onchange=()=>{sync();renderCbo();});
+  $('odSelAll').onclick=()=>{box.querySelectorAll('input[data-oc]').forEach(i=>i.checked=true);sync();renderCbo();};
+  $('odSelNone').onclick=()=>{box.querySelectorAll('input[data-oc]').forEach(i=>i.checked=i.dataset.oc==='d');sync();renderCbo();};
+})();
 const effO=()=>{const v=$('selDate').value;if(!ODATES.length)return '';if(!v)return ODATES[ODATES.length-1];const ok=ODATES.filter(d=>d<=v);return ok.length?ok[ok.length-1]:ODATES[0];};
 function renderCbo(){
   const msg=$('oMsg'), box=$('otAll'), msel=$('oMo'); window._or=[];
@@ -1079,6 +1093,9 @@ function renderCbo(){
   $('odAll').innerHTML=`<table><thead><tr>${dcols.map(c=>c[0]?`<th data-k="${c[0]}"${c[2]?' class="l"':''}>${c[1]}${oar(c[0])}</th>`:`<th>${c[1]}</th>`).join('')}</tr></thead><tbody>`+
     (da.length?`<tr style="font-weight:700"><td class="l">Total (${nf(da.length)} districts)</td><td>${nf(a.length)}</td>${cellsOf(T,TP,spk(mt))}${xV(mt)}</tr>`:'')+
     (da.map(x=>`<tr><td class="l"><b>${x.d}</b></td><td>${nf(x.blocks)}</td>${cellsOf(x,x._p,spk(x))}${xV(x)}</tr>`).join('')||'<tr><td colspan="18" class="mu">No data for this selection</td></tr>')+'</tbody></table>';
+  { const hid=OD_COLS.map((c,i)=>odShow[c[0]]===false?i:-1).filter(i=>i>=0);
+    if(hid.length) $('odAll').querySelectorAll('tr').forEach(tr=>{ const cells=[...tr.children];
+      if(cells.length===OD_COLS.length) hid.forEach(i=>cells[i].remove()); else if(cells.length===1) cells[0].colSpan=OD_COLS.length-hid.length; }); }
   $('odAll').querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{const c=th.dataset.k;odDir=odKey===c?-odDir:(c==='d'?1:-1);odKey=c;renderCbo();});
   $('odMeta').textContent=$('oMeta').textContent;
   window._od=da;

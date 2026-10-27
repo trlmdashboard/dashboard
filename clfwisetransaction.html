@@ -145,21 +145,26 @@
   .sec h2{margin:0;font-size:15px;letter-spacing:-.005em}
   .sec .hint{color:var(--muted);font-size:12.5px}
 
-  /* ---------- district heatmap ---------- */
+  /* ---------- district / block heatmaps ---------- */
   .hmwrap{overflow:auto;padding:4px 10px 14px}
+  .hmwrap.tall{max-height:62vh}
   table.hm{border-collapse:separate;border-spacing:4px;width:100%;min-width:640px}
   table.hm th{font-size:11.5px;font-weight:600;color:var(--ink2);text-align:center;padding:4px 6px;white-space:nowrap}
+  .hmwrap.tall table.hm thead th{position:sticky;top:0;z-index:2;background:var(--surface)}
   table.hm th.l,table.hm td.l{text-align:left}
   table.hm td{padding:0}
   .dn{padding:8px 10px;border-radius:9px;cursor:pointer;font-weight:600;display:flex;justify-content:space-between;gap:10px;align-items:center;white-space:nowrap;background:var(--surface2)}
   .dn:hover{box-shadow:inset 0 0 0 2px var(--brand)}
   .dn.on{background:var(--brand-soft);box-shadow:inset 0 0 0 2px var(--brand)}
   .dn small{color:var(--muted);font-weight:500}
-  .hc{position:relative;min-height:50px;padding:4px 2px 12px;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:13px;line-height:1.1;background:hsl(var(--h,0) var(--hm-s) var(--hm-l));color:var(--ink)}
+  .dn .bd{display:block;font-size:10.5px;font-weight:500;color:var(--muted);line-height:1.2}
+  .hc{position:relative;min-height:50px;padding:4px 2px 14px;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:13px;line-height:1.1;background:hsl(var(--h,0) var(--hm-s) var(--hm-l));color:var(--ink)}
   .hc small{display:block;font-size:10.5px;font-weight:500;opacity:.75}
-  .dl{position:absolute;right:6px;bottom:3px;display:inline-flex;gap:2px;align-items:center;font-size:10px;font-weight:600;line-height:1;white-space:nowrap;opacity:.7}
+  .dl{position:absolute;right:5px;bottom:3px;display:inline-flex;gap:5px;align-items:center;font-size:10px;font-weight:700;line-height:1;white-space:nowrap}
+  .dl>span{display:inline-flex;gap:2px;align-items:center}
   .dl svg{width:9px;height:9px}
-  .dl.up{color:var(--yes-ink)} .dl.dn{color:var(--no-ink)} .dl.eq{color:var(--muted);font-weight:600}
+  .dl .u{color:var(--yes-ink)} .dl .d{color:var(--no-ink)}
+  .dl.eq{color:var(--muted);font-weight:600;opacity:.8}
   .hc.na{background:var(--na-soft);color:var(--na-ink);font-weight:500}
   .pend{font-size:10.5px;background:var(--warn-soft);color:var(--warn-ink);border:1px solid var(--warn-line);border-radius:999px;padding:0 7px;margin-left:6px;font-weight:600}
 
@@ -176,6 +181,22 @@
   .chips{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 12px}
   .chip-f{display:inline-flex;gap:6px;align-items:center;background:var(--brand-soft);color:var(--brand);border-radius:999px;padding:3px 6px 3px 11px;font-weight:600;font-size:12.5px}
   .chip-f button{border:0;background:transparent;color:inherit;cursor:pointer;font-size:15px;line-height:1;padding:0 4px}
+
+  /* ---------- multi-select district dropdown ---------- */
+  .ms{position:relative;min-width:190px}
+  .msb{width:100%;height:36px;border:1px solid var(--line);background:var(--surface2);border-radius:9px;padding:0 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;text-align:left}
+  .msb:hover,.msb[aria-expanded=true]{border-color:var(--brand)}
+  .msb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .msb svg{width:14px;height:14px;flex:none;color:var(--muted)}
+  .msp{position:absolute;left:0;top:calc(100% + 6px);z-index:40;width:max(100%,240px);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.25);padding:6px}
+  .msp[hidden]{display:none}
+  .msh{display:flex;justify-content:space-between;padding:2px 4px 6px;border-bottom:1px solid var(--line);margin-bottom:4px}
+  .msh button{border:0;background:transparent;color:var(--brand);font-weight:600;font-size:12.5px;cursor:pointer;padding:3px 6px;border-radius:6px}
+  .msh button:hover{background:var(--brand-soft)}
+  .msl{max-height:260px;overflow:auto}
+  .mso{display:flex;gap:9px;align-items:center;padding:7px 8px;border-radius:8px;cursor:pointer;font-weight:500}
+  .mso:hover{background:var(--surface2)}
+  .mso input{width:16px;height:16px;accent-color:var(--brand);margin:0;cursor:pointer}
 
   /* ---------- grid ---------- */
   .legend{display:flex;flex-wrap:wrap;gap:16px;align-items:center;padding:0 18px 10px;color:var(--ink2);font-size:12.5px}
@@ -239,7 +260,7 @@
     table.g td.fixed{min-width:200px;max-width:220px}
   }
   @media print{
-    .top,.filters,.chips,.actions,.hmwrap,.sec.hmsec,.tpop{display:none!important}
+    .top,.filters,.chips,.actions,.hmwrap,.sec.hmsec,.tpop,.msp{display:none!important}
     .main{margin:0}
     .scroller{max-height:none;overflow:visible}
     body{background:#fff}
@@ -299,14 +320,30 @@
   </section>
 
   <section class="card sec hmsec" aria-labelledby="hmT">
-    <div class="hd"><h2 id="hmT">District overview · % of CLFs with YES</h2><span class="hint">▲ / ▼ = change in number of YES CLFs vs previous month with data · click a district to filter the grid below</span></div>
+    <div class="hd"><h2 id="hmT">District overview · % of CLFs with YES</h2><span class="hint">▲ = CLFs that became YES (blank or NO → YES) · ▼ = CLFs that went YES → NO, compared with the previous month · click a district to filter the grid below</span></div>
     <div class="hmwrap"><table class="hm" id="hm"></table></div>
+  </section>
+
+  <section class="card sec hmsec" aria-labelledby="bhmT">
+    <div class="hd"><h2 id="bhmT">Block overview · % of CLFs with YES</h2><span class="hint" id="bhmHint">Same ▲ / ▼ rules as the district table · shows blocks of the selected districts (all if none selected) · click a block to filter the grid below</span></div>
+    <div class="hmwrap tall"><table class="hm" id="bhm"></table></div>
   </section>
 
   <section class="card sec" aria-labelledby="gT" style="margin-bottom:0">
     <div class="hd" style="padding-bottom:0"><h2 id="gT">CLF month grid</h2><span class="hint" id="gHint"></span></div>
     <div class="filters">
-      <div class="f"><label for="fDist">District</label><select id="fDist"></select></div>
+      <div class="f"><label for="msBtn">District</label>
+        <div class="ms" id="ms">
+          <button type="button" class="msb" id="msBtn" aria-haspopup="true" aria-expanded="false" aria-controls="msPop">
+            <span id="msLabel">All districts</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="msp" id="msPop" hidden>
+            <div class="msh"><button type="button" id="msAll">Select all</button></div>
+            <div class="msl" id="msList" role="group" aria-label="Districts"></div>
+          </div>
+        </div>
+      </div>
       <div class="f"><label for="fBlock">Block</label><select id="fBlock"></select></div>
       <div class="f"><label>Show</label>
         <div class="seg" id="segStatus" role="group" aria-label="Status filter">
@@ -338,7 +375,7 @@
       <span><span class="pill-s yes"><svg><use href="#i-check"/></svg><span class="t">YES</span></span> captured</span>
       <span><span class="pill-s no"><svg><use href="#i-x"/></svg><span class="t">NO</span></span> not captured</span>
       <span><span class="pill-s na"><svg><use href="#i-dash"/></svg><span class="t">–</span></span> no value yet</span>
-      <span><span class="pill-s chg-up"><svg><use href="#i-check"/></svg><span class="t">YES</span></span> changed NO → YES</span>
+      <span><span class="pill-s chg-up"><svg><use href="#i-check"/></svg><span class="t">YES</span></span> changed blank / NO → YES</span>
       <span><span class="pill-s chg-dn"><svg><use href="#i-x"/></svg><span class="t">NO</span></span> changed YES → NO</span>
       <span class="hint" style="color:var(--muted)">Tip: click a month heading to list CLFs with NO in that month.</span>
     </div>
@@ -359,7 +396,9 @@ const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&':'
 const pct = (a, b) => (b ? Math.round((a * 100) / b) : null);
 
 let DATA = null;
-const V = { status: 'all', sort: 'block', monthNo: null, closed: new Set(), allClosed: false };
+let DISTS = [];
+// V.dists = selected districts (empty set = all districts)
+const V = { status: 'all', sort: 'block', monthNo: null, dists: new Set(), closed: new Set(), allClosed: false };
 
 // 'yes' | 'no' | 'na'
 function stateOf(v) {
@@ -373,13 +412,23 @@ function stateOf(v) {
 const TXT = { yes: 'YES', no: 'NO', na: '–' };
 const ICON = { yes: 'i-check', no: 'i-x', na: 'i-dash' };
 const TRN = { up: ' chg-up', dn: ' chg-dn' };
-// compare a CLF's month i with its most recent earlier month that has a YES/NO value
+
+// Movement of one CLF in month i  ->  'up' | 'dn' | ''
+//  up : this month is YES and the previous month was NO or blank (NULL)   (NO → YES, NULL → YES)
+//  dn : this month is NO and the most recent earlier record that has a value was YES   (YES → NO)
+// The first month of the financial year has nothing to compare with, so it is never marked.
 function transOf(o, months, i) {
-  const cur = o.m[months[i].name];
-  if (cur !== 'yes' && cur !== 'no') return '';
-  for (let j = i - 1; j >= 0; j--) {
-    const pv = o.m[months[j].name];
-    if (pv === 'yes' || pv === 'no') return pv === cur ? '' : (cur === 'yes' ? 'up' : 'dn');
+  if (i <= 0) return '';
+  const cur = o.m[months[i].name] || 'na';
+  if (cur === 'yes') {
+    const prev = o.m[months[i - 1].name] || 'na';
+    return prev === 'yes' ? '' : 'up';
+  }
+  if (cur === 'no') {
+    for (let j = i - 1; j >= 0; j--) {
+      const pv = o.m[months[j].name];
+      if (pv === 'yes' || pv === 'no') return pv === 'yes' ? 'dn' : '';
+    }
   }
   return '';
 }
@@ -402,7 +451,7 @@ async function load(date) {
     DATA = null;
     const net = e instanceof TypeError;
     $('msg').innerHTML = `<div class="banner err"><div><b>Could not load the data.</b> ${esc(e.message || e)}` + (net ? `<br>The browser could not reach the database server (${esc(SUPABASE_URL)}). Check that you are online and that no VPN, firewall, ad-blocker or school/office network is blocking it. If it still fails everywhere, the Supabase project may be paused — open the Supabase dashboard and restore it.` : '') + `<br><button class="mini" type="button" onclick="load($('fDate').value)" style="margin-top:8px;color:inherit">Try again</button></div></div>`;
-    $('kpis').innerHTML = ''; $('hm').innerHTML = ''; $('grid').innerHTML = ''; $('foot').textContent = '';
+    $('kpis').innerHTML = ''; $('hm').innerHTML = ''; $('bhm').innerHTML = ''; $('grid').innerHTML = ''; $('foot').textContent = '';
     return;
   }
   setupFilters();
@@ -421,15 +470,22 @@ function setupFilters() {
 }
 function fillDistricts() {
   const fy = $('fFy').value;
-  const dists = [...new Set(DATA.rows.filter((r) => r.financial_year === fy).map((r) => r.district))].sort();
-  const cur = $('fDist').value;
-  $('fDist').innerHTML = '<option value="">All districts</option>' + dists.map((d) => `<option>${esc(d)}</option>`).join('');
-  if (dists.includes(cur)) $('fDist').value = cur;
+  DISTS = [...new Set(DATA.rows.filter((r) => r.financial_year === fy).map((r) => r.district))].sort();
+  for (const d of [...V.dists]) if (!DISTS.includes(d)) V.dists.delete(d);
+  $('msList').innerHTML = DISTS.map((d) => `<label class="mso"><input type="checkbox" value="${esc(d)}"><span>${esc(d)}</span></label>`).join('');
+  syncMs();
   fillBlocks();
 }
+// keep the checkboxes and the button label in step with V.dists (empty set = all checked)
+function syncMs() {
+  const all = V.dists.size === 0;
+  document.querySelectorAll('#msList input').forEach((i) => { i.checked = all || V.dists.has(i.value); });
+  const n = V.dists.size;
+  $('msLabel').textContent = n === 0 ? 'All districts' : n === 1 ? [...V.dists][0] : `${n} districts`;
+}
 function fillBlocks() {
-  const fy = $('fFy').value, d = $('fDist').value;
-  const blocks = [...new Set(DATA.rows.filter((r) => r.financial_year === fy && (!d || r.district === d)).map((r) => r.block))].sort();
+  const fy = $('fFy').value, sd = V.dists;
+  const blocks = [...new Set(DATA.rows.filter((r) => r.financial_year === fy && (!sd.size || sd.has(r.district))).map((r) => r.block))].sort();
   const cur = $('fBlock').value;
   $('fBlock').innerHTML = '<option value="">All blocks</option>' + blocks.map((b) => `<option>${esc(b)}</option>`).join('');
   if (blocks.includes(cur)) $('fBlock').value = cur;
@@ -463,9 +519,9 @@ function model() {
 }
 
 function filtered(all, months) {
-  const d = $('fDist').value, b = $('fBlock').value, q = $('fSearch').value.trim().toLowerCase(), n = months.length;
+  const sd = V.dists, b = $('fBlock').value, q = $('fSearch').value.trim().toLowerCase(), n = months.length;
   return all.filter((o) => {
-    if (d && o.district !== d) return false;
+    if (sd.size && !sd.has(o.district)) return false;
     if (b && o.block !== b) return false;
     if (q && !(o.clf.toLowerCase().includes(q) || o.ebk.toLowerCase().includes(q))) return false;
     if (V.monthNo && o.m[V.monthNo] !== 'no') return false;
@@ -493,8 +549,8 @@ const ringSvg = (p, color) => {
   return `<div class="ring"><svg viewBox="0 0 54 54"><circle cx="27" cy="27" r="${r}" fill="none" stroke="var(--na-soft)" stroke-width="7"/><circle cx="27" cy="27" r="${r}" fill="none" stroke="${color}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${(c * v) / 100} ${c}"/></svg><b>${p == null ? '–' : p + '%'}</b></div>`;
 };
 const ICO = {
-  users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.500"/><circle cx="17" cy="9" r="2.5"/><path d="M16.500 14.200c2.700.1 4.500 1.900 4.500 4.800"/></svg>',
-  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.500l2.700 2.700L16 9.500"/></svg>',
+  users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.2c2.7.1 4.5 1.9 4.5 4.8"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg>',
   x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>'
 };
 
@@ -503,6 +559,7 @@ function render() {
   const { months, all } = model();
   const list = sorted(filtered(all, months));
   const n = months.length;
+  const sd = V.dists;
 
   // ----- banners -----
   let msg = '';
@@ -529,40 +586,66 @@ function render() {
     <div class="card kpi"><div class="ico g">${ICO.check}</div><div><div class="v">${allYes}</div><div class="l">YES in every month</div></div></div>
     <div class="card kpi"><div class="ico r">${ICO.x}</div><div><div class="v">${allNo}</div><div class="l">NO in every month · needs attention</div></div></div>`;
 
-  // ----- district heatmap (uses every CLF in the FY, ignoring the grid filters) -----
-  const sel = $('fDist').value;
+  // ----- heatmap helpers (district + block tables) -----
   const stat = (set, m) => {
     const y = set.filter((o) => o.m[m.name] === 'yes').length, t = set.filter((o) => o.m[m.name] === 'yes' || o.m[m.name] === 'no').length;
     return { y, t, p: pct(y, t) };
   };
+  // % cell + movement counts: ▲ CLFs that became YES (blank/NO → YES), ▼ CLFs that went YES → NO
   const cellOf = (set, m, i) => {
     const { y, t, p } = stat(set, m);
     if (p == null) return '<div class="hc na">–</div>';
-    // compare with the most recent earlier month that has data
-    let prev = null, pm = null, prevT = null;
-    for (let j = i - 1; j >= 0; j--) { const s = stat(set, months[j]); if (s.p != null) { prev = s.y; prevT = s.t; pm = months[j]; break; } }
     let dl = '', dt = '';
-    if (prev != null) {
-      const d = y - prev, a = Math.abs(d);
-      const cls = d > 0 ? 'up' : d < 0 ? 'dn' : 'eq';
-      const ic = d > 0 ? 'i-up' : d < 0 ? 'i-down' : 'i-dash';
-      dl = `<span class="dl ${cls}"><svg><use href="#${ic}"/></svg>${d === 0 ? '0' : (d > 0 ? '+' : '−') + a}</span>`;
-      dt = d === 0 ? ` · no change vs ${pm.name}` : ` · ${d > 0 ? 'up' : 'down'} ${a} CLF${a === 1 ? '' : 's'} vs ${pm.name} (${prev}/${prevT})`;
+    if (i > 0) {
+      let up = 0, dn = 0;
+      for (const o of set) { const tr = transOf(o, months, i); if (tr === 'up') up++; else if (tr === 'dn') dn++; }
+      if (up || dn) {
+        dl = '<span class="dl">' +
+          (up ? `<span class="u"><svg><use href="#i-up"/></svg>+${up}</span>` : '') +
+          (dn ? `<span class="d"><svg><use href="#i-down"/></svg>−${dn}</span>` : '') + '</span>';
+        dt = ` · vs previous record: ${up} CLF${up === 1 ? '' : 's'} blank/NO → YES, ${dn} CLF${dn === 1 ? '' : 's'} YES → NO`;
+      } else {
+        dl = '<span class="dl eq"><svg><use href="#i-dash"/></svg>0</span>';
+        dt = ' · no change vs previous record';
+      }
     }
     return `<div class="hc" style="--h:${Math.round(p * 1.35)}" title="${esc(m.name)}: ${y} YES of ${t} CLFs${esc(dt)}">${p}%<small>${y}/${t}</small>${dl}</div>`;
   };
-  let hm = '<thead><tr><th class="l">District</th>' + months.map((m) => `<th>${esc(m.name.slice(0, 3))} <span style="font-weight:400;color:var(--muted)">’${String(m.year).slice(2)}</span></th>`).join('') + '</tr></thead><tbody>';
-  hm += `<tr><td class="l"><div class="dn ${sel ? '' : 'on'}" data-dist="">All districts <small>${all.length} CLFs</small></div></td>${months.map((m, i) => `<td>${cellOf(all, m, i)}</td>`).join('')}</tr>`;
+  const monthHead = months.map((m) => `<th>${esc(m.name.slice(0, 3))} <span style="font-weight:400;color:var(--muted)">’${String(m.year).slice(2)}</span></th>`).join('');
+  const cellsOf = (set) => months.map((m, i) => `<td>${cellOf(set, m, i)}</td>`).join('');
+
+  // ----- district overview (uses every CLF in the FY, ignoring the grid filters) -----
+  let hm = `<thead><tr><th class="l">District</th>${monthHead}</tr></thead><tbody>`;
+  hm += `<tr><td class="l"><div class="dn ${sd.size ? '' : 'on'}" data-dist="">All districts <small>${all.length} CLFs</small></div></td>${cellsOf(all)}</tr>`;
   for (const d of dists) {
     const set = all.filter((o) => o.district === d);
     const isPend = !set.some((o) => o.known > 0);
-    hm += `<tr><td class="l"><div class="dn ${sel === d ? 'on' : ''}" data-dist="${esc(d)}"><span>${esc(d)}${isPend ? '<span class="pend">pending</span>' : ''}</span><small>${set.length}</small></div></td>${months.map((m, i) => `<td>${cellOf(set, m, i)}</td>`).join('')}</tr>`;
+    hm += `<tr><td class="l"><div class="dn ${sd.has(d) ? 'on' : ''}" data-dist="${esc(d)}"><span>${esc(d)}${isPend ? '<span class="pend">pending</span>' : ''}</span><small>${set.length}</small></div></td>${cellsOf(set)}</tr>`;
   }
   $('hm').innerHTML = hm + '</tbody>';
 
+  // ----- block overview (blocks of the selected districts; all blocks if none selected) -----
+  const selBlock = $('fBlock').value;
+  const bmap = new Map();
+  for (const o of all) {
+    if (sd.size && !sd.has(o.district)) continue;
+    const k = o.district + '|' + o.block;
+    if (!bmap.has(k)) bmap.set(k, { d: o.district, b: o.block, set: [] });
+    bmap.get(k).set.push(o);
+  }
+  const blocksList = [...bmap.values()].sort((a, b) => a.d.localeCompare(b.d) || a.b.localeCompare(b.b));
+  const inScope = all.filter((o) => !sd.size || sd.has(o.district));
+  let bhm = `<thead><tr><th class="l">Block</th>${monthHead}</tr></thead><tbody>`;
+  bhm += `<tr><td class="l"><div class="dn ${selBlock ? '' : 'on'}" data-bd="" data-bb=""><span>All blocks<span class="bd">${sd.size ? esc([...sd].sort().join(', ')) : 'all districts'}</span></span><small>${inScope.length}</small></div></td>${cellsOf(inScope)}</tr>`;
+  for (const bk of blocksList) {
+    const isPend = !bk.set.some((o) => o.known > 0);
+    bhm += `<tr><td class="l"><div class="dn ${selBlock === bk.b && (sd.size === 0 || sd.has(bk.d)) ? 'on' : ''}" data-bd="${esc(bk.d)}" data-bb="${esc(bk.b)}"><span>${esc(bk.b)}${isPend ? '<span class="pend">pending</span>' : ''}<span class="bd">${esc(bk.d)}</span></span><small>${bk.set.length}</small></div></td>${cellsOf(bk.set)}</tr>`;
+  }
+  $('bhm').innerHTML = bhm + '</tbody>';
+
   // ----- filter chips -----
   const chips = [];
-  if ($('fDist').value) chips.push(['dist', `District: ${$('fDist').value}`]);
+  if (sd.size) chips.push(['dist', sd.size <= 3 ? `District: ${[...sd].sort().join(', ')}` : `${sd.size} districts selected`]);
   if ($('fBlock').value) chips.push(['block', `Block: ${$('fBlock').value}`]);
   if (V.monthNo) chips.push(['month', `NO in ${V.monthNo}`]);
   if (V.status !== 'all') chips.push(['status', { anyno: 'Any NO', allyes: 'All YES', allno: 'All NO' }[V.status]]);
@@ -581,7 +664,6 @@ function render() {
     body = `<tbody><tr><td colspan="${4 + n}" class="empty">No CLFs match these filters.</td></tr></tbody>`;
   } else {
     body = '<tbody>';
-    let cur = null;
     const byD = new Map();
     for (const o of list) { if (!byD.has(o.district)) byD.set(o.district, []); byD.get(o.district).push(o); }
     for (const [d, set] of byD) {
@@ -595,7 +677,7 @@ function render() {
       for (const o of set) {
         const lb = o.latest === 'yes' ? '<span class="badge yes">Active</span>' : o.latest === 'no' ? '<span class="badge no">Not captured</span>' : '<span class="badge na">–</span>';
         body += `<tr class="r"><td class="fixed" title="${esc(o.clf)}"><div class="nm">${esc(o.clf)}</div><div class="sb">${esc(o.block)}${o.ebk ? ' · ' + esc(o.ebk) : ''}</div></td><td class="c">${esc(o.start) || '–'}</td>` +
-          months.map((m, i) => { const tr = transOf(o, months, i); return `<td class="cell${qb(i)}${tr ? ' t-' + tr : ''}">${cellHtml(o.m[m.name] || 'na', `${m.name} ${m.year}: ${o.m[m.name] === 'yes' ? 'captured' : o.m[m.name] === 'no' ? 'not captured' : 'no value'}${tr === 'up' ? ' (changed NO → YES)' : tr === 'dn' ? ' (changed YES → NO)' : ''}`, tr)}</td>`; }).join('') +
+          months.map((m, i) => { const tr = transOf(o, months, i); return `<td class="cell${qb(i)}${tr ? ' t-' + tr : ''}">${cellHtml(o.m[m.name] || 'na', `${m.name} ${m.year}: ${o.m[m.name] === 'yes' ? 'captured' : o.m[m.name] === 'no' ? 'not captured' : 'no value'}${tr === 'up' ? ' (changed blank/NO → YES)' : tr === 'dn' ? ' (changed YES → NO)' : ''}`, tr)}</td>`; }).join('') +
           `<td class="c">${lb}</td><td><div class="score">${o.yes}/${n}<span class="meter"><i style="width:${n ? (o.yes * 100) / n : 0}%"></i></span></div></td></tr>`;
       }
     }
@@ -606,7 +688,6 @@ function render() {
       }).join('') + '<td></td><td></td></tr></tfoot>';
   }
   $('grid').innerHTML = head + body;
-  // group header cells need to stay readable while scrolling sideways
   $('gHint').textContent = `${list.length} of ${all.length} CLFs · ${n} month${n === 1 ? '' : 's'} · report date ${DATA.report_date || '–'}`;
   $('foot').textContent = `Data copied from LokOS on ${DATA.report_date || '–'} by the LokOS Toolkit extension. Months shown: ${months.map((m) => m.name).join(', ') || 'none'}.`;
 }
@@ -707,19 +788,17 @@ async function downloadXlsx() {
     ws.columns.forEach((c, i) => { c.width = [16, 16, 34, 24, 12][i] || 11; });
     if (list.length) ws.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1 + list.length, column: cols.length } };
 
-    // ----- sheet 2: district summary (all CLFs in the financial year) -----
-    const ds = wb.addWorksheet('District summary', { views: [{ state: 'frozen', xSplit: 1, ySplit: 1 }] });
-    ds.addRow(['District', 'CLFs', ...months.map((m) => `${m.name.slice(0, 3)} ${m.year}`)]);
-    head(ds.getRow(1));
-    const pctRow = (label, set) => {
-      const r = ds.addRow([label, set.length, ...months.map((m) => {
+    // ----- sheets 2 & 3: district and block summaries (all CLFs in the financial year) -----
+    const pctRow = (sheet, lead, set) => {
+      const k = lead.length;
+      const r = sheet.addRow([...lead, set.length, ...months.map((m) => {
         const y = set.filter((o) => o.m[m.name] === 'yes').length, t = set.filter((o) => o.m[m.name] === 'yes' || o.m[m.name] === 'no').length;
         return t ? y / t : '–';
       })]);
       r.eachCell((c, i) => {
         c.border = border;
-        c.alignment = { vertical: 'middle', horizontal: i === 1 ? 'left' : 'center' };
-        if (i > 2 && typeof c.value === 'number') {
+        c.alignment = { vertical: 'middle', horizontal: i <= k ? 'left' : 'center' };
+        if (i > k + 1 && typeof c.value === 'number') {
           c.numFmt = '0%';
           const v = c.value;
           c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: v >= 0.8 ? 'FFDCF5E5' : v >= 0.5 ? 'FFFFF3D1' : 'FFFDE4EA' } };
@@ -727,11 +806,26 @@ async function downloadXlsx() {
       });
       return r;
     };
-    pctRow('All districts', all).font = { bold: true };
-    for (const d of [...new Set(all.map((o) => o.district))].sort()) pctRow(d, all.filter((o) => o.district === d));
+    const note = `% of CLFs with YES, all CLFs in ${$('fFy').value} (filters not applied). Report date ${DATA.report_date || '–'}.`;
+
+    const ds = wb.addWorksheet('District summary', { views: [{ state: 'frozen', xSplit: 1, ySplit: 1 }] });
+    ds.addRow(['District', 'CLFs', ...months.map((m) => `${m.name.slice(0, 3)} ${m.year}`)]);
+    head(ds.getRow(1));
+    pctRow(ds, ['All districts'], all).font = { bold: true };
+    for (const d of [...new Set(all.map((o) => o.district))].sort()) pctRow(ds, [d], all.filter((o) => o.district === d));
     ds.columns.forEach((c, i) => { c.width = i === 0 ? 20 : 11; });
     ds.addRow([]);
-    ds.addRow([`% of CLFs with YES, all CLFs in ${$('fFy').value} (filters not applied). Report date ${DATA.report_date || '–'}.`]).font = { italic: true, color: { argb: 'FF8A94A7' } };
+    ds.addRow([note]).font = { italic: true, color: { argb: 'FF8A94A7' } };
+
+    const bs = wb.addWorksheet('Block summary', { views: [{ state: 'frozen', xSplit: 2, ySplit: 1 }] });
+    bs.addRow(['District', 'Block', 'CLFs', ...months.map((m) => `${m.name.slice(0, 3)} ${m.year}`)]);
+    head(bs.getRow(1));
+    const bmap = new Map();
+    for (const o of all) { const k = o.district + '|' + o.block; if (!bmap.has(k)) bmap.set(k, { d: o.district, b: o.block, set: [] }); bmap.get(k).set.push(o); }
+    for (const x of [...bmap.values()].sort((a, b) => a.d.localeCompare(b.d) || a.b.localeCompare(b.b))) pctRow(bs, [x.d, x.b], x.set);
+    bs.columns.forEach((c, i) => { c.width = i < 2 ? 20 : 11; });
+    bs.addRow([]);
+    bs.addRow([note]).font = { italic: true, color: { argb: 'FF8A94A7' } };
 
     const buf = await wb.xlsx.writeBuffer();
     const a = document.createElement('a');
@@ -749,9 +843,9 @@ async function downloadXlsx() {
 
 // ---------- wiring ----------
 function setSeg(id, val) { document.querySelectorAll(`#${id} button`).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === val))); }
+function setDists(arr) { V.dists = new Set(arr); syncMs(); fillBlocks(); }
 $('fDate').addEventListener('change', () => load($('fDate').value));
 $('fFy').addEventListener('change', () => { V.monthNo = null; fillDistricts(); render(); });
-$('fDist').addEventListener('change', () => { fillBlocks(); render(); });
 $('fBlock').addEventListener('change', render);
 $('fSearch').addEventListener('input', render);
 $('fSort').addEventListener('change', () => { V.sort = $('fSort').value; render(); });
@@ -765,15 +859,40 @@ $('bFold').addEventListener('click', () => {
   $('bFold').textContent = V.allClosed ? 'Expand all' : 'Collapse all';
   render();
 });
+
+// multi-select district dropdown
+function toggleMs(open) { $('msPop').hidden = !open; $('msBtn').setAttribute('aria-expanded', String(open)); }
+$('msBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleMs($('msPop').hidden); });
+$('msList').addEventListener('change', () => {
+  const checked = [...document.querySelectorAll('#msList input:checked')].map((i) => i.value);
+  // everything ticked (or nothing ticked) means "all districts"
+  setDists(checked.length === DISTS.length || checked.length === 0 ? [] : checked);
+  render();
+});
+$('msAll').addEventListener('click', () => { setDists([]); render(); });
+document.addEventListener('click', (e) => { if (!$('msPop').hidden && !e.target.closest('#ms')) toggleMs(false); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('msPop').hidden) { toggleMs(false); $('msBtn').focus(); } });
+
+// district overview click -> filter to that district
 $('hm').addEventListener('click', (e) => {
   const d = e.target.closest('[data-dist]'); if (!d) return;
-  $('fDist').value = d.dataset.dist; fillBlocks(); render();
+  setDists(d.dataset.dist ? [d.dataset.dist] : []);
+  $('fBlock').value = '';
+  render();
+  document.getElementById('gT').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+// block overview click -> filter to that block (and its district)
+$('bhm').addEventListener('click', (e) => {
+  const d = e.target.closest('[data-bb]'); if (!d) return;
+  if (d.dataset.bb) { setDists([d.dataset.bd]); $('fBlock').value = d.dataset.bb; }
+  else $('fBlock').value = '';
+  render();
   document.getElementById('gT').scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 $('chips').addEventListener('click', (e) => {
   const b = e.target.closest('[data-clear]'); if (!b) return;
   const k = b.dataset.clear;
-  if (k === 'dist') { $('fDist').value = ''; fillBlocks(); }
+  if (k === 'dist') setDists([]);
   if (k === 'block') $('fBlock').value = '';
   if (k === 'month') V.monthNo = null;
   if (k === 'status') { V.status = 'all'; setSeg('segStatus', 'all'); }

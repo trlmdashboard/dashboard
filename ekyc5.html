@@ -125,14 +125,11 @@ body.ready #navDock{display:flex}
   <div class="grid g2">
     <div class="card"><h2>🏆 Top 10 blocks</h2><div class="tw" id="tTop"></div></div>
     <div class="card"><h2>⚠️ Lowest 10 blocks</h2><div class="tw" id="tLow"></div></div>
-    <div class="card"><h2>🚀 Fastest movers (last <span class="w"></span> days, e-KYC added)</h2><div class="tw" id="tFast"></div></div>
-    <div class="card"><h2>🛑 Stalled blocks (no gain in last <span class="w"></span> days)</h2><div class="tw" id="tStall"></div></div>
     <div class="card"><h2>Last days summary</h2><div class="tw" id="tDays"></div></div>
     <div class="card"><h2>District summary</h2><div class="tw" id="tDist"></div></div>
   </div>
   <div class="card" id="impSum" style="margin-bottom:14px"></div>
   <div class="grid g2">
-    <div class="card"><h2>🧲 Blocks hampering overall progress (below overall average)</h2><div class="tw" id="tHamp"></div></div>
     <div class="card"><h2>🐢 Slowest-moving blocks (last <span class="w"></span> days, target <span class="tg"></span>%)</h2><div class="tw" id="tSlow"></div></div>
     <div class="card"><h2>🎯 Biggest impact on missing the <span class="tg"></span>% target (shortfall)</h2><div class="tw" id="tImp"></div></div>
   </div>
@@ -246,14 +243,6 @@ body.ready #navDock{display:flex}
       <div class="card"><h2>District summary</h2><div class="tw" id="xtDist"></div></div>
       <div class="card"><h2>⚠️ Lowest 10 blocks (captured %)</h2><div class="tw" id="xtLow"></div></div>
       <div class="card"><h2>🎯 Biggest gap: CLFs not yet captured</h2><div class="tw" id="xtGap"></div></div>
-    </div>
-    <div class="card" style="margin:14px 0;width:fit-content;max-width:100%;overflow-x:auto">
-      <h2>District × month: captured % of CLFs</h2>
-      <div class="tw hm xh" id="xtHeat"></div>
-    </div>
-    <div class="card" style="margin:14px 0;width:fit-content;max-width:100%;overflow-x:auto">
-      <h2>All blocks – month-wise status (one row per block), click a column heading to sort <input id="qX" placeholder="search district / block…" style="float:right;text-transform:none;letter-spacing:0"> <select id="xD" class="nocap" style="float:right;margin-right:8px;text-transform:none;letter-spacing:0"></select></h2>
-      <div class="tw dt" id="xtAll"></div>
     </div>
     <div class="card" id="oCard" style="margin:14px 0;width:fit-content;max-width:100%;overflow-x:auto">
       <h2>SHG &amp; VO onboarding – one row per block <span class="mu" id="oMeta" style="font-size:12px;text-transform:none;letter-spacing:0;font-weight:400"></span>
@@ -456,9 +445,6 @@ function render(){
   const byPct=[...valid].sort((a,b)=>b.pct-a.pct);
   $('tTop').innerHTML=table(base,num(byPct.slice(0,10)));
   $('tLow').innerHTML=table(base,num(byPct.slice(-10).reverse()));
-  const gc={h:`Added ${W}d`,f:r=>sgn(r.gain)};
-  $('tFast').innerHTML=table([...base,gc,{h:'Δ pp',f:r=>sgn(+r.ppGain.toFixed(2),n=>n.toFixed(2))}],num([...bl].sort((a,b)=>b.gain-a.gain).slice(0,10)));
-  $('tStall').innerHTML=table([...base,{h:'Pending',f:r=>nf(r.pending)}],num(valid.filter(r=>r.gain<=0&&r.pct<100).sort((a,b)=>b.pending-a.pending).slice(0,15)));
 
   $('tDays').innerHTML=table([
     {h:'Date',f:r=>r.date},{h:'Members',f:r=>nf(r.mem)},{h:'e-KYC',f:r=>nf(r.ek)},{h:'%',f:r=>pf(r.pct)},
@@ -486,7 +472,6 @@ function render(){
   const noGain=below.filter(r=>r.gain<=0).length;
   $('impSum').innerHTML=`<b>Target ${T}%</b> · overall <b>${pf(ov)}</b> · shortfall <b>${nf(totNeed)}</b> members across <b>${below.length}</b> of ${an.length} blocks below target · top 10 blocks hold <b>${pf(imp.length?imp[imp.length-1].cum:0)}</b> of the shortfall · <b>${noGain}</b> below-target blocks added nothing in the last ${W} day(s)`;
   const ids=[{h:'#',f:r=>r._i},{h:'District',f:r=>r.d,l:1},{h:'Block',f:r=>`<b>${r.b}</b>`,l:1},{h:'Members',f:r=>nf(r.mem)}];
-  $('tHamp').innerHTML=table([...ids,{h:'Progress',f:r=>pbar(r.pct)},{h:'vs overall',f:r=>sgn(+(r.pct-ov).toFixed(2),n=>n.toFixed(2)+' pp')},{h:'Members short',f:r=>nf(r.dragMem)},{h:'Lifts overall by',f:r=>'+'+r.uplift.toFixed(2)+' pp'}],num([...an].filter(r=>r.dragMem>0).sort((x,y)=>y.dragMem-x.dragMem).slice(0,10)));
   $('tSlow').innerHTML=table([...ids,{h:'Progress',f:r=>pbar(r.pct)},{h:`Added ${W}d`,f:r=>sgn(r.gain)},{h:'Speed (pp/day)',f:r=>r.speed.toFixed(3)},{h:'ETA to target',f:r=>r.eta===null?'<span class="dn">no progress</span>':nf(r.eta)+' days'}],num([...below].sort((x,y)=>x.speed-y.speed||y.need-x.need).slice(0,10)));
   $('tImp').innerHTML=table([...ids,{h:'e-KYC',f:r=>nf(r.ek)},{h:'Progress',f:r=>pbar(r.pct)},{h:`Shortfall to ${T}%`,f:r=>nf(r.need)},{h:'Share of gap',f:r=>pf(r.share)},{h:'Cumulative',f:r=>pf(r.cum)}],num(imp));
   bl.forEach(r=>{r.need=Math.max(0,Math.ceil(r.mem*T/100-r.ek)); r.needShare=totNeed?r.need/totNeed*100:0;});
@@ -888,7 +873,7 @@ const xGroup=(rows,kf)=>{const m=new Map();rows.forEach(r=>{const k=kf(r);if(!m.
 const xBase=()=>{const dt=effX(),fy=$('xFy').value,q=$('xQtr').value,d=$('selDist').value;return TROWS.filter(r=>r.date===dt&&(!fy||r.fy===fy)&&(!q||r.q===q)&&(!d||r.d===d));};
 function xClear(text){
   $('xMsg').textContent=text; $('xIns').innerHTML='';
-  ['xKpis','xtMon','xtQ','xtDist','xtHeat','xtLow','xtGap','xtAll'].forEach(i=>$(i).innerHTML='');
+  ['xKpis','xtMon','xtQ','xtDist','xtLow','xtGap'].forEach(i=>$(i).innerHTML='');
   Object.keys(charts).filter(k=>k.startsWith('xc')).forEach(k=>{charts[k].destroy();delete charts[k];});
   window._xr=[];
 }
@@ -955,28 +940,9 @@ function renderTxn(){
   $('xtDist').innerHTML=table([{h:'#',f:r=>r._i},{h:'District',f:r=>`<b>${r.d}</b>`,l:1},{h:'Blocks',f:r=>r.blocks},{h:U,f:r=>nf(r.clf)},{h:'Started',f:r=>nf(r.st)},{h:'Captured',f:r=>nf(r.cap)},{h:'Captured %',f:r=>pbar(r.p)},{h:'Zero-capture block-months',f:zc}],num(byD));
   $('xtLow').innerHTML=table([...ids,{h:U,f:r=>nf(r.clf)},{h:'Captured',f:r=>nf(r.cap)},{h:'Captured %',f:r=>pbar(r.p)},{h:'Zero-capture months',f:zc}],num([...vb].sort((a,b)=>a.p-b.p||b.clf-a.clf).slice(0,10)));
   $('xtGap').innerHTML=table([...ids,{h:U,f:r=>nf(r.clf)},{h:'Captured %',f:r=>pbar(r.p)},{h:'Not captured',f:r=>`<b>${nf(r.gap)}</b>`},{h:'Share of gap',f:r=>pf(r.share)},{h:'Cumulative',f:r=>pf(r.cum)}],num(gl));
-  const hc=a=>{if(!a.clf)return '<td class="mu">–</td>';const c=pcol(a.p);return `<td style="background:${c}2e;color:${c};font-weight:600">${a.p.toFixed(1)}%</td>`;};
-  const hd=[...new Set(base.map(r=>r.d))].sort().concat(['ALL']);
-  $('xtHeat').innerHTML=`<table><thead><tr><th>District</th>${byM.map(t=>`<th>${t.lbl}</th>`).join('')}<th>Overall</th></tr></thead><tbody>${hd.map(d=>{const s=d==='ALL'?base:base.filter(r=>r.d===d);return `<tr><td${d==='ALL'?' style="font-weight:700"':''}>${d==='ALL'?'All districts':d}</td>${byM.map(t=>hc(xAgg(s.filter(r=>key(r)===t.fy+'|'+t.m)))).join('')}${hc(xAgg(s))}</tr>`;}).join('')}</tbody></table>`;
-  window._xr=rows.map(r=>({...r,p:pct(r.cap,r.clf),mo:mi(r.m)})); renderTxnAll();
+  window._xr=rows.map(r=>({...r,p:pct(r.cap,r.clf),mo:mi(r.m)}));
 }
-function renderTxnAll(){
-  const q=$('qX').value.trim().toUpperCase(), R=window._xr||[], key=r=>r.fy+'|'+r.m;
-  const dsel=$('xD'),dcur=dsel.value,dl=[...new Set(R.map(r=>r.d))].sort();
-  dsel.innerHTML='<option value="">All districts</option>'+dl.map(d=>`<option>${d}</option>`).join(''); if(dl.includes(dcur)) dsel.value=dcur;
-  const ms=[...new Map(R.map(r=>[key(r),{k:key(r),m:r.m,q:r.q,fy:r.fy}])).values()].sort((a,b)=>a.fy.localeCompare(b.fy)||mi(a.m)-mi(b.m));
-  const multiFy=new Set(ms.map(t=>t.fy)).size>1, lastK=ms.length?ms[ms.length-1].k:'';
-  const gs=[]; ms.forEach(t=>{const g=gs[gs.length-1];if(g&&g.fy===t.fy&&g.q===t.q)g.n++;else gs.push({fy:t.fy,q:t.q,n:1});});
-  const bm=new Map(); R.forEach(r=>{const k=r.d+'|'+r.b;if(!bm.has(k))bm.set(k,{d:r.d,b:r.b,c:{}});bm.get(k).c[key(r)]=r;});
-  const a=[...bm.values()].map(x=>{const t=xAgg(Object.values(x.c));return{...x,tot:t.p,cl:x.c[lastK]?x.c[lastK].clf:t.clf};}).filter(x=>(!dsel.value||x.d===dsel.value)&&(!q||(x.d+' '+x.b).includes(q)));
-  const v=(x,k)=>k==='d'?x.d:k==='b'?x.b:k==='tot'?x.tot:k==='cl'?x.cl:(x.c[k.slice(2)]?x.c[k.slice(2)].p:-1);
-  a.sort((x,y)=>{const A=v(x,xKey),B=v(y,xKey);return (typeof A==='string'?A.localeCompare(B):A-B)*xDir||x.d.localeCompare(y.d)||x.b.localeCompare(y.b);});
-  const ar=k=>xKey===k?(xDir>0?' ▲':' ▼'):' ↕', C='text-align:center';
-  const cell=r=>{if(!r)return `<td class="mu" style="${C}">–</td>`;const c=pcol(r.p);return `<td style="${C};background:${c}22" title="${r.cap} captured of ${r.clf} CLFs (${r.st} started)"><b style="color:${c}">${r.p.toFixed(1)}%</b> <span class="mu" style="font-size:.85em">${r.cap}/${r.clf}</span></td>`;};
-  $('xtAll').innerHTML=`<table><thead><tr><th rowspan="2">#</th><th rowspan="2" data-k="d" class="l">District${ar('d')}</th><th rowspan="2" data-k="b" class="l">Block${ar('b')}</th><th rowspan="2" data-k="cl">CLFs${ar('cl')}</th>${gs.map(g=>`<th colspan="${g.n}" style="${C};border-left:2px solid var(--line)">${g.q}${multiFy?' · '+g.fy:''}</th>`).join('')}</tr><tr>${ms.map((t,i)=>`<th data-k="k:${t.k}" style="${C}${i===0||ms[i-1].q!==t.q||ms[i-1].fy!==t.fy?';border-left:2px solid var(--line)':''}">${t.m}${ar('k:'+t.k)}</th>`).join('')}</tr></thead><tbody>${a.map((x,i)=>`<tr><td>${i+1}</td><td class="l">${x.d}</td><td class="l"><b>${x.b}</b></td><td>${nf(x.cl)}</td>${ms.map(t=>cell(x.c[t.k])).join('')}</tr>`).join('')||`<tr><td colspan="${4+ms.length}" class="mu">No blocks match</td></tr>`}</tbody></table>`;
-  $('xtAll').querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{const k=th.dataset.k;xDir=xKey===k?-xDir:(k==='d'||k==='b'?1:-1);xKey=k;renderTxnAll();});
-}
-$('xFy').onchange=$('xQtr').onchange=$('xMo').onchange=renderTxn; $('qX').oninput=renderTxnAll; $('xD').onchange=renderTxnAll;
+$('xFy').onchange=$('xQtr').onchange=$('xMo').onchange=renderTxn;
 $('xCsv').onclick=()=>{
   const h=['report_date','financial_year','quarter','month_name','district','block','total_clfs','clfs_started_transactions','transaction_captured','percentage'], d=effX();
   const csv=[h.join(',')].concat((window._xr||[]).map(r=>[d,r.fy,r.q,r.m,r.d,r.b,r.clf,r.st,r.cap,r.p.toFixed(2)].map(v=>`"${v}"`).join(','))).join('\n');
@@ -1018,8 +984,12 @@ function renderCbo(){
     return bm;};
   const pc=(on,tot)=>(on===null||tot===null||!(tot>0))?null:on/tot*100;
   const bm=build(day);
-  /* comparison: the same month, the trend-window start date (same rule as the cadre table) */
-  const W=+$('selWin').value, od=ODATES.filter(d=>d<=dt), winDate=od[Math.max(0,od.length-1-W)];
+  /* comparison: the same month, an earlier saved report date. The earlier date is picked from the report dates that
+     actually have rows for the SELECTED MONTH (not from all report dates), so the change shows even when the month's
+     data only started recently. Trend window = how many saved report dates to go back (1 day = previous saved date). */
+  const W=+$('selWin').value;
+  const mdates=[...new Set(OROWS.filter(r=>r.fy+'|'+r.m===k&&r.date<=dt).map(r=>r.date))].sort();
+  const winDate=mdates[Math.max(0,mdates.length-1-W)];
   const hasPrev=!!winDate&&winDate!==dt, pm=hasPrev?build(OROWS.filter(r=>r.date===winDate)):new Map();
   const wl=hasPrev?winDate.split('-').reverse().join('-'):'';
   const a=[...bm.entries()].filter(([,x])=>!q||(x.d+' '+x.b).includes(q)).map(([key,x])=>({...x,shgP:pc(x.shgOn,x.shg),voP:pc(x.voOn,x.vo),_p:pm.get(key)||null}));
@@ -1044,7 +1014,7 @@ function renderCbo(){
     (a.length?`<tr style="font-weight:700"><td class="l" colspan="2">Total (${nf(a.length)} blocks)</td>${cellsOf(T,TP)}</tr>`:'')+
     (a.map(x=>`<tr><td class="l">${x.d}</td><td class="l"><b>${x.b}</b></td>${cellsOf(x,x._p)}</tr>`).join('')||'<tr><td colspan="12" class="mu">No data for this selection</td></tr>')+'</tbody></table>';
   box.querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{const c=th.dataset.k;oDir=oKey===c?-oDir:(c==='d'||c==='b'?1:-1);oKey=c;renderCbo();});
-  $('oNote').textContent=hasPrev?`▲/▼ = change in the counts since ${wl} (trend window: ${W} day${W>1?'s':''}); percentages are onboarded ÷ total.`:'No earlier date available for comparison; percentages are onboarded ÷ total.';
+  $('oNote').textContent=hasPrev?`▲/▼ = change in the counts since ${wl} (trend window: ${W} saved report date${W>1?'s':''} back, same month); percentages are onboarded ÷ total.`:'Only one saved report date so far for this month, so there is nothing to compare with yet; percentages are onboarded ÷ total.';
   const notes=[];
   if(!day.some(r=>r.cbo==='SHG')) notes.push('No SHG rows for this date yet.');
   if(!day.some(r=>r.cbo==='VO')) notes.push('No VO rows for this date yet.');
@@ -1262,7 +1232,7 @@ function addLegend(el){
   el.after(d);
 }
 document.querySelectorAll('.card').forEach(c=>{decorateTitle(c);addCopyBtn(c);});
-['tTop','tLow','tFast','tStall','tDist','tHamp','tSlow','tImp','tAll','tShDist','tShTop','tShLow','tShFast','tShAll','tCVert','tCDist','tCTop','tCLow','tCPend','tCGap','tCRej','tCAll','xtMon','xtQ','xtDist','xtLow','xtHeat','xtAll'].forEach(id=>addLegend($(id)));
+['tTop','tLow','tDist','tSlow','tImp','tAll','tShDist','tShTop','tShLow','tShFast','tShAll','tCVert','tCDist','tCTop','tCLow','tCPend','tCGap','tCRej','tCAll','xtMon','xtQ','xtDist','xtLow'].forEach(id=>addLegend($(id)));
 applyTheme(_t);
 
 /* ---- section menu: one floating button per section, each lists that section's subsections ---- */
@@ -1272,7 +1242,7 @@ applyTheme(_t);
     {k:'e-KYC',g:'e-KYC progress',items:[['Summary','kpis'],['Charts','cCum','.grid'],['Top / lowest blocks','tTop','.grid'],['Impact analysis','impSum'],['District-wise block tables','q','.card'],['All blocks','qAll','.card']]},
     {k:'Cadre',g:'Cadre profile',items:[['Overview','cadreSec'],['Charts','cVS','.grid'],['Summary tables','tCVert','.grid'],['All blocks by vertical','tCAll','.card'],['District × vertical','tCHeat','.card']]},
     {k:'SHG',g:'SHG approval',items:[['Overview','shgSec'],['Charts','sSt','.grid'],['Summary tables','tShDist','.grid'],['All blocks','tShAll','.card']]},
-    {k:'Transaction',g:'Transaction monitoring',items:[['Overview','txnSec'],['Charts','xcMo','.grid'],['Summary tables','xtMon','.grid'],['District × month','xtHeat','.card'],['All blocks, month-wise','xtAll','.card'],['SHG &amp; VO onboarding · blocks','oCard'],['SHG &amp; VO onboarding · districts','odCard'],['Day-wise entries chart','dwCard']]}
+    {k:'Transaction',g:'Transaction monitoring',items:[['Overview','txnSec'],['Charts','xcMo','.grid'],['Summary tables','xtMon','.grid'],['SHG &amp; VO onboarding · blocks','oCard'],['SHG &amp; VO onboarding · districts','odCard'],['Day-wise entries chart','dwCard']]}
   ];
   const dock=$('navDock'), panel=$('navPanel'), links=[], btns=[];
   let openG=-1;

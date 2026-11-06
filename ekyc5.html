@@ -667,7 +667,7 @@ function renderCadreAll(){
   const arrow=k=>cKey===k?(cDir>0?' ▲':' ▼'):' ↕';
   const comb=[['u_th','Unique cadres'],['u_f','Filled'],['u_fp','Filled %'],['u_a','Approved'],['u_p','Pending'],['u_r','Rejected'],['u_nf','Not filled']];
   const sub=[['th','Cadres'],['f','Filled'],['fp','Filled %'],['a','Approved'],['p','Pending'],['r','Rejected']];
-  const h1=`<tr><th rowspan="2">#</th><th rowspan="2" class="l" data-k="d">District${arrow('d')}</th><th rowspan="2" class="l" data-k="b">Block${arrow('b')}</th>${cShowAll?`<th class="gh gs" colspan="${comb.length}">All verticals</th>`:''}${VN.map(v=>`<th class="gh gs" colspan="${sub.length}">${v}</th>`).join('')}</tr>`;
+  const h1=`<tr><th rowspan="2">#</th><th rowspan="2" class="l" data-k="d">District${arrow('d')}</th><th rowspan="2" class="l" data-k="b">Block${arrow('b')}</th>${cShowAll?`<th class="gh gs" colspan="${comb.length}">All verticals (Unique)</th>`:''}${VN.map(v=>`<th class="gh gs" colspan="${sub.length}">${v}</th>`).join('')}</tr>`;
   const h2=`<tr>${cShowAll?comb.map((c,i)=>`<th data-k="${c[0]}"${i===0?' class="gs"':''}>${c[1]}${arrow(c[0])}</th>`).join(''):''}${VN.map(v=>sub.map((c,i)=>{const k='v|'+v+'|'+c[0];return `<th data-k="${k}"${i===0?' class="gs"':''}>${c[1]}${arrow(k)}</th>`;}).join('')).join('')}</tr>`;
   const pc=p=>`<span style="color:${pcol(p)};font-weight:600">${pf(p)}</span>`;
   const body=a.map((r,i)=>`<tr><td>${i+1}</td><td class="l">${r.d}</td><td class="l"><b>${r.b}</b></td>`
